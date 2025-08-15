@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm" 
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                 xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm 
+                                     http://java.sun.com/xml/ns/persistence/orm_2_0.xsd" version="2.0">
+
+    <named-query name="Users.getUserDetails">
+        <query>SELECT u FROM Users u WHERE u.username = :username and u.password = :password</query>
+    </named-query>
+    <named-query name="Employee.nameForId">
+        <query>SELECT e FROM Employee e WHERE e.id = :id</query>
+    </named-query>
+    <named-query name="Employee.getMaxEmpId">
+        <query>SELECT MAX(e.id) FROM Employee e</query>
+    </named-query>
+    <named-query name="Empleave.getMaxEmpLeaveId">
+        <query>SELECT MAX(e.id) FROM Empleave e</query>
+    </named-query>
+    <named-query name="Empleave.getLeaveCount">
+        <query>SELECT COUNT(e) FROM Empleave e WHERE e.employeeid =:employeeid</query>
+    </named-query>
+    <named-query name="Employee.activeList">
+        <query>SELECT e FROM Employee e WHERE e.enddate IS NULL</query>
+    </named-query>
+    <named-query name="Empexpense.expenseList">
+        <query>SELECT e FROM Empexpense e WHERE e.employeeid = :employeeid AND e.enddate IS NULL AND e.expcategory = :expcategory</query>
+    </named-query>
+    <named-query name="Empexpense.loanList">
+        <query>SELECT e FROM Empexpense e WHERE e.enddate IS NULL AND e.expcategory = 'LOAN'</query>
+    </named-query>
+    <named-query name="Empexpense.paybackList">
+        <query>SELECT e FROM Empexpense e WHERE e.employeeid =:employeeid AND e.exprefid =:refid AND e.expcategory = 'PAYBACK'</query>
+    </named-query>    
+    <named-query name="Empexpense.getMaxId">
+        <query>SELECT MAX(e.id) FROM Empexpense e</query>
+    </named-query>
+    <named-query name="Crop.cropPerPK">
+        <query>SELECT c FROM Crop c WHERE c.cropid = :cropid</query>
+    </named-query>
+    <named-query name="Crop.listAll">
+        <query>SELECT c FROM Crop c</query>
+    </named-query>
+    <named-query name="Crop.getCropsPerSite">
+        <query>SELECT c FROM Crop c WHERE c.siteid = :siteid</query>
+    </named-query>
+    <named-query name="Farmresource.listAll">
+        <query>SELECT f FROM Farmresource f</query>
+    </named-query>
+    <named-query name="Farmresource.listNonzero">
+        <query>SELECT f FROM Farmresource f WHERE f.availableamount > 0</query>
+    </named-query>
+    <!--    <named-query name="Crop.listCropPerPK">
+        <query>SELECT c FROM Crop c WHERE c.cropPK.cropcategory = :cropcategory AND c.cropPK.crop =:cropname</query>
+    </named-query>-->
+    <!--    <named-query name="Resource.listResCatPerCrop">
+        <query>SELECT DISTINCT r.resourcePK.resourcecategory FROM Resource r WHERE r.resourcePK.cropcategory =:cropcategory AND r.resourcePK.crop =:crop</query>
+    </named-query>-->
+    <!--    <named-query name="Resource.listResDetPerCrop">
+        <query>SELECT r.resourcePK.resourcename FROM Resource r WHERE r.resourcePK.cropcategory =:cropcategory AND r.resourcePK.crop =:crop AND r.resourcePK.resourcecategory =:resourcecategory</query>
+    </named-query>-->
+    <!--    <named-query name="Site.listSiteForCrop">
+        <query>SELECT s.sitePK.id FROM Site s WHERE s.sitePK.cropcategory =:cropcategory AND s.sitePK.crop =:crop</query>
+    </named-query>-->
+    <!--    <named-query name="Resource.listResourceForCrop">
+        <query>SELECT r.resourcePK.resourcename FROM Resource r WHERE r.resourcePK.cropcategory =:cropcategory AND r.resourcePK.crop =:crop</query>
+    </named-query>-->
+    
+    <named-query name="Site.listSite">
+        <query>SELECT s FROM Site s</query>
+    </named-query>
+    <named-query name="Site.siteNameForId">
+        <query>SELECT s FROM Site s WHERE s.id = :id</query>
+    </named-query> 
+    <!--    <named-query name="Site.listSiteForCrop">
+        <query>SELECT COUNT(s) FROM Site s WHERE s.sitePK.cropcategory =:cropcategory AND s.sitePK.crop =:crop</query>
+    </named-query>-->
+    <!--    <named-query name="Site.chkSiteForCrop">
+        <query>SELECT CASE WHEN EXISTS (SELECT 1 FROM Site s WHERE s.sitePK.cropcategory =:cropcategory AND s.sitePK.crop =:cropname) THEN TRUE ELSE FALSE END</query>
+    </named-query>-->
+    <named-query name="Harvest.activeList">
+        <query>SELECT h FROM Harvest h WHERE h.harvestingdt IS NULL</query>
+    </named-query>
+    <named-query name="Harvest.harvestPerId">
+        <query>SELECT h FROM Harvest h WHERE h.harvestid = :harvestid</query>
+    </named-query>
+    <named-query name="Harvest.getMaxId">
+        <query>SELECT MAX(h.harvestid) FROM Harvest h</query>
+    </named-query>
+    
+    <named-query name="Shopresource.shopResList">
+        <query>SELECT s FROM Shopresource s</query>
+    </named-query>
+    <named-query name="Shopresource.shopsPerRes">
+        <query>SELECT s.shopid FROM Shopresource s WHERE s.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Shopresource.shopResPerId">
+        <query>SELECT s FROM Shopresource s WHERE s.id = :id</query>
+    </named-query>
+    <named-query name="Shopresource.shopDtlsPerRes">
+        <query>SELECT s FROM Shopresource s WHERE s.resourceid = :resourceid AND s.stockperrt > 0</query>
+    </named-query>
+    <named-query name="Shopresource.shopResListPerRes">
+        <query>SELECT s FROM Shopresource s WHERE s.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Shopresource.shopResPerAppid">
+        <query>SELECT s FROM Shopresource s WHERE s.resappid =:resappid AND s.resourceid =:resourceid</query>
+    </named-query>
+    <named-query name="Shopresource.shopDtlsPerPk">
+        <query>SELECT s FROM Shopresource s WHERE s.shopid = :shopid AND s.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Shopresource.delForResid">
+        <query>DELETE FROM Shopresource s WHERE s.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Shopresource.getMaxId">
+        <query>SELECT MAX(s.id) FROM Shopresource s</query>
+    </named-query>
+    <named-query name="Shoprescrop.getMaxId">
+        <query>SELECT MAX(s.id) FROM Shoprescrop s</query>
+    </named-query>
+    <named-query name="Shoprescrop.shopResCropList">
+        <query>SELECT s FROM Shoprescrop s WHERE s.recropid = :recropid</query>
+    </named-query>
+    <named-query name="Shoprescrop.shopResCropEmptyList">
+        <query>SELECT s FROM Shoprescrop s WHERE s.recropid = :recropid AND s.appliedamt = 0</query>
+    </named-query>
+    <named-query name="Shoprescrop.shopResResCrop">
+        <query>SELECT s FROM Shoprescrop s WHERE s.recropid = :recropid AND s.shopresid = :shopresid</query>
+    </named-query>
+    <named-query name="Shop.shopNameForId">
+        <query>SELECT s FROM Shop s WHERE s.shopid = :shopid</query>
+    </named-query>
+    <named-query name="Shop.allShops">
+        <query>SELECT s FROM Shop s</query>
+    </named-query>
+    <named-query name="Farmresource.resNameForId">
+        <query>SELECT f FROM Farmresource f WHERE f.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Farmresource.resIdForName">
+        <query>SELECT f FROM Farmresource f WHERE f.resourcename = :resourcename</query>
+    </named-query>
+    <named-query name="Resourceaquire.getMaxAqid">
+        <query>SELECT MAX(r.aquireid) FROM Resourceaquire r</query>
+    </named-query>
+    <named-query name="Resourceaquire.resAcqPerDt">
+        <query>SELECT r FROM Resourceaquire r WHERE r.aquiredate = :aquiredate AND r.resourceid =:resourceid</query>
+    </named-query>
+    <named-query name="Resourceaquire.allResAcquired">
+        <query>SELECT r FROM Resourceaquire r ORDER BY r.resourceid</query>
+    </named-query>
+    <named-query name="Resourcecrop.getMaxResCropId">
+        <query>SELECT MAX(r.applicationid) FROM Resourcecrop r</query>
+    </named-query>
+    <named-query name="Resourcecrop.getResCropHarvest">
+        <query>SELECT r FROM Resourcecrop r WHERE r.harvestid = :harvestid ORDER BY r.appldate DESC</query>
+    </named-query>
+    <named-query name="Resourcecrop.getResCropResource">
+        <query>SELECT r FROM Resourcecrop r WHERE r.resourceid = :resourceid</query>
+    </named-query>
+    <named-query name="Resourcecrop.detailsRescrop">
+        <query>SELECT r FROM Resourcecrop r WHERE r.harvestid = :harvestid 
+            AND r.appldate &gt;= :startdate AND r.appldate &lt;= :enddate
+        </query>
+    </named-query>
+    <named-query name="Resourcecrop.rescropsForRes">
+        <query>SELECT r FROM Resourcecrop r WHERE r.resourceid = :resourceid 
+            AND r.appldate &gt;= :startdate AND r.appldate &lt;= :enddate ORDER BY r.appldate DESC
+        </query>
+    </named-query>    
+    <named-query name="Resourcecrop.getResCropId">
+        <query>SELECT r FROM Resourcecrop r WHERE r.applicationid = :applicationid</query>
+    </named-query>
+    <named-query name="Expense.getMaxExpId">
+        <query>SELECT MAX(e.expenseid) FROM Expense e</query>
+    </named-query>
+    <named-query name="Expense.empPayments">
+        <query>SELECT e FROM Expense e WHERE e.expensetype IN ('SALARY','LOAN','BONUS','LEAVE') AND 
+            e.date &gt;= :startdate AND e.date &lt;= :enddate</query>
+    </named-query>
+    <named-query name="Expense.getRecForLabHrvst">
+        <query>SELECT e FROM Expense e WHERE e.expenserefid = :expenserefid AND e.expensetype = :expensetype</query>
+    </named-query>  
+    <named-query name="Labourcrop.getMaxLabCropId">
+        <query>SELECT MAX(l.applicationid) FROM Labourcrop l</query>
+    </named-query>
+    <named-query name="Labourcrop.getLabCropHarvest">
+        <query>SELECT l FROM Labourcrop l WHERE l.harvestid = :harvestid ORDER BY l.appldate DESC</query>
+    </named-query>
+    <named-query name="Labourcrop.detailsForHarvest">
+        <query>SELECT l FROM Labourcrop l WHERE l.harvestid = :harvestid 
+            AND l.appldate &gt;= :startdate AND l.appldate &lt;= :enddate ORDER BY l.appldate DESC
+        </query>
+    </named-query>
+    <named-query name="Labourcrop.getLabCropId">
+        <query>SELECT l FROM Labourcrop l WHERE l.applicationid = :applicationid</query>
+    </named-query>
+    <named-query name="Taskplan.activeList">
+        <query>SELECT t FROM Taskplan t WHERE t.taskdate = :taskdate</query>
+    </named-query>
+    <named-query name="Taskplan.getMaxId">
+        <query>SELECT MAX(t.id) FROM Taskplan t</query>
+    </named-query>
+    <named-query name="Taskplan.taskplanPerId">
+        <query>SELECT t FROM Taskplan t WHERE t.id = :id</query>
+    </named-query>
+    <named-query name="Taskplan.getAllData">
+        <query>SELECT t FROM Taskplan t</query>
+    </named-query>
+    <named-query name="Taskplan.detailsBetweenDates">
+        <query>SELECT t FROM Taskplan t WHERE t.taskdate &gt;= :startdate 
+            AND t.taskdate &lt;= :enddate ORDER BY t.taskdate DESC
+        </query>
+    </named-query>
+
+<!--    <named-native-query 
+        name="Resourcecrop.sumByResId" 
+        result-set-mapping="RescropSummaryMapping">
+        <query>       
+            SELECT harvestid AS harvestId, resourceid AS resourceId, 
+            sum(appliedamt) AS appliedAmount 
+            FROM farmdb.resourcecrop 
+            GROUP BY harvestid, resourceid
+        </query>
+    </named-native-query>
+
+    <sql-result-set-mapping name="RescropSummaryMapping">
+        <constructor-result target-class="org.bhaduri.machh.DTO.ResCropSummaryDTO">        
+            <column name="harvestId" class="int"/>
+            <column name="resourceId" class="int"/>
+            <column name="appliedAmount" class="java.math.BigDecimal"/>
+        </constructor-result>
+    </sql-result-set-mapping>
+    
+    
+    <named-native-query 
+        name="Resourcecrop.summaryAll" 
+        result-set-mapping="RescropSummaryAllMapping">
+        <query>       
+            SELECT r.resourceid AS resourceId, 
+                   sum(appliedamt) AS appliedAmount, 
+                   sum(appamtcost) AS appliedCost
+            FROM resourcecrop r
+            WHERE r.appldate &gt;= ? 
+              AND r.appldate &lt;= ?
+              AND r.harvestid = ?
+            GROUP BY resourceid
+        </query>
+    </named-native-query>
+
+    <sql-result-set-mapping name="RescropSummaryAllMapping">
+        <constructor-result target-class="org.bhaduri.machh.DTO.ResCropAllSummaryDTO">        
+            <column name="resourceId" class="int"/>            
+            <column name="appliedAmount" class="java.math.BigDecimal"/>
+            <column name="appliedCost" class="java.math.BigDecimal"/>
+        </constructor-result>
+    </sql-result-set-mapping>    -->
+</entity-mappings>
+

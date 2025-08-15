@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+  
+  <!-- Define Persistence Unit -->
+  <persistence-unit name="org.farmon_Farmon_jar_1.0-SNAPSHOT" transaction-type="JTA">
+    <jta-data-source>jdbc/farmdb</jta-data-source>
+    <class>org.farmon.entities.Users</class>
+    <class>org.farmon.entities.Crop</class>
+    <class>org.farmon.entities.Employee</class>
+    <class>org.farmon.entities.Empexpense</class>
+    <class>org.farmon.entities.Operation</class>
+    <class>org.farmon.entities.Farmresource</class>    
+    <class>org.farmon.entities.Site</class>
+    <class>org.farmon.entities.Expense</class>
+    <class>org.farmon.entities.Resourceaquire</class>
+    <class>org.farmon.entities.Resourcecrop</class>
+    <class>org.farmon.entities.Harvest</class>
+    <class>org.farmon.entities.Shop</class>
+    <class>org.farmon.entities.Labourcrop</class>
+    <class>org.farmon.entities.Shopresource</class>
+    <class>org.farmon.entities.Shoprescrop</class>
+    <class>org.farmon.entities.Taskplan</class>
+    <class>org.farmon.entities.Empleave</class>
+  </persistence-unit>
+</persistence>
