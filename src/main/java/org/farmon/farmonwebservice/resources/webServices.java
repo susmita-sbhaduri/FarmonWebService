@@ -18,14 +18,14 @@ import javax.naming.NamingException;
 import org.farmon.farmondto.UserDTO;
 import org.farmon.services.MasterDataServices;
 
-@Path("loginAuth")
-public class LoginCheckService {
+@Path("allServices")
+public class webServices {
+    
+    @Path("loginAuth")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-
-    public String loginAuthentication(String termDTOJSON) throws NamingException {
-        
+    public String loginAuthentication(String termDTOJSON) throws NamingException {        
         ObjectMapper objectMapper = new ObjectMapper();
         UserDTO userdto;
         try {
