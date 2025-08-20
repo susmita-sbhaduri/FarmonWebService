@@ -18,57 +18,59 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.farmon.DA.UserDAO;
-import org.farmon.entities.Users;
-import org.farmon.farmondto.UserDTO;
-
-//import org.bhaduri.machh.DA.CropDAO;
+import org.farmon.DA.CropDAO;
+import org.farmon.DA.ExpenseDAO;
+import org.farmon.DA.FarmresourceDAO;
 //import org.bhaduri.machh.DA.EmpLeaveDAO;
 //import org.bhaduri.machh.DA.EmpexpenseDAO;
 //import org.bhaduri.machh.DA.EmployeeDAO;
 //import org.bhaduri.machh.DA.ExpenseDAO;
-//import org.bhaduri.machh.DA.HarvestDAO;
-//import org.bhaduri.machh.DA.FarmresourceDAO;
+import org.farmon.DA.HarvestDAO;
+import org.farmon.DA.LabourCropDAO;
+import org.farmon.DA.ResourceCropDAO;
+import org.farmon.DA.SiteDAO;
 //import org.bhaduri.machh.DA.LabourCropDAO;
 //import org.bhaduri.machh.DA.ResAcquireDAO;
-//import org.bhaduri.machh.DA.ResourceCropDAO;
 //import org.bhaduri.machh.DA.ShopDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
 //import org.bhaduri.machh.DA.ShopResDAO;
-//import org.bhaduri.machh.DA.SiteDAO;
 //import org.bhaduri.machh.DA.TaskplanDAO;
 
-//import org.bhaduri.machh.DTO.CropDTO;
+
 //import org.bhaduri.machh.DTO.EmpExpDTO;
 //import org.bhaduri.machh.DTO.EmpLeaveDTO;
 //import org.bhaduri.machh.DTO.EmployeeDTO;
-//import org.bhaduri.machh.DTO.ExpenseDTO;
-//import org.bhaduri.machh.DTO.HarvestDTO;
-//import org.bhaduri.machh.DTO.FarmresourceDTO;
-//import org.bhaduri.machh.DTO.LabourCropDTO;
+import org.farmon.farmondto.FarmresourceDTO;
 //import org.bhaduri.machh.DTO.ResAcqReportDTO;
 //import org.bhaduri.machh.DTO.ResAcquireDTO;
 //import org.bhaduri.machh.DTO.ResCropAllSummaryDTO;
 //import org.bhaduri.machh.DTO.ResCropSummaryDTO;
-//import org.bhaduri.machh.DTO.ResourceCropDTO;
 //import org.bhaduri.machh.DTO.ShopDTO;
 //import org.bhaduri.machh.DTO.ShopResCropDTO;
 //import org.bhaduri.machh.DTO.ShopResDTO;
-//import org.bhaduri.machh.DTO.SiteDTO;
+import org.farmon.farmondto.SiteDTO;
 //import org.bhaduri.machh.DTO.TaskPlanDTO;
+import org.farmon.farmondto.HarvestDTO;
+import org.farmon.farmondto.CropDTO;
+import org.farmon.farmondto.ResourceCropDTO;
+import org.farmon.farmondto.UserDTO;
+import org.farmon.farmondto.ExpenseDTO;
+import org.farmon.farmondto.LabourCropDTO;
 
-//import org.bhaduri.machh.entities.Crop;
+import org.farmon.entities.Users;
+import org.farmon.entities.Crop;
+import org.farmon.entities.Resourcecrop;
 //import org.bhaduri.machh.entities.Empexpense;
 //import org.bhaduri.machh.entities.Empleave;
 //import org.bhaduri.machh.entities.Employee;
-//import org.bhaduri.machh.entities.Expense;
-//import org.bhaduri.machh.entities.Harvest;
+import org.farmon.entities.Harvest;
 //import org.bhaduri.machh.entities.Shop;
 //import org.bhaduri.machh.entities.Shopresource;
-//import org.bhaduri.machh.entities.Site;
-//import org.bhaduri.machh.entities.Farmresource;
-//import org.bhaduri.machh.entities.Labourcrop;
+import org.farmon.entities.Site;
+import org.farmon.entities.Farmresource;
+import org.farmon.entities.Expense;
+import org.farmon.entities.Labourcrop;
 //import org.bhaduri.machh.entities.Resourceaquire;
-//import org.bhaduri.machh.entities.Resourcecrop;
 //import org.bhaduri.machh.entities.Shoprescrop;
 //import org.bhaduri.machh.entities.Taskplan;
 
@@ -78,6 +80,10 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+
+
+
+
 
 public class MasterDataServices {
     private final EntityManagerFactory emf;
@@ -113,6 +119,282 @@ public class MasterDataServices {
         }
     }
     
+    public List<HarvestDTO> getActiveHarvestList() {
+        HarvestDAO harvestdao = new HarvestDAO(utx, emf);  
+        List<HarvestDTO> recordList = new ArrayList<>();
+        HarvestDTO record = new HarvestDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Harvest> harvestlist = harvestdao.getActiveList();
+            for (int i = 0; i < harvestlist.size(); i++) {
+                record.setHarvestid(String.valueOf(harvestlist.get(i).getHarvestid()));
+                record.setSiteid(String.valueOf(harvestlist.get(i).getSiteid()));
+                record.setSiteName(getSiteNameForId(String.valueOf(harvestlist.get(i).getSiteid()))
+                        .getSiteName());
+                
+                record.setCropid(String.valueOf(harvestlist.get(i).getCropid()));
+                record.setCropName(getCropPerPk(String.valueOf(harvestlist.get(i).getCropid()))
+                        .getCropName());
+                record.setCropCategory(getCropPerPk(String.valueOf(harvestlist.get(i).getCropid()))
+                        .getCropCategory());
+                
+                mysqlDate = harvestlist.get(i).getSowingdt();                    
+                record.setSowingDate(formatter.format(mysqlDate));
+                record.setDesc(harvestlist.get(i).getDescription());
+                recordList.add(record);
+                record = new HarvestDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No crops are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getActiveHarvestList.");
+            return null;
+        }
+    }
+    
+    public SiteDTO getSiteNameForId(String siteid) {
+        SiteDAO sitedao = new SiteDAO(utx, emf);        
+        SiteDTO record = new SiteDTO();        
+        try {  
+           Site siterec = sitedao.getSiteName(Integer.parseInt(siteid)); 
+           record.setSiteID(siteid);
+           record.setSiteType(siterec.getSitetype());
+           record.setSiteName(siterec.getSitename());
+           if(siterec.getSize()!=null){
+             record.setSize(String.format("%.2f",siterec.getSize().floatValue()));
+           } else record.setSize(null);           
+           record.setUnit(siterec.getUnit());
+           return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Site found for this siteid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getSiteNameForId(String siteid).");
+            return null;
+        }        
+    }
+    
+    public CropDTO getCropPerPk(String cropid) {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        CropDTO record = new CropDTO();
+
+        try {
+            Crop croprec = cropdao.getCropPerPK(Integer.parseInt(cropid));
+            record.setCropCategory(croprec.getCropcategory());
+            record.setCropName(croprec.getCrop());
+            record.setDetails(croprec.getDetails());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No crop record is found for this cropid.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCropPerPk(String cropid).");
+            return null;
+        }
+    }
+    
+    public HarvestDTO getHarvestRecForId(String harvestid) {
+        HarvestDAO harvestdao = new HarvestDAO(utx, emf);
+        HarvestDTO record = new HarvestDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Harvest harvestrec = harvestdao.getHarvestForId(Integer.parseInt(harvestid));
+            record.setHarvestid(harvestid);
+            record.setSiteid(String.valueOf(harvestrec.getSiteid()));
+            record.setSiteName(getSiteNameForId(String.valueOf(harvestrec.getSiteid()))
+                    .getSiteName());
+            
+            record.setCropid(String.valueOf(harvestrec.getCropid()));
+            record.setCropName(getCropPerPk(String.valueOf(harvestrec.getCropid()))
+                    .getCropName());
+            record.setCropCategory(getCropPerPk(String.valueOf(harvestrec.getCropid()))
+                    .getCropCategory());
+            
+            mysqlDate = harvestrec.getSowingdt();
+            record.setSowingDate(formatter.format(mysqlDate));
+            mysqlDate = harvestrec.getHarvestingdt();
+            if (mysqlDate != null) {
+                record.setHarvestDate(formatter.format(mysqlDate));
+            } else {
+                record.setHarvestDate(null);
+            }
+            record.setDesc(harvestrec.getDescription());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No harvest record found for the given harvestid.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getHarvestRecForId(String harvestid).");
+            return null;
+        }
+    }     
+
+    public List<ResourceCropDTO> getResCropForHarvest(String harvestid) {
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        List<ResourceCropDTO> recordlist = new ArrayList<>();
+        ResourceCropDTO record = new ResourceCropDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Resourcecrop> reclist = rescropdao.getResCropHarvest(Integer.parseInt(harvestid));
+            
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setApplicationId(reclist.get(i).getApplicationid().toString());
+                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));
+                record.setResourceId(Integer.toString(reclist.get(i).getResourceid()));
+                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid())
+                        .getResourceName());
+                mysqlDate = reclist.get(i).getAppldate();
+                record.setApplicationDt(formatter.format(mysqlDate));
+                record.setAppliedAmount(String.format("%.2f", reclist.get(i).getAppliedamt().floatValue()));
+                record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost().floatValue()));
+                record.setResUnit(getResourceNameForId(reclist.get(i).getResourceid()).getUnit());
+                recordlist.add(record);
+                record = new ResourceCropDTO();
+            }  
+            return recordlist;
+        } catch (NoResultException e) {
+            System.out.println("No resourcecrop record is found for this harvest.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResCropForHarvest(String harvestid).");
+            return null;
+        }
+    }
+    
+    public FarmresourceDTO getResourceNameForId(int resourceid) {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+        FarmresourceDTO record = new FarmresourceDTO();        
+        try {  
+           Farmresource resrec = resourcedao.getResourceName(resourceid); 
+           record.setResourceId(Integer.toString(resourceid));
+           record.setResourceName(resrec.getResourcename());
+           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
+           record.setUnit(resrec.getUnit());
+           if(resrec.getCropweight()!=null){
+             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
+           }
+           if(resrec.getCropwtunit()!=null){
+               record.setCropwtunit(resrec.getCropwtunit());
+           }
+           return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resource found for this resourceid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
+            return null;
+        }
+    }
+    
+    public List<LabourCropDTO> getLabCropForHarvest(String harvestid) {
+        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
+        List<LabourCropDTO> recordlist = new ArrayList<>();
+        LabourCropDTO record = new LabourCropDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Labourcrop> reclist = labcropdao.getLabCropHarvest(Integer.parseInt(harvestid));
+            
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setApplicationId(reclist.get(i).getApplicationid().toString());
+                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));                
+                mysqlDate = reclist.get(i).getAppldate();
+                record.setApplicationDate(formatter.format(mysqlDate));
+                String labourCategory = "LABHRVST";
+                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId()
+                        , labourCategory).getExpenditure());  
+                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId()
+                        , labourCategory).getCommString());
+                recordlist.add(record);
+                record = new LabourCropDTO();
+            }  
+            return recordlist;
+        } catch (NoResultException e) {
+            System.out.println("No labourcrop record is found for this harvest.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResCropForHarvest(String harvestid).");
+            return null;
+        }
+    }
+    
+    public ExpenseDTO getLabExpenseForHrvst(String labappid, String expensecat) {
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
+        ExpenseDTO retexpdto = new ExpenseDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Expense rec = expdao.getExpRecForLabHarvest(Integer.parseInt(labappid), expensecat);
+            
+            retexpdto.setExpenseId(rec.getExpenseid().toString());
+            mysqlDate = rec.getDate();
+            retexpdto.setDate(formatter.format(mysqlDate));
+            retexpdto.setExpenseType(rec.getExpensetype());            
+            retexpdto.setExpenseRefId(rec.getExpenserefid().toString());
+            retexpdto.setExpenditure(String.format("%.2f", rec.getExpediture()));
+            retexpdto.setCommString(rec.getComments());
+            
+            return retexpdto;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Expense record found for this labor.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getLabExpenseForHrvst().");
+            return null;
+        }
+    }
+    
+     public List<FarmresourceDTO> getResourceList() {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+        FarmresourceDTO record = new FarmresourceDTO();
+        List<FarmresourceDTO> recordList = new ArrayList<>();
+        try {  
+            List<Farmresource> resourcelist = resourcedao.getAllResource();
+            for (int i = 0; i < resourcelist.size(); i++) {
+                record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
+                record.setResourceName(resourcelist.get(i).getResourcename());
+                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
+                record.setUnit(resourcelist.get(i).getUnit());
+                if (resourcelist.get(i).getCropweight() != null) {
+                    record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
+                }
+                if (resourcelist.get(i).getCropwtunit() != null) {
+                    record.setCropwtunit(resourcelist.get(i).getCropwtunit());
+                }
+                recordList.add(record);
+                record = new FarmresourceDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Resoureces are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceList().");
+            return null;
+        }
+    }
+     
+        
 //    public List<String> getCropCat() {
 //        CropDAO cropdao = new CropDAO(utx, emf);  
 //        List<String> recordList = new ArrayList<>();
@@ -205,82 +487,9 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//      public List<HarvestDTO> getActiveHarvestList() {
-//        HarvestDAO harvestdao = new HarvestDAO(utx, emf);  
-//        List<HarvestDTO> recordList = new ArrayList<>();
-//        HarvestDTO record = new HarvestDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Harvest> harvestlist = harvestdao.getActiveList();
-//            for (int i = 0; i < harvestlist.size(); i++) {
-//                record.setHarvestid(String.valueOf(harvestlist.get(i).getHarvestid()));
-//                record.setSiteid(String.valueOf(harvestlist.get(i).getSiteid()));
-//                record.setSiteName(getSiteNameForId(String.valueOf(harvestlist.get(i).getSiteid()))
-//                        .getSiteName());
-//                
-//                record.setCropid(String.valueOf(harvestlist.get(i).getCropid()));
-//                record.setCropName(getCropPerPk(String.valueOf(harvestlist.get(i).getCropid()))
-//                        .getCropName());
-//                record.setCropCategory(getCropPerPk(String.valueOf(harvestlist.get(i).getCropid()))
-//                        .getCropCategory());
-//                
-//                mysqlDate = harvestlist.get(i).getSowingdt();                    
-//                record.setSowingDate(formatter.format(mysqlDate));
-//                record.setDesc(harvestlist.get(i).getDescription());
-//                recordList.add(record);
-//                record = new HarvestDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No crops are found");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getActiveHarvestList.");
-//            return null;
-//        }
-//    }
-//     
-//    public HarvestDTO getHarvestRecForId(String harvestid) {
-//        HarvestDAO harvestdao = new HarvestDAO(utx, emf);
-//        HarvestDTO record = new HarvestDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Harvest harvestrec = harvestdao.getHarvestForId(Integer.parseInt(harvestid));
-//            record.setHarvestid(harvestid);
-//            record.setSiteid(String.valueOf(harvestrec.getSiteid()));
-//            record.setSiteName(getSiteNameForId(String.valueOf(harvestrec.getSiteid()))
-//                    .getSiteName());
-//            
-//            record.setCropid(String.valueOf(harvestrec.getCropid()));
-//            record.setCropName(getCropPerPk(String.valueOf(harvestrec.getCropid()))
-//                    .getCropName());
-//            record.setCropCategory(getCropPerPk(String.valueOf(harvestrec.getCropid()))
-//                    .getCropCategory());
-//            
-//            mysqlDate = harvestrec.getSowingdt();
-//            record.setSowingDate(formatter.format(mysqlDate));
-//            mysqlDate = harvestrec.getHarvestingdt();
-//            if (mysqlDate != null) {
-//                record.setHarvestDate(formatter.format(mysqlDate));
-//            } else {
-//                record.setHarvestDate(null);
-//            }
-//            record.setDesc(harvestrec.getDescription());
-//            return record;
-//        } catch (NoResultException e) {
-//            System.out.println("No harvest record found for the given harvestid.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getHarvestRecForId(String harvestid).");
-//            return null;
-//        }
-//    }  
+      
+     
+
 //    public int editHarvestRecord(HarvestDTO harvestrec) {        
 //        HarvestDAO harvestdao = new HarvestDAO(utx, emf);
 //        Date mysqlDate;
@@ -604,32 +813,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public FarmresourceDTO getResourceNameForId(int resourceid) {
-//        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-//        FarmresourceDTO record = new FarmresourceDTO();        
-//        try {  
-//           Farmresource resrec = resourcedao.getResourceName(resourceid); 
-//           record.setResourceId(Integer.toString(resourceid));
-//           record.setResourceName(resrec.getResourcename());
-//           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
-//           record.setUnit(resrec.getUnit());
-//           if(resrec.getCropweight()!=null){
-//             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
-//           }
-//           if(resrec.getCropwtunit()!=null){
-//               record.setCropwtunit(resrec.getCropwtunit());
-//           }
-//           return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No resource found for this resourceid");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
-//            return null;
-//        }
-//    }
+
 //    
 //    public FarmresourceDTO getResourceIdForName(String resourcename) {
 //        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
@@ -658,38 +842,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//     public List<FarmresourceDTO> getResourceList() {
-//        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-//        FarmresourceDTO record = new FarmresourceDTO();
-//        List<FarmresourceDTO> recordList = new ArrayList<>();
-//        try {  
-//            List<Farmresource> resourcelist = resourcedao.getAllResource();
-//            for (int i = 0; i < resourcelist.size(); i++) {
-//                record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
-//                record.setResourceName(resourcelist.get(i).getResourcename());
-//                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
-//                record.setUnit(resourcelist.get(i).getUnit());
-//                if (resourcelist.get(i).getCropweight() != null) {
-//                    record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
-//                }
-//                if (resourcelist.get(i).getCropwtunit() != null) {
-//                    record.setCropwtunit(resourcelist.get(i).getCropwtunit());
-//                }
-//                recordList.add(record);
-//                record = new FarmresourceDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No Resoureces are added");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResourceList().");
-//            return null;
-//        }
-//    }
-//     
+
 //    public List<FarmresourceDTO> getNonzeroResList() {
 //        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
 //        FarmresourceDTO record = new FarmresourceDTO();
@@ -1011,29 +1164,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public SiteDTO getSiteNameForId(String siteid) {
-//        SiteDAO sitedao = new SiteDAO(utx, emf);        
-//        SiteDTO record = new SiteDTO();        
-//        try {  
-//           Site siterec = sitedao.getSiteName(Integer.parseInt(siteid)); 
-//           record.setSiteID(siteid);
-//           record.setSiteType(siterec.getSitetype());
-//           record.setSiteName(siterec.getSitename());
-//           if(siterec.getSize()!=null){
-//             record.setSize(String.format("%.2f",siterec.getSize().floatValue()));
-//           } else record.setSize(null);           
-//           record.setUnit(siterec.getUnit());
-//           return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No Site found for this siteid");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getSiteNameForId(String siteid).");
-//            return null;
-//        }        
-//    }
+    
 //    
 //    public int getMaxIdForShopRes(){
 //        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
@@ -1262,35 +1393,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public ExpenseDTO getLabExpenseForHrvst(String labappid, String expensecat) {
-//        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
-//        ExpenseDTO retexpdto = new ExpenseDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Expense rec = expdao.getExpRecForLabHarvest(Integer.parseInt(labappid), expensecat);
-//            
-//            retexpdto.setExpenseId(rec.getExpenseid().toString());
-//            mysqlDate = rec.getDate();
-//            retexpdto.setDate(formatter.format(mysqlDate));
-//            retexpdto.setExpenseType(rec.getExpensetype());            
-//            retexpdto.setExpenseRefId(rec.getExpenserefid().toString());
-//            retexpdto.setExpenditure(String.format("%.2f", rec.getExpediture()));
-//            retexpdto.setCommString(rec.getComments());
-//            
-//            return retexpdto;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No Expense record found for this labor.");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getLabExpenseForHrvst().");
-//            return null;
-//        }
-//    }
-//    
+
 //    public List<ExpenseDTO> getAllEmpExpenseInRange(Date sdate, Date edate) {
 //        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
 //        List<ExpenseDTO> recordlist = new ArrayList<>();
@@ -1343,24 +1446,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public CropDTO getCropPerPk(String cropid) {
-//        CropDAO cropdao = new CropDAO(utx, emf);
-//        CropDTO record = new CropDTO();
-//
-//        try {
-//            Crop croprec = cropdao.getCropPerPK(Integer.parseInt(cropid));
-//            record.setCropCategory(croprec.getCropcategory());
-//            record.setCropName(croprec.getCrop());
-//            record.setDetails(croprec.getDetails());
-//            return record;
-//        } catch (NoResultException e) {
-//            System.out.println("No crop record is found for this cropid.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getCropPerPk(String cropid).");
-//            return null;
-//        }
-//    }
+    
 //    
 //    public List<CropDTO> getCropList() {
 //        CropDAO cropdao = new CropDAO(utx, emf);  
@@ -1463,39 +1549,7 @@ public class MasterDataServices {
 //    
 //    
 //    
-//    public List<ResourceCropDTO> getResCropForHarvest(String harvestid) {
-//        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
-//        List<ResourceCropDTO> recordlist = new ArrayList<>();
-//        ResourceCropDTO record = new ResourceCropDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Resourcecrop> reclist = rescropdao.getResCropHarvest(Integer.parseInt(harvestid));
-//            
-//            for (int i = 0; i < reclist.size(); i++) {
-//                record.setApplicationId(reclist.get(i).getApplicationid().toString());
-//                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));
-//                record.setResourceId(Integer.toString(reclist.get(i).getResourceid()));
-//                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid())
-//                        .getResourceName());
-//                mysqlDate = reclist.get(i).getAppldate();
-//                record.setApplicationDt(formatter.format(mysqlDate));
-//                record.setAppliedAmount(String.format("%.2f", reclist.get(i).getAppliedamt().floatValue()));
-//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost().floatValue()));
-//                record.setResUnit(getResourceNameForId(reclist.get(i).getResourceid()).getUnit());
-//                recordlist.add(record);
-//                record = new ResourceCropDTO();
-//            }  
-//            return recordlist;
-//        } catch (NoResultException e) {
-//            System.out.println("No resourcecrop record is found for this harvest.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResCropForHarvest(String harvestid).");
-//            return null;
-//        }
-//    }
+
 //    
 //    public List<ResourceCropDTO> getResCropForResource(String resid) {
 //        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
@@ -1976,39 +2030,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public List<LabourCropDTO> getLabCropForHarvest(String harvestid) {
-//        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
-//        List<LabourCropDTO> recordlist = new ArrayList<>();
-//        LabourCropDTO record = new LabourCropDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Labourcrop> reclist = labcropdao.getLabCropHarvest(Integer.parseInt(harvestid));
-//            
-//            for (int i = 0; i < reclist.size(); i++) {
-//                record.setApplicationId(reclist.get(i).getApplicationid().toString());
-//                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));                
-//                mysqlDate = reclist.get(i).getAppldate();
-//                record.setApplicationDate(formatter.format(mysqlDate));
-//                String labourCategory = "LABHRVST";
-//                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId()
-//                        , labourCategory).getExpenditure());  
-//                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId()
-//                        , labourCategory).getCommString());
-//                recordlist.add(record);
-//                record = new LabourCropDTO();
-//            }  
-//            return recordlist;
-//        } catch (NoResultException e) {
-//            System.out.println("No labourcrop record is found for this harvest.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResCropForHarvest(String harvestid).");
-//            return null;
-//        }
-//    }
-//    
+
 //    public LabourCropDTO getTotalLabcropReport(String harvestid, Date sdate, Date edate) {
 //        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
 ////        List<LabourCropDTO> recordlist = new ArrayList<>();
