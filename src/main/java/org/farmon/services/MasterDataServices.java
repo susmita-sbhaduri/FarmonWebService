@@ -28,10 +28,11 @@ import org.farmon.DA.FarmresourceDAO;
 import org.farmon.DA.HarvestDAO;
 import org.farmon.DA.LabourCropDAO;
 import org.farmon.DA.ResourceCropDAO;
+import org.farmon.DA.ShopDAO;
+import org.farmon.DA.ShopResDAO;
 import org.farmon.DA.SiteDAO;
 //import org.bhaduri.machh.DA.LabourCropDAO;
 //import org.bhaduri.machh.DA.ResAcquireDAO;
-//import org.bhaduri.machh.DA.ShopDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
 //import org.bhaduri.machh.DA.ShopResDAO;
 //import org.bhaduri.machh.DA.TaskplanDAO;
@@ -45,9 +46,9 @@ import org.farmon.farmondto.FarmresourceDTO;
 //import org.bhaduri.machh.DTO.ResAcquireDTO;
 //import org.bhaduri.machh.DTO.ResCropAllSummaryDTO;
 //import org.bhaduri.machh.DTO.ResCropSummaryDTO;
-//import org.bhaduri.machh.DTO.ShopDTO;
+import org.farmon.farmondto.ShopDTO;
 //import org.bhaduri.machh.DTO.ShopResCropDTO;
-//import org.bhaduri.machh.DTO.ShopResDTO;
+import org.farmon.farmondto.ShopResDTO;
 import org.farmon.farmondto.SiteDTO;
 //import org.bhaduri.machh.DTO.TaskPlanDTO;
 import org.farmon.farmondto.HarvestDTO;
@@ -64,14 +65,14 @@ import org.farmon.entities.Resourcecrop;
 //import org.bhaduri.machh.entities.Empleave;
 //import org.bhaduri.machh.entities.Employee;
 import org.farmon.entities.Harvest;
-//import org.bhaduri.machh.entities.Shop;
+import org.farmon.entities.Shop;
 //import org.bhaduri.machh.entities.Shopresource;
 import org.farmon.entities.Site;
 import org.farmon.entities.Farmresource;
 import org.farmon.entities.Expense;
 import org.farmon.entities.Labourcrop;
 //import org.bhaduri.machh.entities.Resourceaquire;
-//import org.bhaduri.machh.entities.Shoprescrop;
+import org.farmon.entities.Shopresource;
 //import org.bhaduri.machh.entities.Taskplan;
 
 import static org.farmon.farmondto.FarmonResponseCodes.DB_DUPLICATE;
@@ -80,8 +81,6 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
-
-
 
 
 
@@ -394,7 +393,185 @@ public class MasterDataServices {
         }
     }
      
+    public int getMaxFarmresId(){
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf); 
+        try {
+            return resourcedao.getMaxId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in Farmresource table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMacFarmresId().");
+            return 0;
+        }
+    }
+    
+    public List<ShopDTO> getShopList() {
+        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        ShopDTO record = new ShopDTO();
+        List<ShopDTO> recordList = new ArrayList<>();
+        try {  
+            List<Shop> shoplist = shopdao.getAllShops();
+            for (int i = 0; i < shoplist.size(); i++) {
+                record.setShopId(shoplist.get(i).getShopid().toString());
+                record.setShopName(shoplist.get(i).getShopname());
+                record.setLocation(shoplist.get(i).getLocation());
+                record.setContact(shoplist.get(i).getContact());
+                record.setAvailabilityTime(shoplist.get(i).getAvailabilitytime());
+                recordList.add(record);
+                record = new ShopDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Shops are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getShopList().");
+            return null;
+        }
+    }
+    
+    
+    public FarmresourceDTO getResourceIdForName(String resourcename) {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+        FarmresourceDTO record = new FarmresourceDTO();        
+        try {  
+           Farmresource resrec = resourcedao.getResourceId(resourcename); 
+           record.setResourceId(Integer.toString(resrec.getResourceid()));
+           record.setResourceName(resourcename);
+           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
+           record.setUnit(resrec.getUnit());
+           if(resrec.getCropweight()!=null){
+             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
+           }
+           if(resrec.getCropwtunit()!=null){
+               record.setCropwtunit(resrec.getCropwtunit());
+           }
+           return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resourceid found for this resourcename");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceIdForName.");
+            return null;
+        }
+    }
+    
+    public List<ShopResDTO> getResShopForPk(String resourceId, String shopId) {
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
+        List<ShopResDTO> recordList = new ArrayList<>();
+        ShopResDTO record = new ShopResDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Shopresource> shopreslist = shopresdao.getShopResList(Integer.parseInt(resourceId), Integer.parseInt(shopId));
+            for (int i = 0; i < shopreslist.size(); i++) {
+                record.setId(String.valueOf(shopreslist.get(i).getId()));
+                record.setShopId(String.valueOf(shopreslist.get(i).getShopid()));
+                record.setResourceId(String.valueOf(shopreslist.get(i).getResourceid()));
+                record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i).getShopid())).getShopName());
+                record.setResourceName(getResourceNameForId(shopreslist.get(i).getResourceid()).getResourceName());
+                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));              
+                mysqlDate = shopreslist.get(i).getResrtdate();
+                
+                if (mysqlDate != null) {
+                    record.setResRateDate(formatter.format(mysqlDate));
+                } else {
+                    record.setResRateDate("");
+                }
+                record.setStockPerRate(String.format("%.2f", shopreslist.get(i).getStockperrt()));
+                recordList.add(record);
+                record = new ShopResDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No ShopResource record is found for shop and resource id");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResShopForPk.");
+            return null;
+        }
+    }
+    
+    public ShopDTO getShopNameForId(String shopid) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        ShopDTO record = new ShopDTO();
         
+        try {  
+           Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));           
+           record.setShopName(shoprec.getShopname());
+           record.setShopId(shopid);
+           record.setLocation(shoprec.getLocation());
+           record.setContact(shoprec.getContact());
+           record.setAvailabilityTime(shoprec.getAvailabilitytime());
+           return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No shop found for this shopid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getShopNameForId(int shopid).");
+            return null;
+        }
+    }
+    
+    
+    public int addResource(FarmresourceDTO res) {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
+        try {
+            Farmresource recentity = new Farmresource();
+            recentity.setResourceid(Integer.valueOf(res.getResourceId()));
+            recentity.setResourcename(res.getResourceName());
+            recentity.setAvailableamount(BigDecimal.
+                    valueOf(Double.parseDouble(res.getAvailableAmt())));
+            recentity.setUnit(res.getUnit());
+            if (res.getCropweight() != null) {
+                recentity.setCropweight(BigDecimal.
+                        valueOf(Double.parseDouble(res.getCropweight())));
+            } else 
+                recentity.setCropweight(null);
+            recentity.setCropwtunit(res.getCropwtunit());
+            
+            resourcedao.create(recentity);
+            return SUCCESS;
+        }
+        catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Resource record");            
+            return DB_DUPLICATE;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in addResource(FarmresourceDTO res).");
+            return DB_SEVERE;
+        }
+    }
+           
+        
+    public int getMaxIdForShopRes(){
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
+        try {
+            return shopresdao.getMaxId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in expense table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getNextIdForExpense().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+    
 //    public List<String> getCropCat() {
 //        CropDAO cropdao = new CropDAO(utx, emf);  
 //        List<String> recordList = new ArrayList<>();
@@ -755,29 +932,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public ShopDTO getShopNameForId(String shopid) {
-//        ShopDAO shopdao = new ShopDAO(utx, emf);        
-//        ShopDTO record = new ShopDTO();
-//        
-//        try {  
-//           Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));           
-//           record.setShopName(shoprec.getShopname());
-//           record.setShopId(shopid);
-//           record.setLocation(shoprec.getLocation());
-//           record.setContact(shoprec.getContact());
-//           record.setAvailabilityTime(shoprec.getAvailabilitytime());
-//           return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No shop found for this shopid");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getShopNameForId(int shopid).");
-//            return null;
-//        }
-//    }
-//    
+
 //    public List<ShopDTO> getOtherShopsFor(String resourceId) {
 //        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
 //        List<Integer> shopsforres;
@@ -814,34 +969,7 @@ public class MasterDataServices {
 //    }
 //    
 
-//    
-//    public FarmresourceDTO getResourceIdForName(String resourcename) {
-//        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-//        FarmresourceDTO record = new FarmresourceDTO();        
-//        try {  
-//           Farmresource resrec = resourcedao.getResourceId(resourcename); 
-//           record.setResourceId(Integer.toString(resrec.getResourceid()));
-//           record.setResourceName(resourcename);
-//           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
-//           record.setUnit(resrec.getUnit());
-//           if(resrec.getCropweight()!=null){
-//             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
-//           }
-//           if(resrec.getCropwtunit()!=null){
-//               record.setCropwtunit(resrec.getCropwtunit());
-//           }
-//           return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No resourceid found for this resourcename");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResourceIdForName.");
-//            return null;
-//        }
-//    }
-//    
+
 
 //    public List<FarmresourceDTO> getNonzeroResList() {
 //        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
@@ -876,48 +1004,8 @@ public class MasterDataServices {
 //    }
 //     
 //     
-//    public String getNextIdForRes(){
-//        List<FarmresourceDTO> reclist = getResourceList();
-//        List<Integer> resIdList =  new ArrayList<>();
-//        if(!reclist.isEmpty()){
-//            for (int i = 0; i < reclist.size(); i++) {
-//                resIdList.add(i, Integer.valueOf(reclist.get(i).getResourceId()));
-//            }
-//            int maxVal = Collections.max(resIdList);
-//            return String.valueOf(maxVal+1);
-//        }
-//        else return null;
-//    }
-//    
-//    public int addResource(FarmresourceDTO res) {
-//        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
-//        try {
-//            Farmresource recentity = new Farmresource();
-//            recentity.setResourceid(Integer.valueOf(res.getResourceId()));
-//            recentity.setResourcename(res.getResourceName());
-//            recentity.setAvailableamount(BigDecimal.
-//                    valueOf(Double.parseDouble(res.getAvailableAmt())));
-//            recentity.setUnit(res.getUnit());
-//            if (res.getCropweight() != null) {
-//                recentity.setCropweight(BigDecimal.
-//                        valueOf(Double.parseDouble(res.getCropweight())));
-//            } else 
-//                recentity.setCropweight(null);
-//            recentity.setCropwtunit(res.getCropwtunit());
-//            
-//            resourcedao.create(recentity);
-//            return SUCCESS;
-//        }
-//        catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this Resource record");            
-//            return DB_DUPLICATE;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addResource(FarmresourceDTO res).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
+
+
 //    public int editResource(FarmresourceDTO res) {
 //        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
 //        try {
@@ -1137,51 +1225,9 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public List<ShopDTO> getShopList() {
-//        ShopDAO shopdao = new ShopDAO(utx, emf);        
-//        ShopDTO record = new ShopDTO();
-//        List<ShopDTO> recordList = new ArrayList<>();
-//        try {  
-//            List<Shop> shoplist = shopdao.getAllShops();
-//            for (int i = 0; i < shoplist.size(); i++) {
-//                record.setShopId(shoplist.get(i).getShopid().toString());
-//                record.setShopName(shoplist.get(i).getShopname());
-//                record.setLocation(shoplist.get(i).getLocation());
-//                record.setContact(shoplist.get(i).getContact());
-//                record.setAvailabilityTime(shoplist.get(i).getAvailabilitytime());
-//                recordList.add(record);
-//                record = new ShopDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No Shops are added");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getShopList().");
-//            return null;
-//        }
-//    }
-//    
+
     
-//    
-//    public int getMaxIdForShopRes(){
-//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
-//        try {
-//            return shopresdao.getMaxId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in expense table");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getNextIdForExpense().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
-//    
+
 //    public int addShopResource(ShopResDTO shopres) {
 //        ShopResDAO shopresdao = new ShopResDAO(utx, emf); 
 //        Date mysqlDate;
@@ -1284,45 +1330,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public List<ShopResDTO> getResShopForPk(String resourceId, String shopId) {
-//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
-//        List<ShopResDTO> recordList = new ArrayList<>();
-//        ShopResDTO record = new ShopResDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Shopresource> shopreslist = shopresdao.getShopResList(Integer.parseInt(resourceId), Integer.parseInt(shopId));
-//            for (int i = 0; i < shopreslist.size(); i++) {
-//                record.setId(String.valueOf(shopreslist.get(i).getId()));
-//                record.setShopId(String.valueOf(shopreslist.get(i).getShopid()));
-//                record.setResourceId(String.valueOf(shopreslist.get(i).getResourceid()));
-//                record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i).getShopid())).getShopName());
-//                record.setResourceName(getResourceNameForId(shopreslist.get(i).getResourceid()).getResourceName());
-//                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));              
-//                mysqlDate = shopreslist.get(i).getResrtdate();
-//                
-//                if (mysqlDate != null) {
-//                    record.setResRateDate(formatter.format(mysqlDate));
-//                } else {
-//                    record.setResRateDate("");
-//                }
-//                record.setStockPerRate(String.format("%.2f", shopreslist.get(i).getStockperrt()));
-//                recordList.add(record);
-//                record = new ShopResDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No ShopResource record is found for shop and resource id");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResShopForPk.");
-//            return null;
-//        }
-//    }
-//    
+
 //    public int getNextIdForExpense(){
 //        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
 //        try {

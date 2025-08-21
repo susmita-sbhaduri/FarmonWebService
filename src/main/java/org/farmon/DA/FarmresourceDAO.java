@@ -45,31 +45,37 @@ public class FarmresourceDAO extends FarmresourceJpaController{
         return listofresource;
     }
     
-    public List<String> listResCat(String cropcat, String cropname) {
-        EntityManager em = getEntityManager();
-        TypedQuery<String> query = em.createNamedQuery("Resource.listResCatPerCrop", String.class);
-        query.setParameter("cropcategory", cropcat);  
-        query.setParameter("crop", cropname);     
-        List<String> listrescatpercrop = query.getResultList();
-        return listrescatpercrop;
-    }
+//    public List<String> listResCat(String cropcat, String cropname) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> query = em.createNamedQuery("Resource.listResCatPerCrop", String.class);
+//        query.setParameter("cropcategory", cropcat);  
+//        query.setParameter("crop", cropname);     
+//        List<String> listrescatpercrop = query.getResultList();
+//        return listrescatpercrop;
+//    }
+//    
+//    public List<String> listResDet(String cropcat, String cropname, String rescat) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> query = em.createNamedQuery("Resource.listResDetPerCrop", String.class);
+//        query.setParameter("cropcategory", cropcat);  
+//        query.setParameter("crop", cropname);  
+//        query.setParameter("resourcecategory", rescat); 
+//        List<String> listresdetpercrop = query.getResultList();
+//        return listresdetpercrop;
+//    }
+//    
+//    public int listResourceForCrop(String cropcategory, String crop) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> query = em.createNamedQuery("Resource.listResourceForCrop", String.class);
+//        query.setParameter("cropcategory", cropcategory);
+//        query.setParameter("crop", crop);
+////        int countofsiteid = query.getResultList().size();
+//        return query.getResultList().size();
+//    }
     
-    public List<String> listResDet(String cropcat, String cropname, String rescat) {
+    public int getMaxId() {
         EntityManager em = getEntityManager();
-        TypedQuery<String> query = em.createNamedQuery("Resource.listResDetPerCrop", String.class);
-        query.setParameter("cropcategory", cropcat);  
-        query.setParameter("crop", cropname);  
-        query.setParameter("resourcecategory", rescat); 
-        List<String> listresdetpercrop = query.getResultList();
-        return listresdetpercrop;
-    }
-    
-    public int listResourceForCrop(String cropcategory, String crop) {
-        EntityManager em = getEntityManager();
-        TypedQuery<String> query = em.createNamedQuery("Resource.listResourceForCrop", String.class);
-        query.setParameter("cropcategory", cropcategory);
-        query.setParameter("crop", crop);
-//        int countofsiteid = query.getResultList().size();
-        return query.getResultList().size();
+        TypedQuery<Integer> query = em.createNamedQuery("Farmresource.getMaxId", Integer.class);        
+        return query.getSingleResult();
     }
 }
