@@ -609,6 +609,38 @@ public class MasterDataServices {
         }
     }
     
+    public int editShopForRes(ShopResDTO shopres) {
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {            
+            Shopresource shopresrec = new Shopresource();
+            shopresrec.setId(Integer.valueOf(shopres.getId()));
+            shopresrec.setShopid(Integer.parseInt(shopres.getShopId()));
+            shopresrec.setResourceid(Integer.parseInt(shopres.getResourceId()));
+            shopresrec.setRate(BigDecimal.valueOf(Double.parseDouble(shopres.getRate())));
+            mysqlDate = formatter.parse(shopres.getResRateDate());
+            shopresrec.setResrtdate(mysqlDate);
+            shopresrec.setStockperrt(BigDecimal
+                    .valueOf(Double.parseDouble(shopres.getStockPerRate())));
+            shopresrec.setResappid(Integer.valueOf("0"));            
+            shopresrec.setAppliedamt(BigDecimal
+                    .valueOf(Double.parseDouble("0.00")));
+            shopresdao.edit(shopresrec);
+            return SUCCESS;
+        }
+        catch (NoResultException e) {
+            System.out.println("No shopresource record is found for shioid and resourceid");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in editShopForRes(ShopResDTO shopres).");
+            return DB_SEVERE;
+        }
+    }
+    
+    
     public int delResource(FarmresourceDTO res) {
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
         try {
@@ -770,6 +802,26 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    
+    public int delExpenseRecord(ExpenseDTO exrec) {
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf);                 
+        try {
+            Expense rec = new Expense();
+            rec.setExpenseid(Integer.valueOf(exrec.getExpenseId())); 
+            expdao.destroy(rec.getExpenseid());
+            return SUCCESS;
+        }
+        catch (NonexistentEntityException e) {
+            System.out.println("Record for this expense record does not exist");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in delExpenseRecord(ExpenseDTO exrec).");
+            return DB_SEVERE;
+        }
+    }
+        
     
     public int editResource(FarmresourceDTO res) {
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
@@ -1351,37 +1403,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public int editShopForRes(ShopResDTO shopres) {
-//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {            
-//            Shopresource shopresrec = new Shopresource();
-//            shopresrec.setId(Integer.valueOf(shopres.getId()));
-//            shopresrec.setShopid(Integer.parseInt(shopres.getShopId()));
-//            shopresrec.setResourceid(Integer.parseInt(shopres.getResourceId()));
-//            shopresrec.setRate(BigDecimal.valueOf(Double.parseDouble(shopres.getRate())));
-//            mysqlDate = formatter.parse(shopres.getResRateDate());
-//            shopresrec.setResrtdate(mysqlDate);
-//            shopresrec.setStockperrt(BigDecimal
-//                    .valueOf(Double.parseDouble(shopres.getStockPerRate())));
-//            shopresrec.setResappid(Integer.valueOf("0"));            
-//            shopresrec.setAppliedamt(BigDecimal
-//                    .valueOf(Double.parseDouble("0.00")));
-//            shopresdao.edit(shopresrec);
-//            return SUCCESS;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No shopresource record is found for shioid and resourceid");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in editShopForRes(ShopResDTO shopres).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
+
 
 
 
@@ -1446,25 +1468,7 @@ public class MasterDataServices {
 //            return null;
 //        }
 //    }
-//    
-//    public int delExpenseRecord(ExpenseDTO exrec) {
-//        ExpenseDAO expdao = new ExpenseDAO(utx, emf);                 
-//        try {
-//            Expense rec = new Expense();
-//            rec.setExpenseid(Integer.valueOf(exrec.getExpenseId())); 
-//            expdao.destroy(rec.getExpenseid());
-//            return SUCCESS;
-//        }
-//        catch (NonexistentEntityException e) {
-//            System.out.println("Record for this expense record does not exist");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in delExpenseRecord(ExpenseDTO exrec).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
+
     
 //    
 //    public List<CropDTO> getCropList() {
