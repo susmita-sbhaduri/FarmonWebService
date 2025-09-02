@@ -32,8 +32,8 @@ import org.farmon.DA.ResourceCropDAO;
 import org.farmon.DA.ShopDAO;
 import org.farmon.DA.ShopResDAO;
 import org.farmon.DA.SiteDAO;
+import org.farmon.DA.TaskplanDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
-//import org.bhaduri.machh.DA.TaskplanDAO;
 
 
 //import org.bhaduri.machh.DTO.EmpExpDTO;
@@ -48,7 +48,7 @@ import org.farmon.farmondto.ShopDTO;
 //import org.bhaduri.machh.DTO.ShopResCropDTO;
 import org.farmon.farmondto.ShopResDTO;
 import org.farmon.farmondto.SiteDTO;
-//import org.bhaduri.machh.DTO.TaskPlanDTO;
+import org.farmon.farmondto.TaskPlanDTO;
 import org.farmon.farmondto.HarvestDTO;
 import org.farmon.farmondto.CropDTO;
 import org.farmon.farmondto.ResourceCropDTO;
@@ -71,7 +71,7 @@ import org.farmon.entities.Expense;
 import org.farmon.entities.Labourcrop;
 import org.farmon.entities.Resourceaquire;
 import org.farmon.entities.Shopresource;
-//import org.bhaduri.machh.entities.Taskplan;
+import org.farmon.entities.Taskplan;
 
 import static org.farmon.farmondto.FarmonResponseCodes.DB_DUPLICATE;
 import static org.farmon.farmondto.FarmonResponseCodes.DB_NON_EXISTING;
@@ -79,6 +79,8 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+
+
 
 
 
@@ -393,6 +395,40 @@ public class MasterDataServices {
         }
     }
      
+    public List<FarmresourceDTO> getNonzeroResList() {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+        FarmresourceDTO record = new FarmresourceDTO();
+        List<FarmresourceDTO> recordList = new ArrayList<>();
+        try {  
+            List<Farmresource> resourcelist = resourcedao.getNonzeroResource();
+            for (int i = 0; i < resourcelist.size(); i++) {
+                record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
+                record.setResourceName(resourcelist.get(i).getResourcename());
+                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
+                record.setUnit(resourcelist.get(i).getUnit());  
+                if (resourcelist.get(i).getCropweight() != null) {
+                    record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
+                }
+                if (resourcelist.get(i).getCropwtunit() != null) {
+                    record.setCropwtunit(resourcelist.get(i).getCropwtunit());
+                }
+                recordList.add(record);
+                record = new FarmresourceDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Resoureces are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceList().");
+            return null;
+        }
+    }
+     
+  
+    
     public int getMaxFarmresId(){
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf); 
         try {
@@ -850,7 +886,55 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-        
+  
+    public List<TaskPlanDTO> getAllTaskPlanList() {
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+        List<TaskPlanDTO> recordList = new ArrayList<>();
+        TaskPlanDTO record = new TaskPlanDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Taskplan> taskplanlist = taskplandao.getAllData();
+            for (int i = 0; i < taskplanlist.size(); i++) {
+                record.setTaskId(taskplanlist.get(i).getId().toString());
+                record.setTaskType(taskplanlist.get(i).getTasktype());
+                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+                record.setTaskDt(formatter.format(mysqlDate));
+                record.setTaskName(taskplanlist.get(i).getTaskname());
+                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
+                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
+                if (taskplanlist.get(i).getResourceid() == null)
+                    record.setResourceId(null);
+                else
+                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
+                
+                if (taskplanlist.get(i).getAppamtcost() == null)
+                    record.setAppliedAmtCost(null);
+                else
+                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
+                
+                if (taskplanlist.get(i).getAppliedamt() == null)
+                    record.setAppliedAmount(null);
+                else
+                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
+                record.setComments(taskplanlist.get(i).getComments());
+                recordList.add(record);
+                record = new TaskPlanDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No task is planned so far.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getAllTaskPlanList.");
+            return null;
+        }
+    }
+    
         
 //        
 //    public List<String> getCropCat() {
@@ -1211,39 +1295,7 @@ public class MasterDataServices {
 
 
 
-//    public List<FarmresourceDTO> getNonzeroResList() {
-//        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-//        FarmresourceDTO record = new FarmresourceDTO();
-//        List<FarmresourceDTO> recordList = new ArrayList<>();
-//        try {  
-//            List<Farmresource> resourcelist = resourcedao.getNonzeroResource();
-//            for (int i = 0; i < resourcelist.size(); i++) {
-//                record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
-//                record.setResourceName(resourcelist.get(i).getResourcename());
-//                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
-//                record.setUnit(resourcelist.get(i).getUnit());  
-//                if (resourcelist.get(i).getCropweight() != null) {
-//                    record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
-//                }
-//                if (resourcelist.get(i).getCropwtunit() != null) {
-//                    record.setCropwtunit(resourcelist.get(i).getCropwtunit());
-//                }
-//                recordList.add(record);
-//                record = new FarmresourceDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No Resoureces are added");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResourceList().");
-//            return null;
-//        }
-//    }
-//     
-//     
+    
 
 
 
@@ -2566,54 +2618,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public List<TaskPlanDTO> getAllTaskPlanList() {
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
-//        List<TaskPlanDTO> recordList = new ArrayList<>();
-//        TaskPlanDTO record = new TaskPlanDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Taskplan> taskplanlist = taskplandao.getAllData();
-//            for (int i = 0; i < taskplanlist.size(); i++) {
-//                record.setTaskId(taskplanlist.get(i).getId().toString());
-//                record.setTaskType(taskplanlist.get(i).getTasktype());
-//                mysqlDate = taskplanlist.get(i).getTaskdate();                    
-//                record.setTaskDt(formatter.format(mysqlDate));
-//                record.setTaskName(taskplanlist.get(i).getTaskname());
-//                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
-//                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-//                if (taskplanlist.get(i).getResourceid() == null)
-//                    record.setResourceId(null);
-//                else
-//                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
-//                
-//                if (taskplanlist.get(i).getAppamtcost() == null)
-//                    record.setAppliedAmtCost(null);
-//                else
-//                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-//                
-//                if (taskplanlist.get(i).getAppliedamt() == null)
-//                    record.setAppliedAmount(null);
-//                else
-//                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
-//                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
-//                record.setComments(taskplanlist.get(i).getComments());
-//                recordList.add(record);
-//                record = new TaskPlanDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No task is planned so far.");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getAllTaskPlanList.");
-//            return null;
-//        }
-//    }
-//    
+
 //    public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
 //        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
 //        List<TaskPlanDTO> recordList = new ArrayList<>();
