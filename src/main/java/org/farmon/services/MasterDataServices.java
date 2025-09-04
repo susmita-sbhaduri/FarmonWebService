@@ -19,6 +19,7 @@ import javax.naming.NamingException;
 
 import org.farmon.DA.UserDAO;
 import org.farmon.DA.CropDAO;
+import org.farmon.DA.EmployeeDAO;
 import org.farmon.DA.ExpenseDAO;
 import org.farmon.DA.FarmresourceDAO;
 //import org.bhaduri.machh.DA.EmpLeaveDAO;
@@ -79,6 +80,8 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+import org.farmon.entities.Employee;
+import org.farmon.farmondto.EmployeeDTO;
 
 
 
@@ -934,7 +937,223 @@ public class MasterDataServices {
             return null;
         }
     }
+//    #################################Report batch#####################################################
     
+    public List<ResourceCropDTO> getRescropCostMonthly(String startdate, String enddate) {
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        List<ResourceCropDTO> recordList = new ArrayList<>();
+        ResourceCropDTO record = new ResourceCropDTO();
+        
+        float totalcost = 0;
+        try {
+            List<Resourcecrop> reclist = rescropdao.getRescropForDates(formatter.parse(startdate),
+                    formatter.parse(enddate));
+            int lasti = reclist.size()-1;
+            pattern = "dd MMM yyyy";
+            formatter = new SimpleDateFormat(pattern);
+            
+//            if(reclist.size()==1){
+//                record.setResourceName(getResourceNameForId(reclist.get(0).getResourceid()).getResourceName());
+//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(0).getAppamtcost()));                
+//                mysqlDate = reclist.get(0).getAppldate();
+//                if (mysqlDate != null) {
+//                    record.setApplicationDt(formatter.format(mysqlDate));
+//                } else {
+//                    record.setApplicationDt("");
+//                } 
+//                recordList.add(record);
+//                record = new ResourceCropDTO();
+//                totalcost = totalcost + reclist.get(0).getAppamtcost().floatValue();
+//                record.setResourceName("Total");
+//                record.setApplicationDt("");
+//                record.setAppliedAmtCost(String.format("%.2f", totalcost));
+//                recordList.add(record);
+//            } else {
+//
+//                for (int i = 0; i < reclist.size() - 1; i++) {
+//                    record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
+//                    record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost()));
+//
+//                    mysqlDate = reclist.get(i).getAppldate();
+//                    if (mysqlDate != null) {
+//                        record.setApplicationDt(formatter.format(mysqlDate));
+//                    } else {
+//                        record.setApplicationDt("");
+//                    }
+//                    recordList.add(record);
+//                    record = new ResourceCropDTO();
+//
+//                    if (reclist.get(i).getResourceid() == reclist.get(i + 1).getResourceid()) {
+//                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+//
+//                    } else {
+//                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+//                        record.setResourceName("Total");
+//                        record.setApplicationDt("");
+//                        record.setAppliedAmtCost(String.format("%.2f", totalcost));
+//                        recordList.add(record);
+//                        record = new ResourceCropDTO();
+//                        totalcost = 0;
+//                    }
+//                }
+//                record.setResourceName(getResourceNameForId(reclist.get(lasti).getResourceid()).getResourceName());
+//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(lasti).getAppamtcost()));
+//
+//                mysqlDate = reclist.get(lasti).getAppldate();
+//                if (mysqlDate != null) {
+//                    record.setApplicationDt(formatter.format(mysqlDate));
+//                } else {
+//                    record.setApplicationDt("");
+//                }
+//                recordList.add(record);
+//                record = new ResourceCropDTO();
+//
+//                totalcost = totalcost + reclist.get(lasti).getAppamtcost().floatValue();
+//                record.setResourceName("Total");
+//                record.setApplicationDt("");
+//                record.setAppliedAmtCost(String.format("%.2f", totalcost));
+//                recordList.add(record);
+//            }
+            
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
+                record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost()));
+
+                mysqlDate = reclist.get(i).getAppldate();
+                if (mysqlDate != null) {
+                    record.setApplicationDt(formatter.format(mysqlDate));
+                } else {
+                    record.setApplicationDt("");
+                }
+                recordList.add(record);
+                record = new ResourceCropDTO();
+                if((i+1) == reclist.size()){
+                    totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+                    record.setResourceName("Total");
+                    record.setApplicationDt("");
+                    record.setAppliedAmtCost(String.format("%.2f", totalcost));
+                    recordList.add(record);
+                } else {
+                    if (reclist.get(i).getResourceid() == reclist.get(i + 1).getResourceid()) {
+                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+
+                    } else {
+                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+                        record.setResourceName("Total");
+                        record.setApplicationDt("");
+                        record.setAppliedAmtCost(String.format("%.2f", totalcost));
+                        recordList.add(record);
+                        record = new ResourceCropDTO();
+                        totalcost = 0;
+                    }
+                }
+            }
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Resourcecrop record is found.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getRescropCostMonthly.");
+            return null;
+        }
+    }        
+    
+    
+    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
+        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        List<ExpenseDTO> recordList = new ArrayList<>();
+        ExpenseDTO record = new ExpenseDTO();
+        
+        float totalcost = 0;
+        try {
+            List<Expense> reclist = expensedao.getExpMonthly(formatter.parse(startdate),
+                    formatter.parse(enddate));
+            pattern = "dd MMM yyyy";
+            formatter = new SimpleDateFormat(pattern);
+            for (int i = 0; i < reclist.size(); i++) {
+                
+                if(reclist.get(i).getExpensetype().equals("RES")){
+                    record.setExpenseType("Resource");
+                    record.setExpenseRefId(getResourceNameForId(reclist.get(i).getExpenserefid()).getResourceName());
+                }
+                if(reclist.get(i).getExpensetype().equals("LABHRVST")){
+                    record.setExpenseType("Labour");
+                    record.setExpenseRefId("Paid Labor");
+                }
+                
+                if(reclist.get(i).getExpensetype().equals("SALARY")||
+                   reclist.get(i).getExpensetype().equals("LOAN")||
+                   reclist.get(i).getExpensetype().equals("BONUS")||
+                   reclist.get(i).getExpensetype().equals("LEAVE")){
+                   record.setExpenseType(reclist.get(i).getExpensetype()); 
+                   record.setExpenseRefId(getEmpNameForId(reclist.get(i).getExpenserefid().toString()).getName());
+                }               
+               
+                record.setExpenditure(String.format("%.2f", reclist.get(i).getExpediture()));
+                totalcost = totalcost + reclist.get(i).getExpediture().floatValue();
+                mysqlDate = reclist.get(i).getDate();
+                if (mysqlDate != null) {
+                    record.setDate(formatter.format(mysqlDate));
+                } else {
+                    record.setDate("");
+                }
+                recordList.add(record);
+                record = new ExpenseDTO(); 
+                if (i == reclist.size() - 1) {
+                    record.setExpenseType("Total");
+                    record.setExpenseRefId("");
+                    record.setExpenditure(String.format("%.2f", totalcost));
+                    record.setDate("");
+                    recordList.add(record);
+                }
+            }
+            
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Resourcecrop record is found.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getRescropCostMonthly.");
+            return null;
+        }
+    }     
+    
+//    #################################Report batch#####################################################    
+    public LabourCropDTO getLabCropForId(String appliedid) {
+        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);       
+        LabourCropDTO record = new LabourCropDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Labourcrop rec = labcropdao.getLabCropHarvestId(Integer.parseInt(appliedid));
+
+            record.setApplicationId(rec.getApplicationid().toString());
+            record.setHarvestId(Integer.toString(rec.getHarvestid()));            
+            mysqlDate = rec.getAppldate();
+            record.setApplicationDate(formatter.format(mysqlDate));
+            String labourCategory = "LABHRVST";
+            record.setAppliedAmount(getLabExpenseForHrvst(appliedid, labourCategory).getExpenditure());            
+            record.setExpenseComments(getLabExpenseForHrvst(appliedid, labourCategory).getCommString());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No laborcrop record is found for this application Id.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getLabCropForId.");
+            return null;
+        }
+    }
         
 //        
 //    public List<String> getCropCat() {
@@ -1419,6 +1638,7 @@ public class MasterDataServices {
 //    
 
     
+        
 
 
 //    public int deleteShopForRes(ShopResDTO shopres) {
@@ -2181,32 +2401,7 @@ public class MasterDataServices {
 //            return null;
 //        }
 //    }
-//    public LabourCropDTO getLabCropForId(String appliedid) {
-//        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);       
-//        LabourCropDTO record = new LabourCropDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Labourcrop rec = labcropdao.getLabCropHarvestId(Integer.parseInt(appliedid));
-//
-//            record.setApplicationId(rec.getApplicationid().toString());
-//            record.setHarvestId(Integer.toString(rec.getHarvestid()));            
-//            mysqlDate = rec.getAppldate();
-//            record.setApplicationDate(formatter.format(mysqlDate));
-//            String labourCategory = "LABHRVST";
-//            record.setAppliedAmount(getLabExpenseForHrvst(appliedid, labourCategory).getExpenditure());            
-//            record.setExpenseComments(getLabExpenseForHrvst(appliedid, labourCategory).getCommString());
-//            return record;
-//        } catch (NoResultException e) {
-//            System.out.println("No laborcrop record is found for this application Id.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getLabCropForId.");
-//            return null;
-//        }
-//    }
-//    
+
 //    public int getMaxEmployeeId(){
 //        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
 //        try {
@@ -2223,138 +2418,138 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public int addEmployeeRecord(EmployeeDTO employeerec) {
-//        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Employee rec = new Employee();
-//            rec.setId(Integer.valueOf(employeerec.getId()));
-//            rec.setName(employeerec.getName());
-//            rec.setAddress(employeerec.getAddress());
-//            rec.setContact(employeerec.getPhno());
-//            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
-//
-//            mysqlDate = formatter.parse(employeerec.getSdate());
-//            rec.setStartdate(mysqlDate);
-//            
-//            if (employeerec.getEdate() != null) {
-//                rec.setEnddate(formatter.parse(employeerec.getEdate()));
-//            } else {
-//                rec.setEnddate(null);
-//            }
-//            empdao.create(rec);
-//            return SUCCESS;
-//        } catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this employee record");
-//            return DB_DUPLICATE;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addEmployeeRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
-//    public int editEmployeeRecord(EmployeeDTO employeerec) {
-//        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Employee rec = new Employee();
-//            rec.setId(Integer.valueOf(employeerec.getId()));
-//            rec.setName(employeerec.getName());
-//            rec.setAddress(employeerec.getAddress());
-//            rec.setContact(employeerec.getPhno());
-//            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
-//
-//            mysqlDate = formatter.parse(employeerec.getSdate());
-//            rec.setStartdate(mysqlDate);
-//            
-//            if (employeerec.getEdate() != null) {
-//                rec.setEnddate(formatter.parse(employeerec.getEdate()));
-//            } else {
-//                rec.setEnddate(null);
-//            }
-//            empdao.edit(rec);
-//            return SUCCESS;
-//        } catch (NoResultException e) {
-//            System.out.println("This employee record to be edited, does not exist ");
-//            return DB_NON_EXISTING;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in editEmployeeRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
-//    public List<EmployeeDTO> getActiveEmployeeList() {
-//        EmployeeDAO empdao = new EmployeeDAO(utx, emf);  
-//        List<EmployeeDTO> recordList = new ArrayList<>();
-//        EmployeeDTO record = new EmployeeDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Employee> emplist = empdao.getActiveList();
-//            for (int i = 0; i < emplist.size(); i++) {
-//                record.setId(String.valueOf(emplist.get(i).getId()));
-//                record.setName(emplist.get(i).getName());
-//                record.setAddress(emplist.get(i).getAddress());
-//                record.setPhno(emplist.get(i).getContact());               
-//                record.setSalary(String.format("%.2f", emplist.get(i).getSalary()));
-//                mysqlDate = emplist.get(i).getStartdate();                    
-//                record.setSdate(formatter.format(mysqlDate));
-//                record.setEdate(null);
-//                recordList.add(record);
-//                record = new EmployeeDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No employee are found");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getActiveEmployeeList.");
-//            return null;
-//        }
-//    }
-//    
-//    public EmployeeDTO getEmpNameForId(String empid) {
-//        EmployeeDAO empdao = new EmployeeDAO(utx, emf);        
-//        EmployeeDTO record = new EmployeeDTO(); 
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            Employee emprec = empdao.getEmpName(Integer.parseInt(empid));
-//            record.setId(empid);
-//            record.setName(emprec.getName());
-//
-//            record.setAddress(emprec.getAddress());
-//            record.setPhno(emprec.getContact());
-//            record.setSalary(String.format("%.2f", emprec.getSalary()));
-//            mysqlDate = emprec.getStartdate();
-//            record.setSdate(formatter.format(mysqlDate));
-//            if(emprec.getEnddate()==null){
-//                record.setEdate(null);
-//            } else {
-//                mysqlDate = emprec.getEnddate();
-//                record.setEdate(formatter.format(mysqlDate));
-//            }
-//                
-//            return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No resource found for this resourceid");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
-//            return null;
-//        }
-//    }
-//    
+    public int addEmployeeRecord(EmployeeDTO employeerec) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Employee rec = new Employee();
+            rec.setId(Integer.valueOf(employeerec.getId()));
+            rec.setName(employeerec.getName());
+            rec.setAddress(employeerec.getAddress());
+            rec.setContact(employeerec.getPhno());
+            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
+
+            mysqlDate = formatter.parse(employeerec.getSdate());
+            rec.setStartdate(mysqlDate);
+            
+            if (employeerec.getEdate() != null) {
+                rec.setEnddate(formatter.parse(employeerec.getEdate()));
+            } else {
+                rec.setEnddate(null);
+            }
+            empdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this employee record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addEmployeeRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int editEmployeeRecord(EmployeeDTO employeerec) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Employee rec = new Employee();
+            rec.setId(Integer.valueOf(employeerec.getId()));
+            rec.setName(employeerec.getName());
+            rec.setAddress(employeerec.getAddress());
+            rec.setContact(employeerec.getPhno());
+            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
+
+            mysqlDate = formatter.parse(employeerec.getSdate());
+            rec.setStartdate(mysqlDate);
+            
+            if (employeerec.getEdate() != null) {
+                rec.setEnddate(formatter.parse(employeerec.getEdate()));
+            } else {
+                rec.setEnddate(null);
+            }
+            empdao.edit(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("This employee record to be edited, does not exist ");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editEmployeeRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public List<EmployeeDTO> getActiveEmployeeList() {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);  
+        List<EmployeeDTO> recordList = new ArrayList<>();
+        EmployeeDTO record = new EmployeeDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Employee> emplist = empdao.getActiveList();
+            for (int i = 0; i < emplist.size(); i++) {
+                record.setId(String.valueOf(emplist.get(i).getId()));
+                record.setName(emplist.get(i).getName());
+                record.setAddress(emplist.get(i).getAddress());
+                record.setPhno(emplist.get(i).getContact());               
+                record.setSalary(String.format("%.2f", emplist.get(i).getSalary()));
+                mysqlDate = emplist.get(i).getStartdate();                    
+                record.setSdate(formatter.format(mysqlDate));
+                record.setEdate(null);
+                recordList.add(record);
+                record = new EmployeeDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No employee are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getActiveEmployeeList.");
+            return null;
+        }
+    }
+    
+    public EmployeeDTO getEmpNameForId(String empid) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);        
+        EmployeeDTO record = new EmployeeDTO(); 
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            Employee emprec = empdao.getEmpName(Integer.parseInt(empid));
+            record.setId(empid);
+            record.setName(emprec.getName());
+
+            record.setAddress(emprec.getAddress());
+            record.setPhno(emprec.getContact());
+            record.setSalary(String.format("%.2f", emprec.getSalary()));
+            mysqlDate = emprec.getStartdate();
+            record.setSdate(formatter.format(mysqlDate));
+            if(emprec.getEnddate()==null){
+                record.setEdate(null);
+            } else {
+                mysqlDate = emprec.getEnddate();
+                record.setEdate(formatter.format(mysqlDate));
+            }
+                
+            return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resource found for this resourceid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
+            return null;
+        }
+    }
+    
 //    public List<EmpExpDTO> getEmpActiveExpRecs(String empid, String expcat) {
 //        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);  
 //        List<EmpExpDTO> recordList = new ArrayList<>();

@@ -12,6 +12,9 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,6 +147,47 @@ public class WebServices {
         }
         MasterDataServices masterDataService = new MasterDataServices();        
         List<ResourceCropDTO> rescroplist = masterDataService.getResCropForHarvest(farmondto.getHarvestrecord().getHarvestid());                        
+        farmondto.setRescroplist(rescroplist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("resCropMonthly")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getResCropsPerMonth(String termDTOJSON) throws NamingException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        LocalDate today = LocalDate.now();
+
+        // Get the first day of previous month
+        LocalDate firstDayOfPrevMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+
+        // Get the last day of previous month
+        LocalDate lastDayOfPrevMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String firstDayFormatted = firstDayOfPrevMonth.format(formatter);
+        String lastDayFormatted = lastDayOfPrevMonth.format(formatter);
+        MasterDataServices masterDataService = new MasterDataServices();        
+        List<ResourceCropDTO> rescroplist = masterDataService.getRescropCostMonthly(firstDayFormatted,
+                lastDayFormatted);                        
         farmondto.setRescroplist(rescroplist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
@@ -536,6 +580,47 @@ public class WebServices {
         ExpenseDTO expenserec = new ExpenseDTO();
         expenserec.setExpenseId(String.valueOf(maxid));
         farmondto.setExpenserec(expenserec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("expenseMonthly")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getExpenseMonth(String termDTOJSON) throws NamingException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        LocalDate today = LocalDate.now();
+
+        // Get the first day of previous month
+        LocalDate firstDayOfPrevMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+
+        // Get the last day of previous month
+        LocalDate lastDayOfPrevMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String firstDayFormatted = firstDayOfPrevMonth.format(formatter);
+        String lastDayFormatted = lastDayOfPrevMonth.format(formatter);
+        MasterDataServices masterDataService = new MasterDataServices();        
+        List<ExpenseDTO> expenselist = masterDataService.getExpenseMonthly(firstDayFormatted,
+                lastDayFormatted);                        
+        farmondto.setExpenselist(expenselist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;

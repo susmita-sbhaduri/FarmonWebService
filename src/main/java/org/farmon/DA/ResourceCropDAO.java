@@ -59,6 +59,14 @@ public class ResourceCropDAO extends ResourcecropJpaController{
         return query.getResultList();
     }
     
+    public List<Resourcecrop> getRescropForDates(Date sdate, Date edate) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Resourcecrop> query = em.createNamedQuery("Resourcecrop.rescropsForDates", Resourcecrop.class); 
+        query.setParameter("startdate", sdate);
+        query.setParameter("enddate", edate);
+        return query.getResultList();
+    }
+    
     public Resourcecrop getResCropHarvestId(int id) {
         EntityManager em = getEntityManager();
         TypedQuery<Resourcecrop> query = em.createNamedQuery("Resourcecrop.getResCropId", Resourcecrop.class);        
