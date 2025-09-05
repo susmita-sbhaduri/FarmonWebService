@@ -81,6 +81,7 @@ import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.entities.Employee;
+import org.farmon.farmondto.BatchExpenseDTO;
 import org.farmon.farmondto.EmployeeDTO;
 
 
@@ -815,6 +816,29 @@ public class MasterDataServices {
         }
     }    
     
+    public ResAcquireDTO getResIdForAcqid(String resacqid) {
+        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);        
+        ResAcquireDTO record = new ResAcquireDTO();  
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+           Resourceaquire resacqrec = acqresdao.recAcqForAcqid(Integer.parseInt(resacqid));
+           record.setAcquireId(Integer.toString(resacqrec.getAquireid()));
+           record.setResoureId(Integer.toString(resacqrec.getResourceid()));
+           record.setAmount(String.format("%.2f",resacqrec.getAmount().floatValue()));
+           record.setAcquireDate(formatter.format(resacqrec.getAquiredate()));
+           return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resourceid found for this resacqid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResIdForAcqid.");
+            return null;
+        }
+    }
+    
     public int addExpenseRecord(ExpenseDTO exrec) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
         Date mysqlDate;
@@ -939,53 +963,100 @@ public class MasterDataServices {
     }
 //    #################################Report batch#####################################################
     
-    public List<ResourceCropDTO> getRescropCostMonthly(String startdate, String enddate) {
+    public List<BatchExpenseDTO> getRescropExpRpt(String startdate, String enddate) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        List<ResourceCropDTO> recordList = new ArrayList<>();
-        ResourceCropDTO record = new ResourceCropDTO();
-        
+        List<BatchExpenseDTO> recordList = new ArrayList<>();
+        BatchExpenseDTO record = new BatchExpenseDTO();
+
         float totalcost = 0;
+        String acqid;
         try {
-            List<Resourcecrop> reclist = rescropdao.getRescropForDates(formatter.parse(startdate),
+            List<Resourcecrop> rescroplist = rescropdao.getRescropForDates(formatter.parse(startdate),
                     formatter.parse(enddate));
-            int lasti = reclist.size()-1;
+            List<Expense> explist = expensedao.getExpMonthly(formatter.parse(startdate),
+                    formatter.parse(enddate));
             pattern = "dd MMM yyyy";
             formatter = new SimpleDateFormat(pattern);
             
-//            if(reclist.size()==1){
-//                record.setResourceName(getResourceNameForId(reclist.get(0).getResourceid()).getResourceName());
-//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(0).getAppamtcost()));                
-//                mysqlDate = reclist.get(0).getAppldate();
+            for (int i = 0; i < rescroplist.size(); i++) {
+                record.setExpenseCategory("ResourceApp");
+                record.setExpenseName(getResourceNameForId(rescroplist.get(i).getResourceid()).getResourceName());
+                record.setCost(String.format("%.2f", rescroplist.get(i).getAppamtcost()));
+
+                mysqlDate = rescroplist.get(i).getAppldate();
+                if (mysqlDate != null) {
+                    record.setDate(formatter.format(mysqlDate));
+                } else {
+                    record.setDate("");
+                }
+                totalcost = totalcost + rescroplist.get(i).getAppamtcost().floatValue();
+                recordList.add(record);
+                record = new BatchExpenseDTO();
+            }
+            
+            for (int i = 0; i < explist.size(); i++) {                
+                if(explist.get(i).getExpensetype().equals("RES")){
+                    record.setExpenseCategory("ResourceAcq");
+                    acqid = getResIdForAcqid(explist.get(i).getExpenserefid().toString()).getResoureId();
+                    record.setExpenseName(getResourceNameForId(Integer.parseInt(acqid)).getResourceName());
+                }
+                if(explist.get(i).getExpensetype().equals("LABHRVST")){
+                    record.setExpenseCategory("Labour");
+                    record.setExpenseName("Paid Labor");
+                }
+                
+                if(explist.get(i).getExpensetype().equals("SALARY")||
+                   explist.get(i).getExpensetype().equals("LOAN")||
+                   explist.get(i).getExpensetype().equals("BONUS")||
+                   explist.get(i).getExpensetype().equals("LEAVE")){
+                   record.setExpenseCategory(explist.get(i).getExpensetype()); 
+                   record.setExpenseName(getEmpNameForId(explist.get(i).getExpenserefid().toString()).getName());
+                }               
+               
+                record.setCost(String.format("%.2f", explist.get(i).getExpediture()));
+                totalcost = totalcost + explist.get(i).getExpediture().floatValue();
+                mysqlDate = explist.get(i).getDate();
+                if (mysqlDate != null) {
+                    record.setDate(formatter.format(mysqlDate));
+                } else {
+                    record.setDate("");
+                }
+                recordList.add(record);
+                record = new BatchExpenseDTO(); 
+                if (i == explist.size() - 1) {
+                    record.setExpenseCategory("Total");
+                    record.setExpenseName("");
+                    record.setCost(String.format("%.2f", totalcost));
+                    record.setDate("");
+                    recordList.add(record);
+                }
+            }
+            
+            
+//####################### with resource wise total ###################################            
+//            for (int i = 0; i < reclist.size(); i++) {
+//                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
+//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost()));
+//
+//                mysqlDate = reclist.get(i).getAppldate();
 //                if (mysqlDate != null) {
 //                    record.setApplicationDt(formatter.format(mysqlDate));
 //                } else {
 //                    record.setApplicationDt("");
-//                } 
+//                }
 //                recordList.add(record);
 //                record = new ResourceCropDTO();
-//                totalcost = totalcost + reclist.get(0).getAppamtcost().floatValue();
-//                record.setResourceName("Total");
-//                record.setApplicationDt("");
-//                record.setAppliedAmtCost(String.format("%.2f", totalcost));
-//                recordList.add(record);
-//            } else {
-//
-//                for (int i = 0; i < reclist.size() - 1; i++) {
-//                    record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
-//                    record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost()));
-//
-//                    mysqlDate = reclist.get(i).getAppldate();
-//                    if (mysqlDate != null) {
-//                        record.setApplicationDt(formatter.format(mysqlDate));
-//                    } else {
-//                        record.setApplicationDt("");
-//                    }
+//                if((i+1) == reclist.size()){
+//                    totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
+//                    record.setResourceName("Total");
+//                    record.setApplicationDt("");
+//                    record.setAppliedAmtCost(String.format("%.2f", totalcost));
 //                    recordList.add(record);
-//                    record = new ResourceCropDTO();
-//
+//                } else {
 //                    if (reclist.get(i).getResourceid() == reclist.get(i + 1).getResourceid()) {
 //                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
 //
@@ -999,58 +1070,8 @@ public class MasterDataServices {
 //                        totalcost = 0;
 //                    }
 //                }
-//                record.setResourceName(getResourceNameForId(reclist.get(lasti).getResourceid()).getResourceName());
-//                record.setAppliedAmtCost(String.format("%.2f", reclist.get(lasti).getAppamtcost()));
-//
-//                mysqlDate = reclist.get(lasti).getAppldate();
-//                if (mysqlDate != null) {
-//                    record.setApplicationDt(formatter.format(mysqlDate));
-//                } else {
-//                    record.setApplicationDt("");
-//                }
-//                recordList.add(record);
-//                record = new ResourceCropDTO();
-//
-//                totalcost = totalcost + reclist.get(lasti).getAppamtcost().floatValue();
-//                record.setResourceName("Total");
-//                record.setApplicationDt("");
-//                record.setAppliedAmtCost(String.format("%.2f", totalcost));
-//                recordList.add(record);
 //            }
-            
-            for (int i = 0; i < reclist.size(); i++) {
-                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
-                record.setAppliedAmtCost(String.format("%.2f", reclist.get(i).getAppamtcost()));
-
-                mysqlDate = reclist.get(i).getAppldate();
-                if (mysqlDate != null) {
-                    record.setApplicationDt(formatter.format(mysqlDate));
-                } else {
-                    record.setApplicationDt("");
-                }
-                recordList.add(record);
-                record = new ResourceCropDTO();
-                if((i+1) == reclist.size()){
-                    totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
-                    record.setResourceName("Total");
-                    record.setApplicationDt("");
-                    record.setAppliedAmtCost(String.format("%.2f", totalcost));
-                    recordList.add(record);
-                } else {
-                    if (reclist.get(i).getResourceid() == reclist.get(i + 1).getResourceid()) {
-                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
-
-                    } else {
-                        totalcost = totalcost + reclist.get(i).getAppamtcost().floatValue();
-                        record.setResourceName("Total");
-                        record.setApplicationDt("");
-                        record.setAppliedAmtCost(String.format("%.2f", totalcost));
-                        recordList.add(record);
-                        record = new ResourceCropDTO();
-                        totalcost = 0;
-                    }
-                }
-            }
+//####################### with resource wise total ###################################
             return recordList;
         }
         catch (NoResultException e) {
@@ -1071,7 +1092,7 @@ public class MasterDataServices {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         List<ExpenseDTO> recordList = new ArrayList<>();
         ExpenseDTO record = new ExpenseDTO();
-        
+        String acqid;
         float totalcost = 0;
         try {
             List<Expense> reclist = expensedao.getExpMonthly(formatter.parse(startdate),
@@ -1082,7 +1103,8 @@ public class MasterDataServices {
                 
                 if(reclist.get(i).getExpensetype().equals("RES")){
                     record.setExpenseType("Resource");
-                    record.setExpenseRefId(getResourceNameForId(reclist.get(i).getExpenserefid()).getResourceName());
+                    acqid = getResIdForAcqid(reclist.get(i).getExpenserefid().toString()).getResoureId();
+                    record.setExpenseRefId(getResourceNameForId(Integer.parseInt(acqid)).getResourceName());
                 }
                 if(reclist.get(i).getExpensetype().equals("LABHRVST")){
                     record.setExpenseType("Labour");
@@ -2750,21 +2772,21 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public int getMaxTaskplanId(){
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-//        try {
-//            return taskplandao.getMaxId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in resourcecrop table");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getMaxTaskplanId().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
+    public int getMaxTaskplanId(){
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        try {
+            return taskplandao.getMaxId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in resourcecrop table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxTaskplanId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
 //    public List<TaskPlanDTO> getTaskPlanListForDate(Date plandate) {
 //        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
 //        List<TaskPlanDTO> recordList = new ArrayList<>();
@@ -2865,47 +2887,47 @@ public class MasterDataServices {
 //            return null;
 //        }
 //    }
-//    public int addTaskplanRecord(TaskPlanDTO taskrec) {        
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Taskplan record = new Taskplan();
-//            record.setId(Integer.valueOf(taskrec.getTaskId()));
-//            record.setTasktype(taskrec.getTaskType());
-//            record.setTaskname(taskrec.getTaskName());
-//            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-//            if(taskrec.getResourceId()==null){
-//               record.setResourceid(null);
-//            } else record.setResourceid(Integer.parseInt(taskrec.getResourceId()));
-//            
-//            if(taskrec.getAppliedAmount()==null){
-//               record.setAppliedamt(null);
-//            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-//                    .getAppliedAmount())));
-//             
-//            if(taskrec.getAppliedAmtCost()==null){
-//               record.setAppamtcost(null);
-//            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-//                    .getAppliedAmtCost())));
-//            
-//            mysqlDate = formatter.parse(taskrec.getTaskDt());
-//            record.setTaskdate(mysqlDate);  
-//            record.setAppliedflag(taskrec.getAppliedFlag());
-//            record.setComments(taskrec.getComments());
-//            taskplandao.create(record);
-//            return SUCCESS;
-//        } 
-//        catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this taskplan record");            
-//            return DB_DUPLICATE;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addTaskplanRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
+    public int addTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));
+            record.setTasktype(taskrec.getTaskType());
+            record.setTaskname(taskrec.getTaskName());
+            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
+            if(taskrec.getResourceId()==null){
+               record.setResourceid(null);
+            } else record.setResourceid(Integer.parseInt(taskrec.getResourceId()));
+            
+            if(taskrec.getAppliedAmount()==null){
+               record.setAppliedamt(null);
+            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmount())));
+             
+            if(taskrec.getAppliedAmtCost()==null){
+               record.setAppamtcost(null);
+            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmtCost())));
+            
+            mysqlDate = formatter.parse(taskrec.getTaskDt());
+            record.setTaskdate(mysqlDate);  
+            record.setAppliedflag(taskrec.getAppliedFlag());
+            record.setComments(taskrec.getComments());
+            taskplandao.create(record);
+            return SUCCESS;
+        } 
+        catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this taskplan record");            
+            return DB_DUPLICATE;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in addTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
 //    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
 //        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
 //        Date mysqlDate;
