@@ -85,11 +85,6 @@ import org.farmon.farmondto.BatchExpenseDTO;
 import org.farmon.farmondto.EmployeeDTO;
 
 
-
-
-
-
-
 public class MasterDataServices {
     private final EntityManagerFactory emf;
     private final UserTransaction utx;
@@ -1084,71 +1079,71 @@ public class MasterDataServices {
         }
     }        
     
-    
-    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
-        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        List<ExpenseDTO> recordList = new ArrayList<>();
-        ExpenseDTO record = new ExpenseDTO();
-        String acqid;
-        float totalcost = 0;
-        try {
-            List<Expense> reclist = expensedao.getExpMonthly(formatter.parse(startdate),
-                    formatter.parse(enddate));
-            pattern = "dd MMM yyyy";
-            formatter = new SimpleDateFormat(pattern);
-            for (int i = 0; i < reclist.size(); i++) {
-                
-                if(reclist.get(i).getExpensetype().equals("RES")){
-                    record.setExpenseType("Resource");
-                    acqid = getResIdForAcqid(reclist.get(i).getExpenserefid().toString()).getResoureId();
-                    record.setExpenseRefId(getResourceNameForId(Integer.parseInt(acqid)).getResourceName());
-                }
-                if(reclist.get(i).getExpensetype().equals("LABHRVST")){
-                    record.setExpenseType("Labour");
-                    record.setExpenseRefId("Paid Labor");
-                }
-                
-                if(reclist.get(i).getExpensetype().equals("SALARY")||
-                   reclist.get(i).getExpensetype().equals("LOAN")||
-                   reclist.get(i).getExpensetype().equals("BONUS")||
-                   reclist.get(i).getExpensetype().equals("LEAVE")){
-                   record.setExpenseType(reclist.get(i).getExpensetype()); 
-                   record.setExpenseRefId(getEmpNameForId(reclist.get(i).getExpenserefid().toString()).getName());
-                }               
-               
-                record.setExpenditure(String.format("%.2f", reclist.get(i).getExpediture()));
-                totalcost = totalcost + reclist.get(i).getExpediture().floatValue();
-                mysqlDate = reclist.get(i).getDate();
-                if (mysqlDate != null) {
-                    record.setDate(formatter.format(mysqlDate));
-                } else {
-                    record.setDate("");
-                }
-                recordList.add(record);
-                record = new ExpenseDTO(); 
-                if (i == reclist.size() - 1) {
-                    record.setExpenseType("Total");
-                    record.setExpenseRefId("");
-                    record.setExpenditure(String.format("%.2f", totalcost));
-                    record.setDate("");
-                    recordList.add(record);
-                }
-            }
-            
-            return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Resourcecrop record is found.");            
-            return null;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getRescropCostMonthly.");
-            return null;
-        }
-    }     
+//#######################  monthly expense total ###################################    
+//    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
+//        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
+//        Date mysqlDate;
+//        String pattern = "yyyy-MM-dd";
+//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+//        List<ExpenseDTO> recordList = new ArrayList<>();
+//        ExpenseDTO record = new ExpenseDTO();
+//        String acqid;
+//        float totalcost = 0;
+//        try {
+//            List<Expense> reclist = expensedao.getExpMonthly(formatter.parse(startdate),
+//                    formatter.parse(enddate));
+//            pattern = "dd MMM yyyy";
+//            formatter = new SimpleDateFormat(pattern);
+//            for (int i = 0; i < reclist.size(); i++) {
+//                
+//                if(reclist.get(i).getExpensetype().equals("RES")){
+//                    record.setExpenseType("Resource");
+//                    acqid = getResIdForAcqid(reclist.get(i).getExpenserefid().toString()).getResoureId();
+//                    record.setExpenseRefId(getResourceNameForId(Integer.parseInt(acqid)).getResourceName());
+//                }
+//                if(reclist.get(i).getExpensetype().equals("LABHRVST")){
+//                    record.setExpenseType("Labour");
+//                    record.setExpenseRefId("Paid Labor");
+//                }
+//                
+//                if(reclist.get(i).getExpensetype().equals("SALARY")||
+//                   reclist.get(i).getExpensetype().equals("LOAN")||
+//                   reclist.get(i).getExpensetype().equals("BONUS")||
+//                   reclist.get(i).getExpensetype().equals("LEAVE")){
+//                   record.setExpenseType(reclist.get(i).getExpensetype()); 
+//                   record.setExpenseRefId(getEmpNameForId(reclist.get(i).getExpenserefid().toString()).getName());
+//                }               
+//               
+//                record.setExpenditure(String.format("%.2f", reclist.get(i).getExpediture()));
+//                totalcost = totalcost + reclist.get(i).getExpediture().floatValue();
+//                mysqlDate = reclist.get(i).getDate();
+//                if (mysqlDate != null) {
+//                    record.setDate(formatter.format(mysqlDate));
+//                } else {
+//                    record.setDate("");
+//                }
+//                recordList.add(record);
+//                record = new ExpenseDTO(); 
+//                if (i == reclist.size() - 1) {
+//                    record.setExpenseType("Total");
+//                    record.setExpenseRefId("");
+//                    record.setExpenditure(String.format("%.2f", totalcost));
+//                    record.setDate("");
+//                    recordList.add(record);
+//                }
+//            }
+//            
+//            return recordList;
+//        }
+//        catch (NoResultException e) {
+//            System.out.println("No Resourcecrop record is found.");            
+//            return null;
+//        }
+//        catch (Exception exception) {
+//            System.out.println(exception + " has occurred in getRescropCostMonthly.");
+//            return null;
+//        }
+//    }     
     
 //    #################################Report batch#####################################################    
     public LabourCropDTO getLabCropForId(String appliedid) {
@@ -2900,7 +2895,7 @@ public class MasterDataServices {
             record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
             if(taskrec.getResourceId()==null){
                record.setResourceid(null);
-            } else record.setResourceid(Integer.parseInt(taskrec.getResourceId()));
+            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
             
             if(taskrec.getAppliedAmount()==null){
                record.setAppliedamt(null);
@@ -2988,51 +2983,51 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public TaskPlanDTO getTaskPlanForId(String id) {
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
-//        TaskPlanDTO record = new TaskPlanDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Taskplan taskplanrec = taskplandao.getTaskplanPerId(Integer.parseInt(id));
-//
-//            record.setTaskId(taskplanrec.getId().toString());
-//            record.setTaskType(taskplanrec.getTasktype());
-//            mysqlDate = taskplanrec.getTaskdate();
-//            record.setTaskDt(formatter.format(mysqlDate));
-//            record.setTaskName(taskplanrec.getTaskname());
-//            record.setHarvestId(String.valueOf(taskplanrec.getHasvestid()));
-//            record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanrec.getHasvestid())));
-//            if (taskplanrec.getResourceid() == null) {
-//                record.setResourceId(null);
-//            } else {
-//                record.setResourceId(String.valueOf(taskplanrec.getResourceid()));
-//            }
-//            
-//            if (taskplanrec.getAppamtcost() == null)
-//                    record.setAppliedAmtCost(null);
-//                else
-//                    record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
-//            
-//            if (taskplanrec.getAppliedamt() == null) {
-//                record.setAppliedAmount(null);
-//            } else {
-//                record.setAppliedAmount(String.format("%.2f", taskplanrec.getAppliedamt()));
-//            }
-//            record.setAppliedFlag(taskplanrec.getAppliedflag());
-//            record.setComments(taskplanrec.getComments());
-//            return record;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No task is found for this id.");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getTaskPlanForId.");
-//            return null;
-//        }
-//    }
+    public TaskPlanDTO getTaskPlanForId(String id) {
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
+        TaskPlanDTO record = new TaskPlanDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan taskplanrec = taskplandao.getTaskplanPerId(Integer.parseInt(id));
+
+            record.setTaskId(taskplanrec.getId().toString());
+            record.setTaskType(taskplanrec.getTasktype());
+            mysqlDate = taskplanrec.getTaskdate();
+            record.setTaskDt(formatter.format(mysqlDate));
+            record.setTaskName(taskplanrec.getTaskname());
+            record.setHarvestId(String.valueOf(taskplanrec.getHasvestid()));
+            record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanrec.getHasvestid())));
+            if (taskplanrec.getResourceid() == null) {
+                record.setResourceId(null);
+            } else {
+                record.setResourceId(String.valueOf(taskplanrec.getResourceid()));
+            }
+            
+            if (taskplanrec.getAppamtcost() == null)
+                    record.setAppliedAmtCost(null);
+                else
+                    record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
+            
+            if (taskplanrec.getAppliedamt() == null) {
+                record.setAppliedAmount(null);
+            } else {
+                record.setAppliedAmount(String.format("%.2f", taskplanrec.getAppliedamt()));
+            }
+            record.setAppliedFlag(taskplanrec.getAppliedflag());
+            record.setComments(taskplanrec.getComments());
+            return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No task is found for this id.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTaskPlanForId.");
+            return null;
+        }
+    }
 //    
 //    public int getMaxEmpLeaveId(){
 //        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
