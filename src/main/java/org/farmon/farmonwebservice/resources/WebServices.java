@@ -158,6 +158,37 @@ public class WebServices {
         }
     }
     
+    @Path("maxResCropId")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getMaxResCropId(String termDTOJSON) throws NamingException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();        
+        String maxid = String.valueOf(masterDataService.getMaxIdForResCrop());                        
+        ResourceCropDTO rescroprec = new ResourceCropDTO();
+        rescroprec.setApplicationId(maxid);
+        farmondto.setResourceCropDTO(rescroprec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
     @Path("resCropExpMonthly")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -198,6 +229,7 @@ public class WebServices {
             return null;
         }
     }
+    
     
     @Path("labCropList")
     @POST
@@ -835,6 +867,34 @@ public class WebServices {
         }
     }
     
+    @Path("nonzeroStockList")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getNonzeroShopresperResid(String termDTOJSON) throws NamingException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");          
+        }
+        MasterDataServices masterDataService = new MasterDataServices();        
+        List<ShopResDTO> shopreslist = masterDataService.getShopResForResid(farmondto.
+                getShopresrec().getResourceId());
+        farmondto.setShopreslist(shopreslist);        
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
     
     @Path("taskplanList")
     @POST
