@@ -328,10 +328,64 @@ public class MasterDataServices {
             System.out.println("No labourcrop record is found for this harvest.");
             return null;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getResCropForHarvest(String harvestid).");
+            System.out.println(exception + " has occurred in getLabCropForHarvest(String harvestid).");
             return null;
         }
     }
+    
+    public int getMaxIdForLabCrop() {
+        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
+        try {
+            return labourcropdao.getMaxLabCropId();
+        } catch (NoResultException e) {
+            System.out.println("No records");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxIdForLabCrop().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+    
+    public int addLabourCropRecord(LabourCropDTO labourcroprec) {
+        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Labourcrop rec = new Labourcrop();
+
+            rec.setApplicationid(Integer.valueOf(labourcroprec.getApplicationId()));
+            rec.setHarvestid(Integer.parseInt(labourcroprec.getHarvestId()));
+            mysqlDate = formatter.parse(labourcroprec.getApplicationDate());
+            rec.setAppldate(mysqlDate);
+            labourcropdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this labourcrop record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addLabourCropRecord(LabourCropDTO labourcroprec).");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int delLabourCropRecord(LabourCropDTO labourcroprec) {
+        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
+        try {
+            Labourcrop rec = new Labourcrop();
+            rec.setApplicationid(Integer.valueOf(labourcroprec.getApplicationId()));
+            labourcropdao.destroy(rec.getApplicationid());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this labourcrop does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in delLabourCropRecord(LabourCropDTO labourcroprec).");
+            return DB_SEVERE;
+        }
+    }
+
     
     public ExpenseDTO getLabExpenseForHrvst(String labappid, String expensecat) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
@@ -597,7 +651,7 @@ public class MasterDataServices {
             return shopresdao.getMaxId();
         }
         catch (NoResultException e) {
-            System.out.println("No records in expense table");            
+            System.out.println("No records in shopresource table");            
             return 0;
         }
         catch (Exception exception) {
@@ -996,7 +1050,49 @@ public class MasterDataServices {
             return null;
         }
     }
+  
+    public int addResCropRecord(ResourceCropDTO rescroprec) {
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf); 
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Resourcecrop rec = new Resourcecrop();
+            rec.setApplicationid(Integer.valueOf(rescroprec.getApplicationId()));
+            rec.setHarvestid(Integer.parseInt(rescroprec.getHarvestId()));
+            rec.setResourceid(Integer.parseInt(rescroprec.getResourceId()));
+            mysqlDate = formatter.parse(rescroprec.getApplicationDt());
+            rec.setAppldate(mysqlDate);
+            rec.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(rescroprec.getAppliedAmount())));
+            rec.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(rescroprec.getAppliedAmtCost())));
+            rescropdao.create(rec);
+            return SUCCESS;
+        }
+        catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this resourcecrop record");            
+            return DB_DUPLICATE;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in addResCropRecord(ResourceCropDTO rescroprec).");
+            return DB_SEVERE;
+        }
+    }
     
+    public int delResCropRecord(ResourceCropDTO rescroprec) {
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        try {
+            Resourcecrop rec = new Resourcecrop();
+            rec.setApplicationid(Integer.valueOf(rescroprec.getApplicationId()));
+            rescropdao.destroy(rec.getApplicationid());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This resourcecrop record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " delResCropRecord(ResourceCropDTO rescroprec).");
+            return DB_SEVERE;
+        }
+    }
     public int getMaxIdForResCrop() {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         try {
@@ -1896,32 +1992,7 @@ public class MasterDataServices {
 //            return null;
 //        }
 //    }
-//    public int addResCropRecord(ResourceCropDTO rescroprec) {
-//        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf); 
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Resourcecrop rec = new Resourcecrop();
-//            rec.setApplicationid(Integer.valueOf(rescroprec.getApplicationId()));
-//            rec.setHarvestid(Integer.parseInt(rescroprec.getHarvestId()));
-//            rec.setResourceid(Integer.parseInt(rescroprec.getResourceId()));
-//            mysqlDate = formatter.parse(rescroprec.getApplicationDt());
-//            rec.setAppldate(mysqlDate);
-//            rec.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(rescroprec.getAppliedAmount())));
-//            rec.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(rescroprec.getAppliedAmtCost())));
-//            rescropdao.create(rec);
-//            return SUCCESS;
-//        }
-//        catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this resourcecrop record");            
-//            return DB_DUPLICATE;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addResCropRecord(ResourceCropDTO rescroprec).");
-//            return DB_SEVERE;
-//        }
-//    }
+
 //    
 //    public int editResCropRecord(ResourceCropDTO rescroprec) {
 //        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf); 
@@ -1950,23 +2021,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public int delResCropRecord(ResourceCropDTO rescroprec) {
-//        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);                 
-//        try {
-//            Resourcecrop rec = new Resourcecrop();
-//            rec.setApplicationid(Integer.valueOf(rescroprec.getApplicationId())); 
-//            rescropdao.destroy(rec.getApplicationid());
-//            return SUCCESS;
-//        }
-//        catch (NonexistentEntityException e) {
-//            System.out.println("This resourcecrop record does not exist");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " delResCropRecord(ResourceCropDTO rescroprec).");
-//            return DB_SEVERE;
-//        }
-//    }
+
 //    
 //    public int getMaxIdForShopResCrop(){
 //        ShopResCropDAO shoprescroprec = new ShopResCropDAO(utx, emf);
@@ -2260,21 +2315,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public int getMaxIdForLabCrop(){
-//        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
-//        try {
-//            return labourcropdao.getMaxLabCropId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getMaxIdForLabCrop().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
+
 //    public int editLabCropRecord(LabourCropDTO labcroprec) {
 //        LabourCropDAO rescropdao = new LabourCropDAO(utx, emf); 
 //        Date mysqlDate;
@@ -2299,49 +2340,8 @@ public class MasterDataServices {
 //            return DB_SEVERE;
 //        }
 //    }
-//    public int addLabourCropRecord(LabourCropDTO labourcroprec) {
-//        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Labourcrop rec = new Labourcrop();
-//            
-//            rec.setApplicationid(Integer.valueOf(labourcroprec.getApplicationId()));
-//            rec.setHarvestid(Integer.parseInt(labourcroprec.getHarvestId()));            
-//            mysqlDate = formatter.parse(labourcroprec.getApplicationDate());
-//            rec.setAppldate(mysqlDate);
-//            labourcropdao.create(rec);
-//            return SUCCESS;
-//        }
-//        catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this labourcrop record");            
-//            return DB_DUPLICATE;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addLabourCropRecord(LabourCropDTO labourcroprec).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
-//    public int delLabourCropRecord(LabourCropDTO labourcroprec) {
-//        LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);               
-//        try {
-//            Labourcrop rec = new Labourcrop();
-//            rec.setApplicationid(Integer.valueOf(labourcroprec.getApplicationId())); 
-//            labourcropdao.destroy(rec.getApplicationid());
-//            return SUCCESS;
-//        }
-//        catch (NonexistentEntityException e) {
-//            System.out.println("Record for this labourcrop does not exist");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in delLabourCropRecord(LabourCropDTO labourcroprec).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
+
+
 
 //    public LabourCropDTO getTotalLabcropReport(String harvestid, Date sdate, Date edate) {
 //        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
@@ -2923,46 +2923,46 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-//    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Taskplan record = new Taskplan();
-//            record.setId(Integer.valueOf(taskrec.getTaskId()));
-//            record.setTasktype(taskrec.getTaskType());
-//            record.setTaskname(taskrec.getTaskName());
-//            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-//            if(taskrec.getResourceId()==null){
-//               record.setResourceid(null);
-//            } else record.setResourceid(Integer.parseInt(taskrec.getResourceId()));
-//             if(taskrec.getAppliedAmount()==null){
-//               record.setAppliedamt(null);
-//            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-//                    .getAppliedAmount())));
-//             
-//            if(taskrec.getAppliedAmtCost()==null){
-//               record.setAppamtcost(null);
-//            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-//                    .getAppliedAmtCost())));
-//            
-//            mysqlDate = formatter.parse(taskrec.getTaskDt());
-//            record.setTaskdate(mysqlDate);    
-//            record.setAppliedflag(taskrec.getAppliedFlag());
-//            record.setComments(taskrec.getComments());
-//            taskplandao.edit(record);
-//            return SUCCESS;
-//        } 
-//        catch (NoResultException e) {
-//            System.out.println("This taskplan record does not exist.");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addTaskplanRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
+    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));
+            record.setTasktype(taskrec.getTaskType());
+            record.setTaskname(taskrec.getTaskName());
+            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
+            if(taskrec.getResourceId()==null){
+               record.setResourceid(null);
+            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
+             if(taskrec.getAppliedAmount()==null){
+               record.setAppliedamt(null);
+            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmount())));
+             
+            if(taskrec.getAppliedAmtCost()==null){
+               record.setAppamtcost(null);
+            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmtCost())));
+            
+            mysqlDate = formatter.parse(taskrec.getTaskDt());
+            record.setTaskdate(mysqlDate);    
+            record.setAppliedflag(taskrec.getAppliedFlag());
+            record.setComments(taskrec.getComments());
+            taskplandao.edit(record);
+            return SUCCESS;
+        } 
+        catch (NoResultException e) {
+            System.out.println("This taskplan record does not exist.");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in editTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
 //    
 //    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
 //        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
