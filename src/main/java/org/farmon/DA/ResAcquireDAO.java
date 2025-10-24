@@ -38,6 +38,15 @@ public class ResAcquireDAO extends ResourceaquireJpaController{
         return result.get(0);
     }
     
+    public Resourceaquire resAcqPerResid(int resid){
+        EntityManager em = getEntityManager();
+        TypedQuery<Resourceaquire> query = em.createNamedQuery("Resourceaquire.resAcqPerResid", Resourceaquire.class);        
+        query.setParameter("resourceid", resid);
+        query.setMaxResults(1); // Limit to 1 result
+        List<Resourceaquire> result = query.getResultList();
+        return result.get(0);
+    }
+    
     public Resourceaquire recAcqForAcqid(int acqid){
         EntityManager em = getEntityManager();
         TypedQuery<Resourceaquire> query = em.createNamedQuery("Resourceaquire.recForAcqid", Resourceaquire.class);

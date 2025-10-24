@@ -147,6 +147,9 @@
     <named-query name="Resourceaquire.resAcqPerDt">
         <query>SELECT r FROM Resourceaquire r WHERE r.aquiredate = :aquiredate AND r.resourceid =:resourceid</query>
     </named-query>
+    <named-query name="Resourceaquire.resAcqPerResid">
+        <query>SELECT r FROM Resourceaquire r WHERE r.resourceid =:resourceid ORDER BY r.aquiredate ASC</query>
+    </named-query>
     <named-query name="Resourceaquire.recForAcqid">
         <query>SELECT r FROM Resourceaquire r WHERE r.aquireid = :aquireid</query>
     </named-query>
