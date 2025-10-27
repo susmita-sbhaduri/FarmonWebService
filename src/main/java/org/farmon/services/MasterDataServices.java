@@ -2996,26 +2996,26 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-//    
-//    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-//        
-//        try {
-//            Taskplan record = new Taskplan();
-//            record.setId(Integer.valueOf(taskrec.getTaskId()));            
-//            taskplandao.destroy(record.getId());
-//            return SUCCESS;
-//        } 
-//        catch (NonexistentEntityException e) {
-//            System.out.println("Record for this Taskplan does not exist");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in deleteTaskplanRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
+    
+    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));            
+            taskplandao.destroy(record.getId());
+            return SUCCESS;
+        } 
+        catch (NonexistentEntityException e) {
+            System.out.println("Record for this Taskplan does not exist");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in deleteTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public TaskPlanDTO getTaskPlanForId(String id) {
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
         TaskPlanDTO record = new TaskPlanDTO();
