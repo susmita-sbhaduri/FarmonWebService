@@ -1363,6 +1363,45 @@ public class MasterDataServices {
         }
     }
 
+    public List<ResourceCropDTO> getRescropDetailsForRes(String resid, Date sdate, Date edate) {
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        List<ResourceCropDTO> recordlist = new ArrayList<>();
+        ResourceCropDTO record = new ResourceCropDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Resourcecrop> resultlist = rescropdao.getResCropDtlsResid(Integer.parseInt(resid),
+                    sdate, edate);
+
+            for (int i = 0; i < resultlist.size(); i++) {
+                record.setApplicationId(Integer.toString(resultlist.get(i).getApplicationid()));
+                record.setHarvestId(Integer.toString(resultlist.get(i).getHarvestid()));
+                record.setResourceId(Integer.toString(resultlist.get(i).getResourceid()));
+                record.setResourceName(getResourceNameForId(resultlist.get(i).getResourceid())
+                        .getResourceName());
+                record.setHarvestDto(getHarvestRecForId(Integer.toString(resultlist.get(i).getHarvestid())));
+                mysqlDate = resultlist.get(i).getAppldate();
+                record.setApplicationDt(formatter.format(mysqlDate));
+                record.setAppliedAmount(String.format("%.2f", resultlist.get(i).
+                        getAppliedamt().floatValue()));
+                record.setAppliedAmtCost(String.format("%.2f", resultlist.get(i).
+                        getAppamtcost().floatValue()));
+                record.setResUnit(getResourceNameForId(resultlist.get(i).getResourceid()).getUnit());
+                recordlist.add(record);
+                record = new ResourceCropDTO();
+            }
+            return recordlist;
+
+        } catch (NoResultException e) {
+            System.out.println("No Resourcecrop records are found for resid, start and end date");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getRescropDetailsForRes().");
+            return null;
+        }
+    }
+
        
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
@@ -2259,46 +2298,7 @@ public class MasterDataServices {
 //        }
 //    }
 //    
-//    public List<ResourceCropDTO> getRescropDetailsForRes(String resid, Date sdate, Date edate) {
-//        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
-//        List<ResourceCropDTO> recordlist = new ArrayList<>();
-//        ResourceCropDTO record = new ResourceCropDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Resourcecrop> resultlist = rescropdao.getResCropDtlsResid(Integer.parseInt(resid), 
-//                    sdate, edate);
-//            
-//            for (int i = 0; i < resultlist.size(); i++) {
-//                record.setApplicationId(Integer.toString(resultlist.get(i).getApplicationid()));
-//                record.setHarvestId(Integer.toString(resultlist.get(i).getHarvestid()));
-//                record.setResourceId(Integer.toString(resultlist.get(i).getResourceid()));
-//                record.setResourceName(getResourceNameForId(resultlist.get(i).getResourceid())
-//                        .getResourceName());
-//                record.setHarvestDto(getHarvestRecForId(Integer.toString(resultlist.get(i).getHarvestid())));
-//                mysqlDate = resultlist.get(i).getAppldate();
-//                record.setApplicationDt(formatter.format(mysqlDate));
-//                record.setAppliedAmount(String.format("%.2f", resultlist.get(i).
-//                        getAppliedamt().floatValue()));
-//                record.setAppliedAmtCost(String.format("%.2f", resultlist.get(i).
-//                        getAppamtcost().floatValue()));
-//                record.setResUnit(getResourceNameForId(resultlist.get(i).getResourceid()).getUnit());
-//                recordlist.add(record);
-//                record = new ResourceCropDTO();
-//            }  
-//            return recordlist;
-//           
-//        }catch (NoResultException e) {
-//            System.out.println("No Resourcecrop records are found for resid, start and end date");
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getRescropDetailsForRes().");
-//            return null;
-//        }
-//    }
-//    
+
 //    public List<ResourceCropDTO> getSummaryPerResForHrvst(Date sdate, Date edate, String harvestid) {
 //        //this is a group by one
 //        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);

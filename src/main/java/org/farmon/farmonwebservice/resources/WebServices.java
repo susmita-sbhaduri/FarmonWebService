@@ -12,9 +12,12 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -179,6 +182,44 @@ public class WebServices {
         MasterDataServices masterDataService = new MasterDataServices();        
         List<ResourceCropDTO> rescroplist = masterDataService.getResCropForResource(farmondto.
                 getResourceCropDTO().getResourceId());                        
+        farmondto.setRescroplist(rescroplist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("resCropPerResDt")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getResCropPerResDt(String termDTOJSON) throws NamingException, ParseException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();   
+        
+        Date startDate;
+        Date endDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        startDate = formatter.parse(farmondto.getReportstartdt());
+        endDate = formatter.parse(farmondto.getReportenddt());
+        List<ResourceCropDTO> rescroplist = masterDataService
+                .getRescropDetailsForRes(farmondto.getResourceCropDTO().getResourceId(), 
+                        startDate, endDate);                        
         farmondto.setRescroplist(rescroplist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
