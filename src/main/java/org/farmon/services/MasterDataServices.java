@@ -56,13 +56,16 @@ import org.farmon.farmondto.ResourceCropDTO;
 import org.farmon.farmondto.UserDTO;
 import org.farmon.farmondto.ExpenseDTO;
 import org.farmon.farmondto.LabourCropDTO;
+import org.farmon.farmondto.BatchExpenseDTO;
+import org.farmon.farmondto.EmployeeDTO;
+import org.farmon.farmondto.ResCropAllSummaryDTO;
 
 import org.farmon.entities.Users;
 import org.farmon.entities.Crop;
 import org.farmon.entities.Resourcecrop;
 //import org.bhaduri.machh.entities.Empexpense;
 //import org.bhaduri.machh.entities.Empleave;
-//import org.bhaduri.machh.entities.Employee;
+import org.farmon.entities.Employee;
 import org.farmon.entities.Harvest;
 import org.farmon.entities.Shop;
 //import org.bhaduri.machh.entities.Shopresource;
@@ -80,9 +83,8 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
-import org.farmon.entities.Employee;
-import org.farmon.farmondto.BatchExpenseDTO;
-import org.farmon.farmondto.EmployeeDTO;
+
+
 
 
 public class MasterDataServices {
@@ -1402,7 +1404,65 @@ public class MasterDataServices {
         }
     }
 
-       
+    public List<ResourceCropDTO> getSummaryPerResForHrvst(Date sdate, Date edate, String harvestid) {
+        //this is a group by one
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
+        List<ResourceCropDTO> recordlist = new ArrayList<>();
+        ResourceCropDTO record = new ResourceCropDTO();
+
+        try {
+            List<ResCropAllSummaryDTO> recordsummary = rescropdao.getSumForHarvest(sdate,
+                    edate, Integer.parseInt(harvestid));
+
+            for (int i = 0; i < recordsummary.size(); i++) {
+                record.setApplicationId(null);
+                record.setHarvestId(harvestid);
+                record.setResourceId(Integer.toString(recordsummary.get(i).getResourceId()));
+                record.setResourceName(getResourceNameForId(recordsummary.get(i).getResourceId())
+                        .getResourceName());
+                record.setHarvestDto(getHarvestRecForId(harvestid));
+                record.setApplicationDt(null);
+                record.setAppliedAmount(String.format("%.2f", recordsummary.get(i).
+                        getAppliedAmount().floatValue()));
+                record.setAppliedAmtCost(String.format("%.2f", recordsummary.get(i).
+                        getAppliedCost().floatValue()));
+                record.setResUnit(getResourceNameForId(recordsummary.get(i).getResourceId())
+                        .getUnit());
+                recordlist.add(record);
+                record = new ResourceCropDTO();
+            }
+            return recordlist;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getSummaryPerResForHrvst.");
+            return null;
+        }
+    }
+
+    public LabourCropDTO getTotalLabcropReport(String harvestid, Date sdate, Date edate) {
+        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
+        LabourCropDTO record = new LabourCropDTO();
+        try {
+            List<Labourcrop> reclist = labcropdao.getForHrstDtRange(Integer.parseInt(harvestid), sdate, edate);
+            float appliedamt = 0;
+            for (int i = 0; i < reclist.size(); i++) {
+                String labourCategory = "LABHRVST";
+                appliedamt = appliedamt + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getApplicationid().toString(),
+                         labourCategory).getExpenditure());
+            }
+            record.setApplicationId("0");
+            record.setHarvestId(harvestid);
+            record.setApplicationDate(null);
+            record.setAppliedAmount(String.format("%.2f", appliedamt));
+
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No labourcrop record is found for this harvest and applied date.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTotalLabcropReport.");
+            return null;
+        }
+    }
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
 //        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
@@ -2299,40 +2359,7 @@ public class MasterDataServices {
 //    }
 //    
 
-//    public List<ResourceCropDTO> getSummaryPerResForHrvst(Date sdate, Date edate, String harvestid) {
-//        //this is a group by one
-//        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
-//        List<ResourceCropDTO> recordlist = new ArrayList<>();
-//        ResourceCropDTO record = new ResourceCropDTO();
-//        
-//        try {
-//            List<ResCropAllSummaryDTO> recordsummary = rescropdao.getSumForHarvest(sdate, 
-//                    edate, Integer.parseInt(harvestid));
-//            
-//            for (int i = 0; i < recordsummary.size(); i++) {
-//                record.setApplicationId(null);
-//                record.setHarvestId(harvestid);
-//                record.setResourceId(Integer.toString(recordsummary.get(i).getResourceId()));
-//                record.setResourceName(getResourceNameForId(recordsummary.get(i).getResourceId())
-//                        .getResourceName());
-//                record.setHarvestDto(getHarvestRecForId(harvestid));
-//                record.setApplicationDt(null);
-//                record.setAppliedAmount(String.format("%.2f", recordsummary.get(i).
-//                        getAppliedAmount().floatValue()));
-//                record.setAppliedAmtCost(String.format("%.2f", recordsummary.get(i).
-//                        getAppliedCost().floatValue()));
-//                record.setResUnit(getResourceNameForId(recordsummary.get(i).getResourceId())
-//                        .getUnit());
-//                recordlist.add(record);
-//                record = new ResourceCropDTO();
-//            }  
-//            return recordlist;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getSummaryPerResForHrvst.");
-//            return null;
-//        }
-//    }
-//    
+
 
 //    public int editLabCropRecord(LabourCropDTO labcroprec) {
 //        LabourCropDAO rescropdao = new LabourCropDAO(utx, emf); 
@@ -2361,46 +2388,7 @@ public class MasterDataServices {
 
 
 
-//    public LabourCropDTO getTotalLabcropReport(String harvestid, Date sdate, Date edate) {
-//        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
-////        List<LabourCropDTO> recordlist = new ArrayList<>();
-//        LabourCropDTO record = new LabourCropDTO();
-////        Date mysqlDate;
-////        String pattern = "yyyy-MM-dd";
-////        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Labourcrop> reclist = labcropdao.getForHrstDtRange(Integer.parseInt(harvestid), sdate, edate);
-//            float appliedamt = 0;
-////            int ii = reclist.size()-1;
-//            for (int i = 0; i < reclist.size(); i++) {
-////                record.setApplicationId(reclist.get(i).getApplicationid().toString());
-////                record.setHarvestId(harvestid);                
-////                mysqlDate = reclist.get(i).getAppldate();
-////                record.setApplicationDate(formatter.format(mysqlDate));
-//                String labourCategory = "LABHRVST";
-//                appliedamt = appliedamt + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getApplicationid().toString()
-//                        , labourCategory).getExpenditure());
-////                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId()
-////                        , labourCategory).getExpenditure());  
-////                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId()
-////                        , labourCategory).getCommString());
-////                recordlist.add(record);
-////                record = new LabourCropDTO();
-//            }  
-//            record.setApplicationId("0");
-//            record.setHarvestId(harvestid);
-//            record.setApplicationDate(null);
-//            record.setAppliedAmount(String.format("%.2f", appliedamt));
-//
-//            return record;
-//        } catch (NoResultException e) {
-//            System.out.println("No labourcrop record is found for this harvest and applied date.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getTotalLabcropReport.");
-//            return null;
-//        }
-//    }
+
 //    public List<LabourCropDTO> getLabcropDetails(String harvestid, Date sdate, Date edate) {
 //        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
 //        List<LabourCropDTO> recordlist = new ArrayList<>();       

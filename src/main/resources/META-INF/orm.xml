@@ -248,7 +248,7 @@
             <column name="resourceId" class="int"/>
             <column name="appliedAmount" class="java.math.BigDecimal"/>
         </constructor-result>
-    </sql-result-set-mapping>
+    </sql-result-set-mapping>  -->
     
     
     <named-native-query 
@@ -267,11 +267,11 @@
     </named-native-query>
 
     <sql-result-set-mapping name="RescropSummaryAllMapping">
-        <constructor-result target-class="org.bhaduri.machh.DTO.ResCropAllSummaryDTO">        
+        <constructor-result target-class="org.farmon.farmondto.ResCropAllSummaryDTO">        
             <column name="resourceId" class="int"/>            
             <column name="appliedAmount" class="java.math.BigDecimal"/>
             <column name="appliedCost" class="java.math.BigDecimal"/>
         </constructor-result>
-    </sql-result-set-mapping>    -->
+    </sql-result-set-mapping>   
 </entity-mappings>
 

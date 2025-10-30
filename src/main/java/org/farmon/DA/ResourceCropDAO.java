@@ -10,7 +10,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import java.util.Date;
 import java.util.List;
-//import org.farmon.DTO.ResCropAllSummaryDTO;
+import org.farmon.farmondto.ResCropAllSummaryDTO;
 //import org.farmon.ResCropSummaryDTO;
 import org.farmon.JPA.ResourcecropJpaController;
 import org.farmon.entities.Resourcecrop;
@@ -80,14 +80,14 @@ public class ResourceCropDAO extends ResourcecropJpaController{
 //        return query.getResultList();
 //    }
 //    
-//    public List<ResCropAllSummaryDTO> getSumForHarvest(Date sdate, Date edate, int harvestid) {
-//        EntityManager em = getEntityManager();
-//        TypedQuery<ResCropAllSummaryDTO> query = em.createNamedQuery("Resourcecrop.summaryAll",
-//                ResCropAllSummaryDTO.class);
-//        query.setParameter(1, sdate);
-//        query.setParameter(2, edate);
-//        query.setParameter(3, harvestid);
-//        return query.getResultList();
-//    }
+    public List<ResCropAllSummaryDTO> getSumForHarvest(Date sdate, Date edate, int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<ResCropAllSummaryDTO> query = em.createNamedQuery("Resourcecrop.summaryAll",
+                ResCropAllSummaryDTO.class);
+        query.setParameter(1, sdate);
+        query.setParameter(2, edate);
+        query.setParameter(3, harvestid);
+        return query.getResultList();
+    }
         
 }
