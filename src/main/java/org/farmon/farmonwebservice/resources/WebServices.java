@@ -268,6 +268,44 @@ public class WebServices {
         }
     }
     
+    @Path("resCropPerHarDt")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getRescropPerPerHarDt(String termDTOJSON) throws NamingException, ParseException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();   
+        
+        Date startDate;
+        Date endDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        startDate = formatter.parse(farmondto.getReportstartdt());
+        endDate = formatter.parse(farmondto.getReportenddt());
+        List<ResourceCropDTO> rescroplist = masterDataService
+                .getRescropDetails(farmondto.getResourceCropDTO().getHarvestId(),
+                        startDate, endDate);                        
+        farmondto.setRescroplist(rescroplist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
     @Path("labCropSumHarDt")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -297,6 +335,81 @@ public class WebServices {
                 .getTotalLabcropReport(farmondto.getLabcroprecord().getHarvestId(),
                         startDate, endDate);                        
         farmondto.setLabcroprecord(labcropsummary);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("labCropDtlsHarDt")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getLabcropDtlsHarDt(String termDTOJSON) throws NamingException, ParseException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();   
+        
+        Date startDate;
+        Date endDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        startDate = formatter.parse(farmondto.getReportstartdt());
+        endDate = formatter.parse(farmondto.getReportenddt());
+        List<LabourCropDTO> labcropdetails = masterDataService
+                .getLabcropDetails(farmondto.getLabcroprecord().getHarvestId(),
+                        startDate, endDate);                        
+        farmondto.setLabcroplist(labcropdetails);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("empExpensePerDt")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getEmpExpensePerDt(String termDTOJSON) throws NamingException, ParseException {        
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        }
+        catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();   
+        
+        Date startDate;
+        Date endDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        startDate = formatter.parse(farmondto.getReportstartdt());
+        endDate = formatter.parse(farmondto.getReportenddt());
+        List<ExpenseDTO> expenselist = masterDataService
+                .getAllEmpExpenseInRange(startDate, endDate);                        
+        farmondto.setExpenselist(expenselist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;
