@@ -1607,7 +1607,44 @@ public class MasterDataServices {
         }
     }
 
+    public List<EmpExpDTO> getPaybackList(String empid, String loanrefid) {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+        List<EmpExpDTO> recordList = new ArrayList<>();
+        EmpExpDTO record = new EmpExpDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Empexpense> reclist = empexpdao.getPaybkLst(Integer.parseInt(empid), Integer.parseInt(loanrefid));
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setId(String.valueOf(reclist.get(i).getId()));
+                record.setEmpid(String.valueOf(reclist.get(i).getEmployeeid()));
+                record.setExpcategory(reclist.get(i).getExpcategory());
+                record.setTotal(String.format("%.2f", reclist.get(i).getTotalloan()));
+                record.setOutstanding(String.format("%.2f", reclist.get(i).getOutstanding()));
+                record.setEmprefid(String.valueOf(reclist.get(i).getExprefid()));
+                if (reclist.get(i).getStartdate() == null) {
+                    record.setSdate(null);
+                } else {
+                    mysqlDate = reclist.get(i).getStartdate();
+                    record.setSdate(formatter.format(mysqlDate));
+                }
+                record.setEdate(null);
+                recordList.add(record);
+                record = new EmpExpDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No employee payback records are found");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getPaybackList.");
+            return null;
+        }
+    }
 
+
+    
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
 //        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
@@ -2655,44 +2692,7 @@ public class MasterDataServices {
 //    
 //    
 
-//    public List<EmpExpDTO> getPaybackList(String empid, String loanrefid) {
-//        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);  
-//        List<EmpExpDTO> recordList = new ArrayList<>();
-//        EmpExpDTO record = new EmpExpDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Empexpense> reclist = empexpdao.getPaybkLst(Integer.parseInt(empid), Integer.parseInt(loanrefid));
-//            for (int i = 0; i < reclist.size(); i++) {
-//                record.setId(String.valueOf(reclist.get(i).getId()));                
-//                record.setEmpid(String.valueOf(reclist.get(i).getEmployeeid()));
-//                record.setExpcategory(reclist.get(i).getExpcategory());
-//                record.setTotal(String.format("%.2f", reclist.get(i).getTotalloan()));
-//                record.setOutstanding(String.format("%.2f", reclist.get(i).getOutstanding()));
-//                record.setEmprefid(String.valueOf(reclist.get(i).getExprefid()));
-//                if(reclist.get(i).getStartdate()==null){
-//                   record.setSdate(null);
-//                } else {
-//                   mysqlDate = reclist.get(i).getStartdate();
-//                   record.setSdate(formatter.format(mysqlDate));
-//                }
-//                record.setEdate(null);
-//                recordList.add(record);
-//                record = new EmpExpDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No employee payback records are found");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getPaybackList.");
-//            return null;
-//        }
-//    }
-//    
+
 //    public int getMaxEmpExpenseId(){
 //        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
 //        try {
