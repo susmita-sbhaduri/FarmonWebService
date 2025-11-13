@@ -56,7 +56,7 @@ import org.farmon.farmondto.ResourceCropDTO;
 import org.farmon.farmondto.UserDTO;
 import org.farmon.farmondto.ExpenseDTO;
 import org.farmon.farmondto.LabourCropDTO;
-import org.farmon.farmondto.BatchExpenseDTO;
+import org.farmon.farmondto.AllExpenseReportDTO;
 import org.farmon.farmondto.EmployeeDTO;
 import org.farmon.farmondto.ResCropAllSummaryDTO;
 
@@ -1143,14 +1143,14 @@ public class MasterDataServices {
 
 //    #################################Report batch#####################################################
     
-    public List<BatchExpenseDTO> getRescropExpRpt(String startdate, String enddate) {
+    public List<AllExpenseReportDTO> getRescropExpRpt(String startdate, String enddate) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        List<BatchExpenseDTO> recordList = new ArrayList<>();
-        BatchExpenseDTO record = new BatchExpenseDTO();
+        List<AllExpenseReportDTO> recordList = new ArrayList<>();
+        AllExpenseReportDTO record = new AllExpenseReportDTO();
 
         float totalcost = 0;
         String acqid;
@@ -1175,7 +1175,7 @@ public class MasterDataServices {
                 }
                 totalcost = totalcost + rescroplist.get(i).getAppamtcost().floatValue();
                 recordList.add(record);
-                record = new BatchExpenseDTO();
+                record = new AllExpenseReportDTO();
             }
             
             for (int i = 0; i < explist.size(); i++) {                
@@ -1206,7 +1206,7 @@ public class MasterDataServices {
                     record.setDate("");
                 }
                 recordList.add(record);
-                record = new BatchExpenseDTO(); 
+                record = new AllExpenseReportDTO(); 
                 if (i == explist.size() - 1) {
                     record.setExpenseCategory("Total");
                     record.setExpenseName("");
@@ -2840,57 +2840,57 @@ public class MasterDataServices {
 //    }
 //    
 
-//    public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
-//        List<TaskPlanDTO> recordList = new ArrayList<>();
-//        TaskPlanDTO record = new TaskPlanDTO();
-//        Date mysqlDate;
-//        String pattern = "dd MMM yyyy";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Taskplan> taskplanlist = taskplandao.detailsBetweenDates(startdate, enddate);
-//            for (int i = 0; i < taskplanlist.size(); i++) {
-//                record.setTaskId(taskplanlist.get(i).getId().toString());
-//                record.setTaskType(taskplanlist.get(i).getTasktype());
-//                mysqlDate = taskplanlist.get(i).getTaskdate();                    
-//                record.setTaskDt(formatter.format(mysqlDate));
-//                record.setTaskName(taskplanlist.get(i).getTaskname());
-//                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
-//                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-//                if (taskplanlist.get(i).getResourceid() == null){
-//                    record.setResourceId(null);
-//                    record.setResourceName(null);
-//                }else{
-//                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
-//                    record.setResourceName(getResourceNameForId(taskplanlist.get(i).getResourceid())
-//                            .getResourceName()+"(" +getResourceNameForId(taskplanlist.get(i).getResourceid())
-//                                    .getUnit()+")");
-//                }
-//                if (taskplanlist.get(i).getAppamtcost() == null)
-//                    record.setAppliedAmtCost(null);
-//                else
-//                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-//                
-//                if (taskplanlist.get(i).getAppliedamt() == null)
-//                    record.setAppliedAmount(null);
-//                else
-//                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
-//                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
-//                record.setComments(taskplanlist.get(i).getComments());
-//                recordList.add(record);
-//                record = new TaskPlanDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No task is planned for this date range.");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getTaskdDetailsBetweenDates.");
-//            return null;
-//        }
-//    }
+    public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+        List<TaskPlanDTO> recordList = new ArrayList<>();
+        TaskPlanDTO record = new TaskPlanDTO();
+        Date mysqlDate;
+        String pattern = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Taskplan> taskplanlist = taskplandao.detailsBetweenDates(startdate, enddate);
+            for (int i = 0; i < taskplanlist.size(); i++) {
+                record.setTaskId(taskplanlist.get(i).getId().toString());
+                record.setTaskType(taskplanlist.get(i).getTasktype());
+                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+                record.setTaskDt(formatter.format(mysqlDate));
+                record.setTaskName(taskplanlist.get(i).getTaskname());
+                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
+                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
+                if (taskplanlist.get(i).getResourceid() == null){
+                    record.setResourceId(null);
+                    record.setResourceName(null);
+                }else{
+                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
+                    record.setResourceName(getResourceNameForId(taskplanlist.get(i).getResourceid())
+                            .getResourceName()+"(" +getResourceNameForId(taskplanlist.get(i).getResourceid())
+                                    .getUnit()+")");
+                }
+                if (taskplanlist.get(i).getAppamtcost() == null)
+                    record.setAppliedAmtCost(null);
+                else
+                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
+                
+                if (taskplanlist.get(i).getAppliedamt() == null)
+                    record.setAppliedAmount(null);
+                else
+                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
+                record.setComments(taskplanlist.get(i).getComments());
+                recordList.add(record);
+                record = new TaskPlanDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No task is planned for this date range.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTaskdDetailsBetweenDates.");
+            return null;
+        }
+    }
     public int addTaskplanRecord(TaskPlanDTO taskrec) {        
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         Date mysqlDate;
