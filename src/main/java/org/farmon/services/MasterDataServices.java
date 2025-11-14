@@ -1503,42 +1503,187 @@ public class MasterDataServices {
         }
     }
     
-        public List<LabourCropDTO> getLabcropDetails(String harvestid, Date sdate, Date edate) {
+    public List<LabourCropDTO> getLabcropDetails(String harvestid, Date sdate, Date edate) {
         LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
-        List<LabourCropDTO> recordlist = new ArrayList<>();       
+        List<LabourCropDTO> recordlist = new ArrayList<>();
         LabourCropDTO record = new LabourCropDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
-            List<Labourcrop> reclist = labcropdao.getForHrstDtRange(Integer.parseInt(harvestid), 
+            List<Labourcrop> reclist = labcropdao.getForHrstDtRange(Integer.parseInt(harvestid),
                     sdate, edate);
-            
+
             for (int i = 0; i < reclist.size(); i++) {
                 record.setApplicationId(reclist.get(i).getApplicationid().toString());
-                record.setHarvestId(harvestid);                
+                record.setHarvestId(harvestid);
                 mysqlDate = reclist.get(i).getAppldate();
                 record.setApplicationDate(formatter.format(mysqlDate));
-                String labourCategory = "LABHRVST";                
-                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId()
-                        , labourCategory).getExpenditure());  
-                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId()
-                        , labourCategory).getCommString());
+                String labourCategory = "LABHRVST";
+                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId(),
+                         labourCategory).getExpenditure());
+                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId(),
+                         labourCategory).getCommString());
                 recordlist.add(record);
                 record = new LabourCropDTO();
-            }  
+            }
             return recordlist;
-           
-        }catch (NoResultException e) {
+
+        } catch (NoResultException e) {
             System.out.println("No labourcrop record is found for this harvest and applied date.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getLabcropDetails().");
             return null;
         }
     }
         
+    public int getMaxEmployeeId() {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        try {
+            return empdao.getMaxEmpId();
+        } catch (NoResultException e) {
+            System.out.println("No records in employee table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxEmployeeId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+
+    public int addEmployeeRecord(EmployeeDTO employeerec) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Employee rec = new Employee();
+            rec.setId(Integer.valueOf(employeerec.getId()));
+            rec.setName(employeerec.getName());
+            rec.setAddress(employeerec.getAddress());
+            rec.setContact(employeerec.getPhno());
+            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
+
+            mysqlDate = formatter.parse(employeerec.getSdate());
+            rec.setStartdate(mysqlDate);
+            
+            if (employeerec.getEdate() != null) {
+                rec.setEnddate(formatter.parse(employeerec.getEdate()));
+            } else {
+                rec.setEnddate(null);
+            }
+            empdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this employee record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addEmployeeRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int editEmployeeRecord(EmployeeDTO employeerec) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Employee rec = new Employee();
+            rec.setId(Integer.valueOf(employeerec.getId()));
+            rec.setName(employeerec.getName());
+            rec.setAddress(employeerec.getAddress());
+            rec.setContact(employeerec.getPhno());
+            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
+
+            mysqlDate = formatter.parse(employeerec.getSdate());
+            rec.setStartdate(mysqlDate);
+            
+            if (employeerec.getEdate() != null) {
+                rec.setEnddate(formatter.parse(employeerec.getEdate()));
+            } else {
+                rec.setEnddate(null);
+            }
+            empdao.edit(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("This employee record to be edited, does not exist ");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editEmployeeRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public List<EmployeeDTO> getActiveEmployeeList() {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);  
+        List<EmployeeDTO> recordList = new ArrayList<>();
+        EmployeeDTO record = new EmployeeDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Employee> emplist = empdao.getActiveList();
+            for (int i = 0; i < emplist.size(); i++) {
+                record.setId(String.valueOf(emplist.get(i).getId()));
+                record.setName(emplist.get(i).getName());
+                record.setAddress(emplist.get(i).getAddress());
+                record.setPhno(emplist.get(i).getContact());               
+                record.setSalary(String.format("%.2f", emplist.get(i).getSalary()));
+                mysqlDate = emplist.get(i).getStartdate();                    
+                record.setSdate(formatter.format(mysqlDate));
+                record.setEdate(null);
+                recordList.add(record);
+                record = new EmployeeDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No employee are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getActiveEmployeeList.");
+            return null;
+        }
+    }
+    
+    public EmployeeDTO getEmpNameForId(String empid) {
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);        
+        EmployeeDTO record = new EmployeeDTO(); 
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            Employee emprec = empdao.getEmpName(Integer.parseInt(empid));
+            record.setId(empid);
+            record.setName(emprec.getName());
+
+            record.setAddress(emprec.getAddress());
+            record.setPhno(emprec.getContact());
+            record.setSalary(String.format("%.2f", emprec.getSalary()));
+            mysqlDate = emprec.getStartdate();
+            record.setSdate(formatter.format(mysqlDate));
+            if(emprec.getEnddate()==null){
+                record.setEdate(null);
+            } else {
+                mysqlDate = emprec.getEnddate();
+                record.setEdate(formatter.format(mysqlDate));
+            }
+                
+            return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resource found for this resourceid");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
+            return null;
+        }
+    }
+
     public List<ExpenseDTO> getAllEmpExpenseInRange(Date sdate, Date edate) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf);
         List<ExpenseDTO> recordlist = new ArrayList<>();
@@ -2502,154 +2647,7 @@ public class MasterDataServices {
 
 
 
-//    public int getMaxEmployeeId(){
-//        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
-//        try {
-//            return empdao.getMaxEmpId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in employee table");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getMaxEmployeeId().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
-//    
-    public int addEmployeeRecord(EmployeeDTO employeerec) {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {
-            Employee rec = new Employee();
-            rec.setId(Integer.valueOf(employeerec.getId()));
-            rec.setName(employeerec.getName());
-            rec.setAddress(employeerec.getAddress());
-            rec.setContact(employeerec.getPhno());
-            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
-
-            mysqlDate = formatter.parse(employeerec.getSdate());
-            rec.setStartdate(mysqlDate);
-            
-            if (employeerec.getEdate() != null) {
-                rec.setEnddate(formatter.parse(employeerec.getEdate()));
-            } else {
-                rec.setEnddate(null);
-            }
-            empdao.create(rec);
-            return SUCCESS;
-        } catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this employee record");
-            return DB_DUPLICATE;
-        } catch (Exception exception) {
-            System.out.println(exception + " has occurred in addEmployeeRecord.");
-            return DB_SEVERE;
-        }
-    }
-    
-    public int editEmployeeRecord(EmployeeDTO employeerec) {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {
-            Employee rec = new Employee();
-            rec.setId(Integer.valueOf(employeerec.getId()));
-            rec.setName(employeerec.getName());
-            rec.setAddress(employeerec.getAddress());
-            rec.setContact(employeerec.getPhno());
-            rec.setSalary(BigDecimal.valueOf(Double.parseDouble(employeerec.getSalary())));
-
-            mysqlDate = formatter.parse(employeerec.getSdate());
-            rec.setStartdate(mysqlDate);
-            
-            if (employeerec.getEdate() != null) {
-                rec.setEnddate(formatter.parse(employeerec.getEdate()));
-            } else {
-                rec.setEnddate(null);
-            }
-            empdao.edit(rec);
-            return SUCCESS;
-        } catch (NoResultException e) {
-            System.out.println("This employee record to be edited, does not exist ");
-            return DB_NON_EXISTING;
-        } catch (Exception exception) {
-            System.out.println(exception + " has occurred in editEmployeeRecord.");
-            return DB_SEVERE;
-        }
-    }
-    
-    public List<EmployeeDTO> getActiveEmployeeList() {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);  
-        List<EmployeeDTO> recordList = new ArrayList<>();
-        EmployeeDTO record = new EmployeeDTO();
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
-            List<Employee> emplist = empdao.getActiveList();
-            for (int i = 0; i < emplist.size(); i++) {
-                record.setId(String.valueOf(emplist.get(i).getId()));
-                record.setName(emplist.get(i).getName());
-                record.setAddress(emplist.get(i).getAddress());
-                record.setPhno(emplist.get(i).getContact());               
-                record.setSalary(String.format("%.2f", emplist.get(i).getSalary()));
-                mysqlDate = emplist.get(i).getStartdate();                    
-                record.setSdate(formatter.format(mysqlDate));
-                record.setEdate(null);
-                recordList.add(record);
-                record = new EmployeeDTO();
-            }        
-            return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No employee are found");            
-            return null;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getActiveEmployeeList.");
-            return null;
-        }
-    }
-    
-    public EmployeeDTO getEmpNameForId(String empid) {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);        
-        EmployeeDTO record = new EmployeeDTO(); 
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
-            Employee emprec = empdao.getEmpName(Integer.parseInt(empid));
-            record.setId(empid);
-            record.setName(emprec.getName());
-
-            record.setAddress(emprec.getAddress());
-            record.setPhno(emprec.getContact());
-            record.setSalary(String.format("%.2f", emprec.getSalary()));
-            mysqlDate = emprec.getStartdate();
-            record.setSdate(formatter.format(mysqlDate));
-            if(emprec.getEnddate()==null){
-                record.setEdate(null);
-            } else {
-                mysqlDate = emprec.getEnddate();
-                record.setEdate(formatter.format(mysqlDate));
-            }
-                
-            return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resource found for this resourceid");            
-            return null;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
-            return null;
-        }
-    }
-    
+        
 //    public List<EmpExpDTO> getEmpActiveExpRecs(String empid, String expcat) {
 //        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);  
 //        List<EmpExpDTO> recordList = new ArrayList<>();
