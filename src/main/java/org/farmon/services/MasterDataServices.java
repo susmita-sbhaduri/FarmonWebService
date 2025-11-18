@@ -22,7 +22,7 @@ import org.farmon.DA.CropDAO;
 import org.farmon.DA.EmployeeDAO;
 import org.farmon.DA.ExpenseDAO;
 import org.farmon.DA.FarmresourceDAO;
-//import org.bhaduri.machh.DA.EmpLeaveDAO;
+import org.farmon.DA.EmpLeaveDAO;
 import org.farmon.DA.EmpexpenseDAO;
 //import org.bhaduri.machh.DA.EmployeeDAO;
 //import org.bhaduri.machh.DA.ExpenseDAO;
@@ -1716,6 +1716,103 @@ public class MasterDataServices {
         }
     }
     
+    public EmpExpDTO getEmpActiveExpRec(String empid, String expcat) {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+
+        EmpExpDTO record = new EmpExpDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Empexpense empexprecord = empexpdao.getExpenseList(Integer.parseInt(empid), expcat);
+
+            record.setId(String.valueOf(empexprecord.getId()));
+            record.setEmpid(empid);
+            record.setExpcategory(empexprecord.getExpcategory());
+            record.setTotal(String.format("%.2f", empexprecord.getTotalloan()));
+            record.setOutstanding(String.format("%.2f", empexprecord.getOutstanding()));
+            record.setEmprefid(String.valueOf(empexprecord.getExprefid()));
+            if (empexprecord.getStartdate() == null) {
+                record.setSdate(null);
+            } else {
+                mysqlDate = empexprecord.getStartdate();
+                record.setSdate(formatter.format(mysqlDate));
+            }
+            record.setEdate(null);
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No employee expense records are found");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getEmployeeExpRecs.");
+            return null;
+        }
+    }
+    
+    public int getMaxEmpExpenseId() {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+        try {
+            return empexpdao.getMaxId();
+        } catch (NoResultException e) {
+            System.out.println("No records in empexpense table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxEmpExpenseId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+
+    public int addEmpExpRecord(EmpExpDTO empexprec) {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Empexpense rec = new Empexpense();
+            rec.setId(Integer.valueOf(empexprec.getId()));
+            rec.setEmployeeid(Integer.parseInt(empexprec.getEmpid()));
+            rec.setTotalloan(BigDecimal.valueOf(Double.parseDouble(empexprec.getTotal())));
+            rec.setOutstanding(BigDecimal.valueOf(Double.parseDouble(empexprec.getOutstanding())));
+            rec.setExpcategory(empexprec.getExpcategory());
+            if (empexprec.getExpcategory().equals("LOAN")) {
+                rec.setExprefid(null);
+            } else {
+                rec.setExprefid(Integer.valueOf(empexprec.getEmprefid()));
+            }
+            mysqlDate = formatter.parse(empexprec.getSdate());
+            rec.setStartdate(mysqlDate);
+
+            if (empexprec.getEdate() != null) {
+                rec.setEnddate(formatter.parse(empexprec.getEdate()));
+            } else {
+                rec.setEnddate(null);
+            }
+            empexpdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this empexpense record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addEmpExpRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+
+    public int getCountLeaveEmp(String empid) {
+        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
+        try {
+            Long longcount = leavedao.getLeaveCount(Integer.parseInt(empid));
+            return longcount.intValue();
+        } catch (NoResultException e) {
+            System.out.println("No records in empleave table for this employee");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCountLeaveEmp().");
+            return DB_SEVERE;
+        }
+    }
     public List<EmpExpDTO> getEmpActiveLoans() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
@@ -1788,7 +1885,39 @@ public class MasterDataServices {
         }
     }
 
-
+    public int editEmpExpRecord(EmpExpDTO empexprec) {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Empexpense rec = new Empexpense();
+            
+            rec.setId(Integer.valueOf(empexprec.getId()));
+            rec.setEmployeeid(Integer.parseInt(empexprec.getEmpid()));
+            rec.setTotalloan(BigDecimal.valueOf(Double.parseDouble(empexprec.getTotal())));
+            rec.setOutstanding(BigDecimal.valueOf(Double.parseDouble(empexprec.getOutstanding())));
+            rec.setExpcategory(empexprec.getExpcategory());
+            
+            mysqlDate = formatter.parse(empexprec.getSdate());
+            rec.setStartdate(mysqlDate);
+            
+            if (empexprec.getEdate()!= null) {
+                rec.setEnddate(formatter.parse(empexprec.getEdate()));
+            } else rec.setEnddate(null);            
+            empexpdao.edit(rec);
+            return SUCCESS;
+        }
+        catch (NoResultException e) {
+            System.out.println("This empexpense record does not exist.");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in editEmpExpRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
@@ -1882,6 +2011,270 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public int getMaxTaskplanId(){
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        try {
+            return taskplandao.getMaxId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in resourcecrop table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxTaskplanId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+
+    public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+        List<TaskPlanDTO> recordList = new ArrayList<>();
+        TaskPlanDTO record = new TaskPlanDTO();
+        Date mysqlDate;
+        String pattern = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Taskplan> taskplanlist = taskplandao.detailsBetweenDates(startdate, enddate);
+            for (int i = 0; i < taskplanlist.size(); i++) {
+                record.setTaskId(taskplanlist.get(i).getId().toString());
+                record.setTaskType(taskplanlist.get(i).getTasktype());
+                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+                record.setTaskDt(formatter.format(mysqlDate));
+                record.setTaskName(taskplanlist.get(i).getTaskname());
+                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
+                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
+                if (taskplanlist.get(i).getResourceid() == null){
+                    record.setResourceId(null);
+                    record.setResourceName(null);
+                }else{
+                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
+                    record.setResourceName(getResourceNameForId(taskplanlist.get(i).getResourceid())
+                            .getResourceName()+"(" +getResourceNameForId(taskplanlist.get(i).getResourceid())
+                                    .getUnit()+")");
+                }
+                if (taskplanlist.get(i).getAppamtcost() == null)
+                    record.setAppliedAmtCost(null);
+                else
+                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
+                
+                if (taskplanlist.get(i).getAppliedamt() == null)
+                    record.setAppliedAmount(null);
+                else
+                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
+                record.setComments(taskplanlist.get(i).getComments());
+                recordList.add(record);
+                record = new TaskPlanDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No task is planned for this date range.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTaskdDetailsBetweenDates.");
+            return null;
+        }
+    }
+    public int addTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));
+            record.setTasktype(taskrec.getTaskType());
+            record.setTaskname(taskrec.getTaskName());
+            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
+            if(taskrec.getResourceId()==null){
+               record.setResourceid(null);
+            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
+            
+            if(taskrec.getAppliedAmount()==null){
+               record.setAppliedamt(null);
+            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmount())));
+             
+            if(taskrec.getAppliedAmtCost()==null){
+               record.setAppamtcost(null);
+            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmtCost())));
+            
+            mysqlDate = formatter.parse(taskrec.getTaskDt());
+            record.setTaskdate(mysqlDate);  
+            record.setAppliedflag(taskrec.getAppliedFlag());
+            record.setComments(taskrec.getComments());
+            taskplandao.create(record);
+            return SUCCESS;
+        } 
+        catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this taskplan record");            
+            return DB_DUPLICATE;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in addTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
+    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));
+            record.setTasktype(taskrec.getTaskType());
+            record.setTaskname(taskrec.getTaskName());
+            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
+            if(taskrec.getResourceId()==null){
+               record.setResourceid(null);
+            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
+             if(taskrec.getAppliedAmount()==null){
+               record.setAppliedamt(null);
+            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmount())));
+             
+            if(taskrec.getAppliedAmtCost()==null){
+               record.setAppamtcost(null);
+            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                    .getAppliedAmtCost())));
+            
+            mysqlDate = formatter.parse(taskrec.getTaskDt());
+            record.setTaskdate(mysqlDate);    
+            record.setAppliedflag(taskrec.getAppliedFlag());
+            record.setComments(taskrec.getComments());
+            taskplandao.edit(record);
+            return SUCCESS;
+        } 
+        catch (NoResultException e) {
+            System.out.println("This taskplan record does not exist.");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in editTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
+        
+        try {
+            Taskplan record = new Taskplan();
+            record.setId(Integer.valueOf(taskrec.getTaskId()));            
+            taskplandao.destroy(record.getId());
+            return SUCCESS;
+        } 
+        catch (NonexistentEntityException e) {
+            System.out.println("Record for this Taskplan does not exist");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in deleteTaskplanRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public TaskPlanDTO getTaskPlanForId(String id) {
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
+        TaskPlanDTO record = new TaskPlanDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Taskplan taskplanrec = taskplandao.getTaskplanPerId(Integer.parseInt(id));
+
+            record.setTaskId(taskplanrec.getId().toString());
+            record.setTaskType(taskplanrec.getTasktype());
+            mysqlDate = taskplanrec.getTaskdate();
+            record.setTaskDt(formatter.format(mysqlDate));
+            record.setTaskName(taskplanrec.getTaskname());
+            record.setHarvestId(String.valueOf(taskplanrec.getHasvestid()));
+            record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanrec.getHasvestid())));
+            if (taskplanrec.getResourceid() == null) {
+                record.setResourceId(null);
+            } else {
+                record.setResourceId(String.valueOf(taskplanrec.getResourceid()));
+            }
+            
+            if (taskplanrec.getAppamtcost() == null)
+                    record.setAppliedAmtCost(null);
+                else
+                    record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
+            
+            if (taskplanrec.getAppliedamt() == null) {
+                record.setAppliedAmount(null);
+            } else {
+                record.setAppliedAmount(String.format("%.2f", taskplanrec.getAppliedamt()));
+            }
+            record.setAppliedFlag(taskplanrec.getAppliedflag());
+            record.setComments(taskplanrec.getComments());
+            return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No task is found for this id.");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTaskPlanForId.");
+            return null;
+        }
+    }
+    
+
+//    public List<TaskPlanDTO> getTaskPlanListForDate(Date plandate) {
+//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+//        List<TaskPlanDTO> recordList = new ArrayList<>();
+//        TaskPlanDTO record = new TaskPlanDTO();
+//        Date mysqlDate;
+//        String pattern = "yyyy-MM-dd";
+//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+//        try {  
+//            List<Taskplan> taskplanlist = taskplandao.getListForDate(plandate);
+//            for (int i = 0; i < taskplanlist.size(); i++) {
+//                record.setTaskId(taskplanlist.get(i).getId().toString());
+//                record.setTaskType(taskplanlist.get(i).getTasktype());
+//                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+//                record.setTaskDt(formatter.format(mysqlDate));
+//                record.setTaskName(taskplanlist.get(i).getTaskname());
+//                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
+//                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
+//                if (taskplanlist.get(i).getResourceid() == null)
+//                    record.setResourceId(null);
+//                else
+//                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
+//                
+//                if (taskplanlist.get(i).getAppamtcost() == null)
+//                    record.setAppliedAmtCost(null);
+//                else
+//                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
+//                
+//                if (taskplanlist.get(i).getAppliedamt() == null)
+//                    record.setAppliedAmount(null);
+//                else
+//                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+//                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
+//                record.setComments(taskplanlist.get(i).getComments());
+//                recordList.add(record);
+//                record = new TaskPlanDTO();
+//            }        
+//            return recordList;
+//        }
+//        catch (NoResultException e) {
+//            System.out.println("No task is planned for this date.");            
+//            return null;
+//        }
+//        catch (Exception exception) {
+//            System.out.println(exception + " has occurred in getTaskPlanListForDate.");
+//            return null;
+//        }
+//    }
+//        
         
 //        
 //    public List<String> getCropCat() {
@@ -2648,393 +3041,14 @@ public class MasterDataServices {
 
 
         
-//    public List<EmpExpDTO> getEmpActiveExpRecs(String empid, String expcat) {
-//        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);  
-//        List<EmpExpDTO> recordList = new ArrayList<>();
-//        EmpExpDTO record = new EmpExpDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Empexpense> reclist = empexpdao.getExpenseList(Integer.parseInt(empid), expcat);
-//            for (int i = 0; i < reclist.size(); i++) {
-//                record.setId(String.valueOf(reclist.get(i).getId()));
-//                record.setEmpid(empid);
-//                record.setExpcategory(reclist.get(i).getExpcategory());
-//                record.setTotal(String.format("%.2f", reclist.get(i).getTotalloan()));
-//                record.setOutstanding(String.format("%.2f", reclist.get(i).getOutstanding()));
-//                record.setEmprefid(String.valueOf(reclist.get(i).getExprefid()));
-//                if(reclist.get(i).getStartdate()==null){
-//                   record.setSdate(null);
-//                } else {
-//                   mysqlDate = reclist.get(i).getStartdate();
-//                   record.setSdate(formatter.format(mysqlDate));
-//                }
-//                record.setEdate(null);
-//                recordList.add(record);
-//                record = new EmpExpDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No employee expense records are found");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getEmployeeExpRecs.");
-//            return null;
-//        }
-//    }
-//    
+
 //    
 //    
 //    
 
 
-//    public int getMaxEmpExpenseId(){
-//        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
-//        try {
-//            return empexpdao.getMaxId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in empexpense table");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getMaxEmpExpenseId().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
-//    
-//    public int addEmpExpRecord(EmpExpDTO empexprec) {
-//        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Empexpense rec = new Empexpense();
-//            rec.setId(Integer.valueOf(empexprec.getId()));
-//            rec.setEmployeeid(Integer.parseInt(empexprec.getEmpid()));
-//            rec.setTotalloan(BigDecimal.valueOf(Double.parseDouble(empexprec.getTotal())));
-//            rec.setOutstanding(BigDecimal.valueOf(Double.parseDouble(empexprec.getOutstanding())));
-//            rec.setExpcategory(empexprec.getExpcategory());
-//            if(empexprec.getExpcategory().equals("LOAN"))
-//                rec.setExprefid(null);
-//            else
-//                rec.setExprefid(Integer.valueOf(empexprec.getEmprefid()));
-//            mysqlDate = formatter.parse(empexprec.getSdate());
-//            rec.setStartdate(mysqlDate);
-//            
-//            if (empexprec.getEdate()!= null) {
-//                rec.setEnddate(formatter.parse(empexprec.getEdate()));
-//            } else {
-//                rec.setEnddate(null);
-//            }
-//            empexpdao.create(rec);
-//            return SUCCESS;
-//        } catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this empexpense record");
-//            return DB_DUPLICATE;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addEmpExpRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
-//    public int editEmpExpRecord(EmpExpDTO empexprec) {
-//        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Empexpense rec = new Empexpense();
-//            
-//            rec.setId(Integer.valueOf(empexprec.getId()));
-//            rec.setEmployeeid(Integer.parseInt(empexprec.getEmpid()));
-//            rec.setTotalloan(BigDecimal.valueOf(Double.parseDouble(empexprec.getTotal())));
-//            rec.setOutstanding(BigDecimal.valueOf(Double.parseDouble(empexprec.getOutstanding())));
-//            rec.setExpcategory(empexprec.getExpcategory());
-//            
-//            mysqlDate = formatter.parse(empexprec.getSdate());
-//            rec.setStartdate(mysqlDate);
-//            
-//            if (empexprec.getEdate()!= null) {
-//                rec.setEnddate(formatter.parse(empexprec.getEdate()));
-//            } else rec.setEnddate(null);            
-//            empexpdao.edit(rec);
-//            return SUCCESS;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("This empexpense record does not exist.");            
-//            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in editEmpExpRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
-    public int getMaxTaskplanId(){
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-        try {
-            return taskplandao.getMaxId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in resourcecrop table");            
-            return 0;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getMaxTaskplanId().");
-            //            return DB_SEVERE;
-            return 0;
-        }
-    }
-//    public List<TaskPlanDTO> getTaskPlanListForDate(Date plandate) {
-//        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
-//        List<TaskPlanDTO> recordList = new ArrayList<>();
-//        TaskPlanDTO record = new TaskPlanDTO();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {  
-//            List<Taskplan> taskplanlist = taskplandao.getListForDate(plandate);
-//            for (int i = 0; i < taskplanlist.size(); i++) {
-//                record.setTaskId(taskplanlist.get(i).getId().toString());
-//                record.setTaskType(taskplanlist.get(i).getTasktype());
-//                mysqlDate = taskplanlist.get(i).getTaskdate();                    
-//                record.setTaskDt(formatter.format(mysqlDate));
-//                record.setTaskName(taskplanlist.get(i).getTaskname());
-//                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
-//                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-//                if (taskplanlist.get(i).getResourceid() == null)
-//                    record.setResourceId(null);
-//                else
-//                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
-//                
-//                if (taskplanlist.get(i).getAppamtcost() == null)
-//                    record.setAppliedAmtCost(null);
-//                else
-//                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-//                
-//                if (taskplanlist.get(i).getAppliedamt() == null)
-//                    record.setAppliedAmount(null);
-//                else
-//                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
-//                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
-//                record.setComments(taskplanlist.get(i).getComments());
-//                recordList.add(record);
-//                record = new TaskPlanDTO();
-//            }        
-//            return recordList;
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No task is planned for this date.");            
-//            return null;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getTaskPlanListForDate.");
-//            return null;
-//        }
-//    }
-//    
 
-    public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
-        List<TaskPlanDTO> recordList = new ArrayList<>();
-        TaskPlanDTO record = new TaskPlanDTO();
-        Date mysqlDate;
-        String pattern = "dd MMM yyyy";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
-            List<Taskplan> taskplanlist = taskplandao.detailsBetweenDates(startdate, enddate);
-            for (int i = 0; i < taskplanlist.size(); i++) {
-                record.setTaskId(taskplanlist.get(i).getId().toString());
-                record.setTaskType(taskplanlist.get(i).getTasktype());
-                mysqlDate = taskplanlist.get(i).getTaskdate();                    
-                record.setTaskDt(formatter.format(mysqlDate));
-                record.setTaskName(taskplanlist.get(i).getTaskname());
-                record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
-                record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-                if (taskplanlist.get(i).getResourceid() == null){
-                    record.setResourceId(null);
-                    record.setResourceName(null);
-                }else{
-                    record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
-                    record.setResourceName(getResourceNameForId(taskplanlist.get(i).getResourceid())
-                            .getResourceName()+"(" +getResourceNameForId(taskplanlist.get(i).getResourceid())
-                                    .getUnit()+")");
-                }
-                if (taskplanlist.get(i).getAppamtcost() == null)
-                    record.setAppliedAmtCost(null);
-                else
-                    record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-                
-                if (taskplanlist.get(i).getAppliedamt() == null)
-                    record.setAppliedAmount(null);
-                else
-                    record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
-                record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
-                record.setComments(taskplanlist.get(i).getComments());
-                recordList.add(record);
-                record = new TaskPlanDTO();
-            }        
-            return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No task is planned for this date range.");            
-            return null;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getTaskdDetailsBetweenDates.");
-            return null;
-        }
-    }
-    public int addTaskplanRecord(TaskPlanDTO taskrec) {        
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {
-            Taskplan record = new Taskplan();
-            record.setId(Integer.valueOf(taskrec.getTaskId()));
-            record.setTasktype(taskrec.getTaskType());
-            record.setTaskname(taskrec.getTaskName());
-            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-            if(taskrec.getResourceId()==null){
-               record.setResourceid(null);
-            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
-            
-            if(taskrec.getAppliedAmount()==null){
-               record.setAppliedamt(null);
-            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmount())));
-             
-            if(taskrec.getAppliedAmtCost()==null){
-               record.setAppamtcost(null);
-            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmtCost())));
-            
-            mysqlDate = formatter.parse(taskrec.getTaskDt());
-            record.setTaskdate(mysqlDate);  
-            record.setAppliedflag(taskrec.getAppliedFlag());
-            record.setComments(taskrec.getComments());
-            taskplandao.create(record);
-            return SUCCESS;
-        } 
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this taskplan record");            
-            return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in addTaskplanRecord.");
-            return DB_SEVERE;
-        }
-    }
-    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {
-            Taskplan record = new Taskplan();
-            record.setId(Integer.valueOf(taskrec.getTaskId()));
-            record.setTasktype(taskrec.getTaskType());
-            record.setTaskname(taskrec.getTaskName());
-            record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-            if(taskrec.getResourceId()==null){
-               record.setResourceid(null);
-            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
-             if(taskrec.getAppliedAmount()==null){
-               record.setAppliedamt(null);
-            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmount())));
-             
-            if(taskrec.getAppliedAmtCost()==null){
-               record.setAppamtcost(null);
-            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmtCost())));
-            
-            mysqlDate = formatter.parse(taskrec.getTaskDt());
-            record.setTaskdate(mysqlDate);    
-            record.setAppliedflag(taskrec.getAppliedFlag());
-            record.setComments(taskrec.getComments());
-            taskplandao.edit(record);
-            return SUCCESS;
-        } 
-        catch (NoResultException e) {
-            System.out.println("This taskplan record does not exist.");            
-            return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in editTaskplanRecord.");
-            return DB_SEVERE;
-        }
-    }
     
-    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-        
-        try {
-            Taskplan record = new Taskplan();
-            record.setId(Integer.valueOf(taskrec.getTaskId()));            
-            taskplandao.destroy(record.getId());
-            return SUCCESS;
-        } 
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this Taskplan does not exist");            
-            return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in deleteTaskplanRecord.");
-            return DB_SEVERE;
-        }
-    }
-    
-    public TaskPlanDTO getTaskPlanForId(String id) {
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
-        TaskPlanDTO record = new TaskPlanDTO();
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {
-            Taskplan taskplanrec = taskplandao.getTaskplanPerId(Integer.parseInt(id));
-
-            record.setTaskId(taskplanrec.getId().toString());
-            record.setTaskType(taskplanrec.getTasktype());
-            mysqlDate = taskplanrec.getTaskdate();
-            record.setTaskDt(formatter.format(mysqlDate));
-            record.setTaskName(taskplanrec.getTaskname());
-            record.setHarvestId(String.valueOf(taskplanrec.getHasvestid()));
-            record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanrec.getHasvestid())));
-            if (taskplanrec.getResourceid() == null) {
-                record.setResourceId(null);
-            } else {
-                record.setResourceId(String.valueOf(taskplanrec.getResourceid()));
-            }
-            
-            if (taskplanrec.getAppamtcost() == null)
-                    record.setAppliedAmtCost(null);
-                else
-                    record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
-            
-            if (taskplanrec.getAppliedamt() == null) {
-                record.setAppliedAmount(null);
-            } else {
-                record.setAppliedAmount(String.format("%.2f", taskplanrec.getAppliedamt()));
-            }
-            record.setAppliedFlag(taskplanrec.getAppliedflag());
-            record.setComments(taskplanrec.getComments());
-            return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No task is found for this id.");            
-            return null;
-        }
-        catch (Exception exception) {
-            System.out.println(exception + " has occurred in getTaskPlanForId.");
-            return null;
-        }
-    }
 //    
 //    public int getMaxEmpLeaveId(){
 //        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
@@ -3051,21 +3065,7 @@ public class MasterDataServices {
 //            return 0;
 //        }
 //    }
-//    public int getCountLeaveEmp(String empid){
-//        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
-//        try {
-//            Long longcount = leavedao.getLeaveCount(Integer.parseInt(empid));            
-//            return longcount.intValue();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in empleave table for this employee");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getCountLeaveEmp().");
-//            return DB_SEVERE;
-//        }
-//    }
+
 //    public int addEmpleaveRecord(EmpLeaveDTO leaverec) {
 //        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
 //        Date mysqlDate;

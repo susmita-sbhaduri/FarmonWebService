@@ -25,6 +25,7 @@ import javax.naming.NamingException;
 import org.farmon.farmondto.AllExpenseReportDTO;
 import org.farmon.farmondto.BatchExpenseDTO;
 import org.farmon.farmondto.EmpExpDTO;
+import org.farmon.farmondto.EmpLeaveDTO;
 import org.farmon.farmondto.EmployeeDTO;
 import org.farmon.farmondto.ExpenseDTO;
 import org.farmon.farmondto.FarmonDTO;
@@ -415,7 +416,7 @@ public class WebServices {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String getEmpNameForId(String termDTOJSON) throws NamingException, ParseException {
+    public String getEmpNameForId(String termDTOJSON) throws NamingException {
         ObjectMapper objectMapper = new ObjectMapper();
         FarmonDTO farmondto;
         try {
@@ -432,6 +433,130 @@ public class WebServices {
         EmployeeDTO emprec = masterDataService
                 .getEmpNameForId(farmondto.getEmprec().getId());
         farmondto.setEmprec(emprec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("activeEmpExp")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getActiveEmpExpense(String termDTOJSON) throws NamingException, ParseException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+
+        EmpExpDTO activerexmpexp = masterDataService.getEmpActiveExpRec(farmondto
+                .getEmpexprec().getEmpid(), farmondto.getEmpexprec().getExpcategory());
+        farmondto.setEmpexprec(activerexmpexp);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("editEmpExp")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String editEmpExpense(String termDTOJSON) throws NamingException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        
+        MasterDataServices masterDataService = new MasterDataServices();
+        int editres = masterDataService.editEmpExpRecord(farmondto.getEmpexprec());
+        FarmonResponse farmonres = new FarmonResponse();
+        farmonres.setFarmon_EDIT_RES(editres);
+        farmondto.setResponses(farmonres);
+        
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("maxEmpExpId")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getMaxEmpExpId(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        String maxid = String.valueOf(masterDataService.getMaxEmpExpenseId());
+        EmpExpDTO empexprec = new EmpExpDTO();
+        empexprec.setId(maxid);
+        farmondto.setEmpexprec(empexprec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("empLeaves")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getEmpLeaveCount(String termDTOJSON) throws NamingException, ParseException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+
+        int leavecount = masterDataService.getCountLeaveEmp(farmondto.getEmpleaverec()
+                .getEmpid());
+        EmpLeaveDTO leaverec = new EmpLeaveDTO();
+        leaverec.setId(String.valueOf(leavecount));
+        farmondto.setEmpleaverec(leaverec);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;
@@ -530,6 +655,64 @@ public class WebServices {
             return null;
         }
     }
+    
+    @Path("getActiveEmp")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getActiveEmpRec(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        List<EmployeeDTO>activeemplist = masterDataService.getActiveEmployeeList();
+        
+        farmondto.setEmplist(activeemplist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+//    @Path("empNameforId")
+//    @POST
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public String getEmpNameforId(String termDTOJSON) throws NamingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        FarmonDTO farmondto;
+//        try {
+//            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+//            farmondto = (FarmonDTO) DTO;
+//        } catch (IOException ex) {
+//            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+//            farmondto = new FarmonDTO();
+//            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+////            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+//        }
+//        MasterDataServices masterDataService = new MasterDataServices();
+//        EmployeeDTO emprec = masterDataService.getEmpNameForId(farmondto.getEmprec().getId()); 
+//        
+//        farmondto.setEmprec(emprec);
+//        try {
+//            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+//            return responseTermDTOJSON;
+//        } catch (JsonProcessingException ex) {
+//            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
     
     @Path("addEmployee")
     @POST
