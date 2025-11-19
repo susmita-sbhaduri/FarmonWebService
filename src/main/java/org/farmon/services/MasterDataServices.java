@@ -1782,7 +1782,7 @@ public class MasterDataServices {
             }
             mysqlDate = formatter.parse(empexprec.getSdate());
             rec.setStartdate(mysqlDate);
-
+            
             if (empexprec.getEdate() != null) {
                 rec.setEnddate(formatter.parse(empexprec.getEdate()));
             } else {
