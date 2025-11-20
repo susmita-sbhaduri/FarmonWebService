@@ -38,8 +38,7 @@ import org.farmon.DA.TaskplanDAO;
 
 
 import org.farmon.farmondto.EmpExpDTO;
-//import org.bhaduri.machh.DTO.EmpLeaveDTO;
-//import org.bhaduri.machh.DTO.EmployeeDTO;
+import org.farmon.farmondto.EmpLeaveDTO;
 import org.farmon.farmondto.FarmresourceDTO;
 import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
@@ -64,7 +63,7 @@ import org.farmon.entities.Users;
 import org.farmon.entities.Crop;
 import org.farmon.entities.Resourcecrop;
 import org.farmon.entities.Empexpense;
-//import org.bhaduri.machh.entities.Empleave;
+import org.farmon.entities.Empleave;
 import org.farmon.entities.Employee;
 import org.farmon.entities.Harvest;
 import org.farmon.entities.Shop;
@@ -1813,6 +1812,46 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int getMaxEmpLeaveId() {
+        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
+        try {
+            return leavedao.getMaxEmpLeaveId();
+        } catch (NoResultException e) {
+            System.out.println("No records in empleave table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxEmpLeaveId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+    
+    public int addEmpleaveRecord(EmpLeaveDTO leaverec) {
+        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Empleave rec = new Empleave();
+            rec.setId(Integer.valueOf(leaverec.getId()));
+            rec.setEmployeeid(Integer.parseInt(leaverec.getEmpid()));
+            rec.setComments(leaverec.getComments());
+
+            mysqlDate = formatter.parse(leaverec.getLeavedate());
+            rec.setLeavedate(mysqlDate);
+            leavedao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this empleave record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addEmpleaveRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+    
     public List<EmpExpDTO> getEmpActiveLoans() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
@@ -3050,46 +3089,8 @@ public class MasterDataServices {
 
     
 //    
-//    public int getMaxEmpLeaveId(){
-//        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
-//        try {
-//            return leavedao.getMaxEmpLeaveId();
-//        }
-//        catch (NoResultException e) {
-//            System.out.println("No records in empleave table");            
-//            return 0;
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getMaxEmpLeaveId().");
-//            //            return DB_SEVERE;
-//            return 0;
-//        }
-//    }
 
-//    public int addEmpleaveRecord(EmpLeaveDTO leaverec) {
-//        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
-//        Date mysqlDate;
-//        String pattern = "dd MMM yyyy";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            Empleave rec = new Empleave();
-//            rec.setId(Integer.valueOf(leaverec.getId()));
-//            rec.setEmployeeid(Integer.parseInt(leaverec.getEmpid()));
-//            rec.setComments(leaverec.getComments());
-//            
-//
-//            mysqlDate = formatter.parse(leaverec.getLeavedate());
-//            rec.setLeavedate(mysqlDate);
-//            leavedao.create(rec);
-//            return SUCCESS;
-//        } catch (PreexistingEntityException e) {
-//            System.out.println("Record is already there for this empleave record");
-//            return DB_DUPLICATE;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in addEmpleaveRecord.");
-//            return DB_SEVERE;
-//        }
-//    }
+
 
     
 }
