@@ -728,8 +728,24 @@ public class MasterDataServices {
             System.out.println(exception + " has occurred in editShopForRes(ShopResDTO shopres).");
             return DB_SEVERE;
         }
-    }
+    }  
     
+    
+    public int deleteShopResForResid(String resid) {
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
+        try {
+            int rowsDeleted = shopresdao.delForResid(Integer.parseInt(resid));
+            if (rowsDeleted > 0) {
+                return SUCCESS;
+            } else {
+                return DB_NON_EXISTING;
+            }
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in deleteShopResForResid(String resid).");
+            return DB_SEVERE;
+        }
+    }
+
     
     public int delResource(FarmresourceDTO res) {
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
@@ -2681,42 +2697,20 @@ public class MasterDataServices {
 
 
 //    public int deleteShopForRes(ShopResDTO shopres) {
-//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
 //        try {
 //            Shopresource record = new Shopresource();
 //            record.setId(Integer.valueOf(shopres.getId()));
 //            shopresdao.destroy(record.getId());
 //            return SUCCESS;
-//        }
-//        catch (NonexistentEntityException e) {
-//            System.out.println("Record for this ShopResource does not exist");            
+//        } catch (NonexistentEntityException e) {
+//            System.out.println("Record for this ShopResource does not exist");
 //            return DB_NON_EXISTING;
-//        }
-//        catch (Exception exception) {
+//        } catch (Exception exception) {
 //            System.out.println(exception + " has occurred in deleteShopForRes(ShopResDTO shopres).");
 //            return DB_SEVERE;
 //        }
 //    }
-//    
-//    public int deleteShopResForResid(String resid) {
-//        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
-//        try {
-//            int rowsDeleted = shopresdao.delForResid(Integer.parseInt(resid));
-//            if(rowsDeleted>0){
-//                return SUCCESS;
-//            } else {
-//                return DB_NON_EXISTING;
-//            }
-//        }
-//        catch (Exception exception) {
-//            System.out.println(exception + " has occurred in deleteShopResForResid(String resid).");
-//            return DB_SEVERE;
-//        }
-//    }
-//    
-
-
-
 
 //    public int editExpenseRecord(ExpenseDTO exrec) {
 //        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 

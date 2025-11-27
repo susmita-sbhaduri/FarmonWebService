@@ -89,7 +89,6 @@ public class ShopResDAO extends ShopresourceJpaController{
         try {
             myUtx.begin();
             em = getEntityManager();
-//            Query query = em.createQuery("DELETE FROM Shopresource s WHERE s.shopresourcePK.resourceid = :resourceid");
             Query query = em.createNamedQuery("Shopresource.delForResid");
             query.setParameter("resourceid", resid);
             rowsDeleted = query.executeUpdate();
