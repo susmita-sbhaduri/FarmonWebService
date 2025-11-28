@@ -847,6 +847,41 @@ public class MasterDataServices {
         }
     }
     
+    public List<ShopResDTO> getDistictShopResForResid(String resid) { // for EditResource.java
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+        List<ShopResDTO> recordList = new ArrayList<>();
+        ShopResDTO record = new ShopResDTO();
+       
+        try {  
+            List<Integer> shopreslist = shopresdao.getDistictShopResPerRes(Integer.parseInt(resid));
+            for (int i = 0; i < shopreslist.size(); i++) {
+                record.setId(null);
+                record.setShopId(String.valueOf(shopreslist.get(i)));
+                record.setResourceId(null);
+                record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i))).getShopName());
+                record.setResourceName(null);
+                record.setRate(null);              
+                record.setUnit(null);
+                record.setResAppId(null);
+                record.setAmtApplied(null);
+                record.setResRateDate(null);                
+                record.setStockPerRate(null);
+                recordList.add(record);
+                record = new ShopResDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No shopid for ShopResource records are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getDistictShopResForResid().");
+            return null;
+        }
+    }
+    
+    
     public int getMaxIdForResAquire(){
         ResAcquireDAO resourcedao = new ResAcquireDAO(utx, emf);
         try {
@@ -975,7 +1010,32 @@ public class MasterDataServices {
         }
     }
     
-
+    public List<ResAcquireDTO> getDistinctResAcqForResid() { // for MaintainResource.java
+        ResAcquireDAO resacqdao = new ResAcquireDAO(utx, emf);  
+        List<ResAcquireDTO> recordList = new ArrayList<>();
+        ResAcquireDTO record = new ResAcquireDTO();
+       
+        try {  
+            List<Integer> reslist = resacqdao.getDistictResAcqPerRes();
+            for (int i = 0; i < reslist.size(); i++) {
+                record.setAcquireId(null);
+                record.setResoureId(String.valueOf(reslist.get(i)));
+                record.setAmount(null);
+                record.setAcquireDate(null);
+                recordList.add(record);
+                record = new ResAcquireDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No resacquired(resid) records for resourceid are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getDistinctResAcqForResid().");
+            return null;
+        }
+    }
     
     public int addExpenseRecord(ExpenseDTO exrec) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf); 

@@ -60,4 +60,11 @@ public class ResAcquireDAO extends ResourceaquireJpaController{
         TypedQuery<Resourceaquire> query = em.createNamedQuery("Resourceaquire.allResAcquired", Resourceaquire.class);        
         return query.getResultList();
     }
+    
+    public List<Integer> getDistictResAcqPerRes() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Resourceaquire.disResAcqPerRes", Integer.class);
+        List<Integer> resids = query.getResultList();
+        return resids;
+    }
 }

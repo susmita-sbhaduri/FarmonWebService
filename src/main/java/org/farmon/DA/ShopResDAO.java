@@ -57,6 +57,14 @@ public class ShopResDAO extends ShopresourceJpaController{
         return shopids;
     }
     
+    public List<Integer> getDistictShopResPerRes(int id) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Shopresource.disShopResPerRes", Integer.class);
+        query.setParameter("resourceid", id);
+        List<Integer> shopids = query.getResultList();
+        return shopids;
+    }
+    
     public List<Shopresource> getShopResPerAppid(int appid, int resid) {
         EntityManager em = getEntityManager();
         TypedQuery<Shopresource> query = em.createNamedQuery("Shopresource.shopResPerAppid", Shopresource.class);

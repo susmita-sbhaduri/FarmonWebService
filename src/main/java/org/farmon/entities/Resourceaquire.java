@@ -27,7 +27,7 @@ import java.util.Date;
 @Table(name = "resourceaquire")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Resourceaquire.findAll", query = "SELECT r FROM Resourceaquire r"),
+    @NamedQuery(name = "Resourceaquire.findAll", query = "SELECT DISTINCT r.resourceid FROM Resourceaquire r WHERE r.resourceid = :resourceid"),
     @NamedQuery(name = "Resourceaquire.findByAquireid", query = "SELECT r FROM Resourceaquire r WHERE r.aquireid = :aquireid"),
     @NamedQuery(name = "Resourceaquire.findByResourceid", query = "SELECT r FROM Resourceaquire r WHERE r.resourceid = :resourceid"),
     @NamedQuery(name = "Resourceaquire.findByAquiredate", query = "SELECT r FROM Resourceaquire r WHERE r.aquiredate = :aquiredate"),

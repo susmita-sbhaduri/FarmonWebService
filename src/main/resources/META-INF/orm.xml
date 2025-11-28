@@ -44,7 +44,7 @@
         <query>SELECT c FROM Crop c WHERE c.siteid = :siteid</query>
     </named-query>
     <named-query name="Farmresource.listAll">
-        <query>SELECT f FROM Farmresource f</query>
+        <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>
     <named-query name="Farmresource.listNonzero">
         <query>SELECT f FROM Farmresource f WHERE f.availableamount > 0</query>
@@ -105,6 +105,9 @@
     <named-query name="Shopresource.shopResListPerRes">
         <query>SELECT s FROM Shopresource s WHERE s.resourceid = :resourceid</query>
     </named-query>
+    <named-query name="Shopresource.disShopResPerRes">
+        <query>SELECT DISTINCT s.shopid FROM Shopresource s WHERE s.resourceid = :resourceid</query>
+    </named-query>    
     <named-query name="Shopresource.shopResPerAppid">
         <query>SELECT s FROM Shopresource s WHERE s.resappid =:resappid AND s.resourceid =:resourceid</query>
     </named-query>
@@ -149,6 +152,9 @@
     </named-query>
     <named-query name="Resourceaquire.resAcqPerResid">
         <query>SELECT r FROM Resourceaquire r WHERE r.resourceid =:resourceid ORDER BY r.aquiredate ASC</query>
+    </named-query>
+    <named-query name="Resourceaquire.disResAcqPerRes">
+        <query>SELECT DISTINCT r.resourceid FROM Resourceaquire r</query>
     </named-query>
     <named-query name="Resourceaquire.recForAcqid">
         <query>SELECT r FROM Resourceaquire r WHERE r.aquireid = :aquireid</query>
