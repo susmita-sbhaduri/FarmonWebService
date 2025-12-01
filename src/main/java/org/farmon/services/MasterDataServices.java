@@ -625,12 +625,15 @@ public class MasterDataServices {
             recentity.setAvailableamount(BigDecimal.
                     valueOf(Double.parseDouble(res.getAvailableAmt())));
             recentity.setUnit(res.getUnit());
-            if (res.getCropweight() != null) {
-                recentity.setCropweight(BigDecimal.
-                        valueOf(Double.parseDouble(res.getCropweight())));
-            } else 
-                recentity.setCropweight(null);
-            recentity.setCropwtunit(res.getCropwtunit());
+//            if (res.getCropweight() != null) {
+//                recentity.setCropweight(BigDecimal.
+//                        valueOf(Double.parseDouble(res.getCropweight())));
+//            } else 
+//                recentity.setCropweight(null);
+//            recentity.setCropwtunit(res.getCropwtunit());
+            
+            recentity.setCropweight(null);
+            recentity.setCropwtunit(null);
             
             resourcedao.create(recentity);
             return SUCCESS;
@@ -1093,12 +1096,15 @@ public class MasterDataServices {
             recentity.setAvailableamount(BigDecimal.valueOf(Double.parseDouble
             (res.getAvailableAmt())));
             recentity.setUnit(res.getUnit());
-            if (res.getCropweight() != null) {
-                recentity.setCropweight(BigDecimal.
-                        valueOf(Double.parseDouble(res.getCropweight())));
-            } else 
-                recentity.setCropweight(null);
-            recentity.setCropwtunit(res.getCropwtunit());
+//            if (res.getCropweight() != null) {
+//                recentity.setCropweight(BigDecimal.
+//                        valueOf(Double.parseDouble(res.getCropweight())));
+//            } else 
+//                recentity.setCropweight(null);
+//            recentity.setCropwtunit(res.getCropwtunit());
+            
+            recentity.setCropweight(null);
+            recentity.setCropwtunit(null);
             resourcedao.edit(recentity);
             return SUCCESS;
         }
