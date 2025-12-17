@@ -19,6 +19,10 @@
     <named-query name="Empleave.getLeaveCount">
         <query>SELECT COUNT(e) FROM Empleave e WHERE e.employeeid =:employeeid</query>
     </named-query>
+    <named-query name="Empleave.leaveList">
+        <query>SELECT e FROM Empleave e ORDER BY e.employeeid</query>
+    </named-query>
+    
     <named-query name="Employee.activeList">
         <query>SELECT e FROM Employee e WHERE e.enddate IS NULL</query>
     </named-query>
@@ -27,6 +31,9 @@
     </named-query>
     <named-query name="Empexpense.loanList">
         <query>SELECT e FROM Empexpense e WHERE e.enddate IS NULL AND e.expcategory = 'LOAN'</query>
+    </named-query>
+    <named-query name="Empexpense.paidLoans">
+        <query>SELECT e FROM Empexpense e WHERE e.enddate IS NOT NULL AND e.expcategory = 'LOAN'</query>
     </named-query>
     <named-query name="Empexpense.paybackList">
         <query>SELECT e FROM Empexpense e WHERE e.employeeid =:employeeid AND e.exprefid =:refid AND e.expcategory = 'PAYBACK'</query>

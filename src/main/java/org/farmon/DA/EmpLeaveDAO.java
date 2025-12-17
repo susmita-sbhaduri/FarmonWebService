@@ -8,7 +8,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.util.List;
 import org.farmon.JPA.EmpleaveJpaController;
+import org.farmon.entities.Empleave;
 
 /**
  *
@@ -29,5 +31,11 @@ public class EmpLeaveDAO extends EmpleaveJpaController{
         TypedQuery<Long> query = em.createNamedQuery("Empleave.getLeaveCount", Long.class);   
         query.setParameter("employeeid", id);  
         return query.getSingleResult();
+    }
+    
+    public List<Empleave> getLeaveList() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Empleave> query = em.createNamedQuery("Empleave.leaveList", Empleave.class);
+        return query.getResultList();
     }
 }

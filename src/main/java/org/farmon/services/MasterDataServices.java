@@ -1932,14 +1932,41 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-
+    
+    public List<EmpLeaveDTO> getEmpleaveRecords() {
+        EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
+        List<EmpLeaveDTO> recordList = new ArrayList<>();
+        EmpLeaveDTO record = new EmpLeaveDTO();
+        Date mysqlDate;
+        String pattern = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Empleave> reclist = leavedao.getLeaveList();
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setId(String.valueOf(reclist.get(i).getId()));
+                record.setEmpid(String.valueOf(reclist.get(i).getEmployeeid()));
+                mysqlDate = reclist.get(i).getLeavedate();
+                record.setLeavedate(formatter.format(mysqlDate));
+                record.setComments(reclist.get(i).getComments());
+                recordList.add(record);
+                record = new EmpLeaveDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No employee leave records are found");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getEmpleaveRecords.");
+            return null;
+        }
+    }
     
     public List<EmpExpDTO> getEmpActiveLoans() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
         EmpExpDTO record = new EmpExpDTO();
         Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
+        String pattern = "dd MMM yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             List<Empexpense> reclist = empexpdao.getLoanList();
@@ -1969,13 +1996,55 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public List<EmpExpDTO> getEmpPaidLoans() {
+        EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
+        List<EmpExpDTO> recordList = new ArrayList<>();
+        EmpExpDTO record = new EmpExpDTO();
+        Date mysqlDate;
+        String pattern = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Empexpense> reclist = empexpdao.getPaidLoans();
+            for (int i = 0; i < reclist.size(); i++) {
+                record.setId(String.valueOf(reclist.get(i).getId()));
+                record.setEmpid(String.valueOf(reclist.get(i).getEmployeeid()));
+                record.setExpcategory(reclist.get(i).getExpcategory());
+                record.setTotal(String.format("%.2f", reclist.get(i).getTotalloan()));
+                record.setOutstanding(String.format("%.2f", reclist.get(i).getOutstanding()));
+                record.setEmprefid(String.valueOf(reclist.get(i).getExprefid()));
+                if (reclist.get(i).getStartdate() == null) {
+                    record.setSdate(null);
+                } else {
+                    mysqlDate = reclist.get(i).getStartdate();
+                    record.setSdate(formatter.format(mysqlDate));
+                }
+                if (reclist.get(i).getEnddate() == null) {
+                    record.setEdate(null);
+                } else {
+                    mysqlDate = reclist.get(i).getEnddate();
+                    record.setEdate(formatter.format(mysqlDate));
+                }
+//                record.setEdate(null);
+                recordList.add(record);
+                record = new EmpExpDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No employee loan records are found");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getEmpPaidLoans.");
+            return null;
+        }
+    }
 
     public List<EmpExpDTO> getPaybackList(String empid, String loanrefid) {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
         EmpExpDTO record = new EmpExpDTO();
         Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
+        String pattern = "dd MMM yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             List<Empexpense> reclist = empexpdao.getPaybkLst(Integer.parseInt(empid), Integer.parseInt(loanrefid));

@@ -686,6 +686,35 @@ public class WebServices {
         }
     }
     
+    @Path("empLeaves")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getEmpLeaves(String termDTOJSON) throws NamingException, ParseException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+
+        List<EmpLeaveDTO> empleaves = masterDataService.getEmpleaveRecords();
+        farmondto.setEmpleavelist(empleaves);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
     @Path("empActiveLoans")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -705,6 +734,35 @@ public class WebServices {
         MasterDataServices masterDataService = new MasterDataServices();
 
         List<EmpExpDTO> activeloans = masterDataService.getEmpActiveLoans();
+        farmondto.setEmpexplist(activeloans);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("empPaidLoans")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getPaidEmpLoans(String termDTOJSON) throws NamingException, ParseException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+
+        List<EmpExpDTO> activeloans = masterDataService.getEmpPaidLoans();
         farmondto.setEmpexplist(activeloans);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
