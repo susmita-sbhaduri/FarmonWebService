@@ -1945,6 +1945,8 @@ public class MasterDataServices {
             for (int i = 0; i < reclist.size(); i++) {
                 record.setId(String.valueOf(reclist.get(i).getId()));
                 record.setEmpid(String.valueOf(reclist.get(i).getEmployeeid()));
+                record.setEmpname(getEmpNameForId(String.valueOf(reclist.get(i).
+                        getEmployeeid())).getName());
                 mysqlDate = reclist.get(i).getLeavedate();
                 record.setLeavedate(formatter.format(mysqlDate));
                 record.setComments(reclist.get(i).getComments());

@@ -686,11 +686,11 @@ public class WebServices {
         }
     }
     
-    @Path("empLeaves")
+    @Path("empLeaveList")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String getEmpLeaves(String termDTOJSON) throws NamingException, ParseException {
+    public String getEmpLeaveList(String termDTOJSON) throws NamingException, ParseException {
         ObjectMapper objectMapper = new ObjectMapper();
         FarmonDTO farmondto;
         try {
