@@ -1356,9 +1356,11 @@ public class MasterDataServices {
         float totalcost = 0;
         try {
             List<Resourceaquire> reclist = acqresdao.getAllResAcquired();
-//            int lasti = reclist.size() - 1;
+            String unit;
             for (int i = 0; i < reclist.size(); i++) {
                 record.setResName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
+                unit = getResourceNameForId(reclist.get(i).getResourceid()).getUnit();
+                record.setUnit(unit);
                 record.setAcqAmt(String.format("%.2f", reclist.get(i).getAmount()));
                 String expenseCategory = "RES";
                 record.setCost(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
@@ -1377,6 +1379,7 @@ public class MasterDataServices {
                     totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
                              expenseCategory).getExpenditure());
                     record.setResName("Total");
+                    record.setUnit(unit);
                     record.setAcqDt("");
                     record.setAcqAmt(String.format("%.2f", amounttotal));
                     record.setCost(String.format("%.2f", totalcost));
@@ -1392,6 +1395,7 @@ public class MasterDataServices {
                         totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
                                 expenseCategory).getExpenditure());
                         record.setResName("Total");
+                        record.setUnit(unit);
                         record.setAcqDt("");
                         record.setAcqAmt(String.format("%.2f", amounttotal));
                         record.setCost(String.format("%.2f", totalcost));
