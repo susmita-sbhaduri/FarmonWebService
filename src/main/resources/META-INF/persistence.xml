@@ -23,5 +23,6 @@
     <class>org.farmon.entities.Shoprescrop</class>
     <class>org.farmon.entities.Taskplan</class>
     <class>org.farmon.entities.Empleave</class>
+    <class>org.farmon.entities.Sensor</class>
   </persistence-unit>
 </persistence>

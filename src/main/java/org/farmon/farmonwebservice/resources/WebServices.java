@@ -35,6 +35,7 @@ import org.farmon.farmondto.LabourCropDTO;
 import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
 import org.farmon.farmondto.ResourceCropDTO;
+import org.farmon.farmondto.SensorDTO;
 import org.farmon.farmondto.ShopDTO;
 import org.farmon.farmondto.ShopResDTO;
 import org.farmon.farmondto.TaskPlanDTO;
@@ -2172,6 +2173,39 @@ public class WebServices {
         } catch (JsonProcessingException ex) {
             Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
             return null;
+        }
+    }
+    
+    @Path("sensorLog")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON) // Changed to return JSON
+    public String receiveSensorData(String sensorJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SensorDTO sensorDTO;
+        FarmonDTO farmondto = new FarmonDTO();        
+        try {
+            // 1. Convert incoming JSON to SensorDTO
+            sensorDTO = objectMapper.readValue(sensorJSON, SensorDTO.class);
+            
+            // 2. Save to database using your service layer
+            MasterDataServices masterDataService = new MasterDataServices();
+            int addres = masterDataService.addSensorRecord(sensorDTO);
+            FarmonResponse farmonres = new FarmonResponse();
+            farmonres.setFarmon_ADD_RES(addres);
+            farmondto.setResponses(farmonres);            
+            
+        } catch (IOException ex) {
+            Logger.getLogger(WebServices.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");          
+        }
+        
+        // 4. Convert the generic DTO back to a JSON string and send it to the NodeMCU
+        try {
+            return objectMapper.writeValueAsString(farmondto.getResponses().getFarmon_ADD_RES());
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(WebServices.class.getName()).log(Level.SEVERE, null, ex);
+            return "{\"responseMsg\":\"CRITICAL_JSON_ERROR\"}";
         }
     }
 }

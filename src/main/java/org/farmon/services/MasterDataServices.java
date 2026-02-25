@@ -10,6 +10,8 @@ import jakarta.persistence.NoResultException;
 import jakarta.transaction.UserTransaction;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,6 +36,7 @@ import org.farmon.DA.ShopDAO;
 import org.farmon.DA.ShopResDAO;
 import org.farmon.DA.SiteDAO;
 import org.farmon.DA.TaskplanDAO;
+import org.farmon.DA.SensorDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
 
 
@@ -58,6 +61,7 @@ import org.farmon.farmondto.LabourCropDTO;
 import org.farmon.farmondto.AllExpenseReportDTO;
 import org.farmon.farmondto.EmployeeDTO;
 import org.farmon.farmondto.ResCropAllSummaryDTO;
+import org.farmon.farmondto.SensorDTO;
 
 import org.farmon.entities.Users;
 import org.farmon.entities.Crop;
@@ -82,6 +86,7 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+import org.farmon.entities.Sensor;
 
 
 
@@ -2453,6 +2458,43 @@ public class MasterDataServices {
         }
     }
     
+     public int addSensorRecord(SensorDTO sensorRec) {
+        SensorDAO sensordao = new SensorDAO(utx, emf);        
+        try {
+            Sensor rec = new Sensor();
+            int idsensor = getMaxSensorId()+1;
+            rec.setIdsensor(idsensor);
+            if(sensorRec.getBoardId()==3){
+               rec.setParameter("Temperature");               
+            }
+            rec.setData(BigDecimal.valueOf(sensorRec.getFirstData()));
+            LocalDateTime nowHrMin = LocalDateTime.now().withSecond(0).withNano(0);
+            Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
+            rec.setUpdatetime(dateForDatabase);
+            sensordao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Sensor record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addSensorRecord().");
+            return DB_SEVERE;
+        }
+    }
+    public int getMaxSensorId(){
+        SensorDAO sensordao = new SensorDAO(utx, emf);
+        try {
+            return sensordao.getMaxSenId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in Sensor table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxSensorId().");
+            return 0;
+        }
+    }
 
 //    public List<TaskPlanDTO> getTaskPlanListForDate(Date plandate) {
 //        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
