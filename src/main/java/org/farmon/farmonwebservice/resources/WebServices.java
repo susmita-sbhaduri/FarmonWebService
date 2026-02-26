@@ -36,6 +36,7 @@ import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
 import org.farmon.farmondto.ResourceCropDTO;
 import org.farmon.farmondto.SensorDTO;
+import org.farmon.farmondto.SensorDbDTO;
 import org.farmon.farmondto.ShopDTO;
 import org.farmon.farmondto.ShopResDTO;
 import org.farmon.farmondto.TaskPlanDTO;
@@ -2160,8 +2161,7 @@ public class WebServices {
         } catch (IOException ex) {
             Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
             farmondto = new FarmonDTO();
-            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
-//            userdto.setResponseCode(HedwigResponseCode.JSON_FORMAT_PROBLEM);            
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");            
         }
         MasterDataServices masterDataService = new MasterDataServices();
         TaskPlanDTO taskplandto = masterDataService.getTaskPlanForId(farmondto.
@@ -2183,7 +2183,8 @@ public class WebServices {
     public String receiveSensorData(String sensorJSON) throws NamingException {
         ObjectMapper objectMapper = new ObjectMapper();
         SensorDTO sensorDTO;
-        FarmonDTO farmondto = new FarmonDTO();        
+        FarmonDTO farmondto = new FarmonDTO();  
+        farmondto.setUserDto(new UserDTO());
         try {
             // 1. Convert incoming JSON to SensorDTO
             sensorDTO = objectMapper.readValue(sensorJSON, SensorDTO.class);
@@ -2197,7 +2198,10 @@ public class WebServices {
             
         } catch (IOException ex) {
             Logger.getLogger(WebServices.class.getName()).log(Level.SEVERE, null, ex);
-            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");          
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");  
+            FarmonResponse errRes = new FarmonResponse();
+            errRes.setFarmon_ADD_RES(-1); 
+            farmondto.setResponses(errRes);
         }
         
         // 4. Convert the generic DTO back to a JSON string and send it to the NodeMCU
@@ -2206,6 +2210,34 @@ public class WebServices {
         } catch (JsonProcessingException ex) {
             Logger.getLogger(WebServices.class.getName()).log(Level.SEVERE, null, ex);
             return "{\"responseMsg\":\"CRITICAL_JSON_ERROR\"}";
+        }
+    }
+    
+    @Path("sensorDataList")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getSensorDataList(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {            
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.setUserDto(new UserDTO());
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+        }    
+        MasterDataServices masterDataService = new MasterDataServices();
+        List<SensorDbDTO> sensordatalist = masterDataService.getSensorDataList();
+        farmondto.setSensordatalist(sensordatalist);            
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
     }
 }

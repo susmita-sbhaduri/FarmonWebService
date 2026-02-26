@@ -245,6 +245,9 @@
     <named-query name="Sensor.getMaxSenId">
         <query>SELECT MAX(s.idsensor) FROM Sensor s</query>
     </named-query>
+    <named-query name="Sensor.listAll">
+        <query>SELECT s FROM Sensor s ORDER BY s.parameter</query>
+    </named-query>
 
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 

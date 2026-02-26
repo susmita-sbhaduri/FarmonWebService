@@ -87,6 +87,7 @@ import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.entities.Sensor;
+import org.farmon.farmondto.SensorDbDTO;
 
 
 
@@ -2462,16 +2463,23 @@ public class MasterDataServices {
         SensorDAO sensordao = new SensorDAO(utx, emf);        
         try {
             Sensor rec = new Sensor();
-            int idsensor = getMaxSensorId()+1;
-            rec.setIdsensor(idsensor);
-            if(sensorRec.getBoardId()==3){
-               rec.setParameter("Temperature");               
+            int idsensor = getMaxSensorId()+1;            
+            if (sensorRec.getBoardId() == 1) {
+                rec.setIdsensor(idsensor);
+                rec.setParameter("Temperature(DegC)");
+                rec.setData(BigDecimal.valueOf(sensorRec.getFirstData()));
+                LocalDateTime nowHrMin = LocalDateTime.now().withSecond(0).withNano(0);
+                Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
+                rec.setUpdatetime(dateForDatabase);
+                sensordao.create(rec);
+                rec = new Sensor();
+                idsensor = idsensor +1;
+                rec.setIdsensor(idsensor);
+                rec.setParameter("Relative Humidity(%)");
+                rec.setData(BigDecimal.valueOf(sensorRec.getSecData()));
+                rec.setUpdatetime(dateForDatabase);
+                sensordao.create(rec);                
             }
-            rec.setData(BigDecimal.valueOf(sensorRec.getFirstData()));
-            LocalDateTime nowHrMin = LocalDateTime.now().withSecond(0).withNano(0);
-            Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
-            rec.setUpdatetime(dateForDatabase);
-            sensordao.create(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
             System.out.println("Record is already there for this Sensor record");
@@ -2493,6 +2501,36 @@ public class MasterDataServices {
         catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxSensorId().");
             return 0;
+        }
+    }
+    
+    public List<SensorDbDTO> getSensorDataList() {
+        SensorDAO sensordao = new SensorDAO(utx, emf);        
+        SensorDbDTO record = new SensorDbDTO();
+        List<SensorDbDTO> recordList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MMM-dd HH:mm");
+        String formattedDate;
+        try {  
+            List<Sensor> sensordata = sensordao.getAllSensorData();
+            for (int i = 0; i < sensordata.size(); i++) {
+                record.setIdsensor(Integer.toString(sensordata.get(i).getIdsensor()));
+                record.setParameter(sensordata.get(i).getParameter());
+                record.setData(String.format("%.2f",sensordata.get(i).getData().floatValue()));
+                Date dbDate = sensordata.get(i).getUpdatetime();
+                formattedDate = sdf.format(dbDate);
+                record.setUpdatetime(formattedDate);
+                recordList.add(record);
+                record = new SensorDbDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No sensor data are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getSensorDataList().");
+            return null;
         }
     }
 

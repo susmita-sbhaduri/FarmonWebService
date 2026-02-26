@@ -8,7 +8,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.util.List;
 import org.farmon.JPA.SensorJpaController;
+import org.farmon.entities.Sensor;
 
 /**
  *
@@ -22,5 +24,12 @@ public class SensorDAO extends SensorJpaController{
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Sensor.getMaxSenId", Integer.class);        
         return query.getSingleResult();
+    }
+    
+    public List<Sensor> getAllSensorData() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Sensor> query = em.createNamedQuery("Sensor.listAll", Sensor.class);            
+        List<Sensor> listofdata = query.getResultList();
+        return listofdata;
     }
 }
