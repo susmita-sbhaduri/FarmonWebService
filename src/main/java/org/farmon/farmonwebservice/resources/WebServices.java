@@ -36,7 +36,7 @@ import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
 import org.farmon.farmondto.ResourceCropDTO;
 import org.farmon.farmondto.SensorDTO;
-import org.farmon.farmondto.SensorDbDTO;
+import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.ShopDTO;
 import org.farmon.farmondto.ShopResDTO;
 import org.farmon.farmondto.TaskPlanDTO;
@@ -2191,7 +2191,7 @@ public class WebServices {
             
             // 2. Save to database using your service layer
             MasterDataServices masterDataService = new MasterDataServices();
-            int addres = masterDataService.addSensorRecord(sensorDTO);
+            int addres = masterDataService.addSensorDataRecord(sensorDTO);
             FarmonResponse farmonres = new FarmonResponse();
             farmonres.setFarmon_ADD_RES(addres);
             farmondto.setResponses(farmonres);            
@@ -2230,7 +2230,7 @@ public class WebServices {
             farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
         }    
         MasterDataServices masterDataService = new MasterDataServices();
-        List<SensorDbDTO> sensordatalist = masterDataService.getSensorDataList();
+        List<SensorDataDTO> sensordatalist = masterDataService.getSensorDataList();
         farmondto.setSensordatalist(sensordatalist);            
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);

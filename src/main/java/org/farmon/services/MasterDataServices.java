@@ -36,7 +36,8 @@ import org.farmon.DA.ShopDAO;
 import org.farmon.DA.ShopResDAO;
 import org.farmon.DA.SiteDAO;
 import org.farmon.DA.TaskplanDAO;
-import org.farmon.DA.SensorDAO;
+import org.farmon.DA.SensorDataDAO;
+import org.farmon.DA.SensorDtlsDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
 
 
@@ -86,8 +87,11 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
-import org.farmon.entities.Sensor;
-import org.farmon.farmondto.SensorDbDTO;
+
+import org.farmon.entities.Sensordata;
+import org.farmon.entities.Sensordetail;
+import org.farmon.farmondto.SensorDataDTO;
+import org.farmon.farmondto.SensordtlsDTO;
 
 
 
@@ -2459,68 +2463,61 @@ public class MasterDataServices {
         }
     }
     
-     public int addSensorRecord(SensorDTO sensorRec) {
-        SensorDAO sensordao = new SensorDAO(utx, emf);        
+     public int addSensorDataRecord(SensorDTO sensorRec) {
+        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
         try {
-            Sensor rec = new Sensor();
-            int idsensor = getMaxSensorId()+1;            
-            if (sensorRec.getBoardId() == 1) {
-                rec.setIdsensor(idsensor);
-                rec.setParameter("Temperature(DegC)");
-                rec.setData(BigDecimal.valueOf(sensorRec.getFirstData()));
-                LocalDateTime nowHrMin = LocalDateTime.now().withSecond(0).withNano(0);
-                Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
-                rec.setUpdatetime(dateForDatabase);
-                sensordao.create(rec);
-                rec = new Sensor();
-                idsensor = idsensor +1;
-                rec.setIdsensor(idsensor);
-                rec.setParameter("Relative Humidity(%)");
-                rec.setData(BigDecimal.valueOf(sensorRec.getSecData()));
-                rec.setUpdatetime(dateForDatabase);
-                sensordao.create(rec);                
-            }
+            Sensordata rec = new Sensordata();
+            int idsensordata = getMaxSensDataId()+1; 
+            rec.setId(idsensordata);
+            rec.setSensorid(Integer.toString(sensorRec.getBoardId()));
+            rec.setData(BigDecimal.valueOf(sensorRec.getData()));
+            LocalDateTime nowHrMin = LocalDateTime.now().withSecond(0).withNano(0);
+            Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
+            rec.setUpdatetime(dateForDatabase);
+            sensordao.create(rec);
+            
             return SUCCESS;
         } catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this Sensor record");
+            System.out.println("Record is already there for this Sensordata record");
             return DB_DUPLICATE;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in addSensorRecord().");
+            System.out.println(exception + " has occurred in addSensorDataRecord().");
             return DB_SEVERE;
         }
     }
-    public int getMaxSensorId(){
-        SensorDAO sensordao = new SensorDAO(utx, emf);
+    public int getMaxSensDataId(){
+        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
             return sensordao.getMaxSenId();
         }
         catch (NoResultException e) {
-            System.out.println("No records in Sensor table");            
+            System.out.println("No records in Sensordata table");            
             return 0;
         }
         catch (Exception exception) {
-            System.out.println(exception + " has occurred in getMaxSensorId().");
+            System.out.println(exception + " has occurred in getMaxSensDataId().");
             return 0;
         }
     }
     
-    public List<SensorDbDTO> getSensorDataList() {
-        SensorDAO sensordao = new SensorDAO(utx, emf);        
-        SensorDbDTO record = new SensorDbDTO();
-        List<SensorDbDTO> recordList = new ArrayList<>();
+    public List<SensorDataDTO> getSensorDataList() {
+        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
+        SensorDataDTO record = new SensorDataDTO();
+        List<SensorDataDTO> recordList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MMM-dd HH:mm");
         String formattedDate;
         try {  
-            List<Sensor> sensordata = sensordao.getAllSensorData();
+            List<Sensordata> sensordata = sensordao.getAllSensorData();
             for (int i = 0; i < sensordata.size(); i++) {
-                record.setIdsensor(Integer.toString(sensordata.get(i).getIdsensor()));
-                record.setParameter(sensordata.get(i).getParameter());
+                record.setId(Integer.toString(sensordata.get(i).getId()));
+                record.setIdsensor(getSendtlsForId
+                                  (sensordata.get(i).getSensorid()).getParameter());
                 record.setData(String.format("%.2f",sensordata.get(i).getData().floatValue()));
                 Date dbDate = sensordata.get(i).getUpdatetime();
                 formattedDate = sdf.format(dbDate);
                 record.setUpdatetime(formattedDate);
                 recordList.add(record);
-                record = new SensorDbDTO();
+                record = new SensorDataDTO();
             }        
             return recordList;
         }
@@ -2530,6 +2527,27 @@ public class MasterDataServices {
         }
         catch (Exception exception) {
             System.out.println(exception + " has occurred in getSensorDataList().");
+            return null;
+        }
+    }
+    
+    public SensordtlsDTO getSendtlsForId(String id) {
+        SensorDtlsDAO sensordao = new SensorDtlsDAO(utx, emf);        
+        SensordtlsDTO record = new SensordtlsDTO(); 
+        
+        try {  
+            Sensordetail sensorec = sensordao.getParamName(Integer.parseInt(id));
+            record.setId(id);
+            record.setIdsensor(sensorec.getSensorid());
+            record.setParameter(sensorec.getParameter());
+            return record;
+        }
+        catch (NoResultException e) {
+            System.out.println("No sensor found for this id");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getSendtlsForId.");
             return null;
         }
     }

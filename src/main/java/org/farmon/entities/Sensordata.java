@@ -25,25 +25,25 @@ import java.util.Date;
  * @author sb
  */
 @Entity
-@Table(name = "sensor")
+@Table(name = "sensordata")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Sensor.findAll", query = "SELECT s FROM Sensor s"),
-    @NamedQuery(name = "Sensor.findByIdsensor", query = "SELECT s FROM Sensor s WHERE s.idsensor = :idsensor"),
-    @NamedQuery(name = "Sensor.findByParameter", query = "SELECT s FROM Sensor s WHERE s.parameter = :parameter"),
-    @NamedQuery(name = "Sensor.findByData", query = "SELECT s FROM Sensor s WHERE s.data = :data"),
-    @NamedQuery(name = "Sensor.findByUpdatetime", query = "SELECT s FROM Sensor s WHERE s.updatetime = :updatetime")})
-public class Sensor implements Serializable {
+    @NamedQuery(name = "Sensordata.findAll", query = "SELECT s FROM Sensordata s"),
+    @NamedQuery(name = "Sensordata.findById", query = "SELECT s FROM Sensordata s WHERE s.id = :id"),
+    @NamedQuery(name = "Sensordata.findBySensorid", query = "SELECT s FROM Sensordata s WHERE s.sensorid = :sensorid"),
+    @NamedQuery(name = "Sensordata.findByData", query = "SELECT s FROM Sensordata s WHERE s.data = :data"),
+    @NamedQuery(name = "Sensordata.findByUpdatetime", query = "SELECT s FROM Sensordata s WHERE s.updatetime = :updatetime")})
+public class Sensordata implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
-    @Column(name = "idsensor")
-    private Integer idsensor;
-    @Size(max = 100)
-    @Column(name = "parameter")
-    private String parameter;
+    @Column(name = "id")
+    private Integer id;
+    @Size(max = 50)
+    @Column(name = "sensorid")
+    private String sensorid;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "data")
     private BigDecimal data;
@@ -51,27 +51,27 @@ public class Sensor implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatetime;
 
-    public Sensor() {
+    public Sensordata() {
     }
 
-    public Sensor(Integer idsensor) {
-        this.idsensor = idsensor;
+    public Sensordata(Integer id) {
+        this.id = id;
     }
 
-    public Integer getIdsensor() {
-        return idsensor;
+    public Integer getId() {
+        return id;
     }
 
-    public void setIdsensor(Integer idsensor) {
-        this.idsensor = idsensor;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getParameter() {
-        return parameter;
+    public String getSensorid() {
+        return sensorid;
     }
 
-    public void setParameter(String parameter) {
-        this.parameter = parameter;
+    public void setSensorid(String sensorid) {
+        this.sensorid = sensorid;
     }
 
     public BigDecimal getData() {
@@ -93,18 +93,18 @@ public class Sensor implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (idsensor != null ? idsensor.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Sensor)) {
+        if (!(object instanceof Sensordata)) {
             return false;
         }
-        Sensor other = (Sensor) object;
-        if ((this.idsensor == null && other.idsensor != null) || (this.idsensor != null && !this.idsensor.equals(other.idsensor))) {
+        Sensordata other = (Sensordata) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -112,7 +112,7 @@ public class Sensor implements Serializable {
 
     @Override
     public String toString() {
-        return "org.farmon.entities.Sensor[ idsensor=" + idsensor + " ]";
+        return "org.farmon.entities.Sensordata[ id=" + id + " ]";
     }
     
 }

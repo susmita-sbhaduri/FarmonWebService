@@ -16,15 +16,15 @@ import java.util.List;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.JPA.exceptions.RollbackFailureException;
-import org.farmon.entities.Sensor;
+import org.farmon.entities.Sensordetail;
 
 /**
  *
  * @author sb
  */
-public class SensorJpaController implements Serializable {
+public class SensordetailJpaController implements Serializable {
 
-    public SensorJpaController(UserTransaction utx, EntityManagerFactory emf) {
+    public SensordetailJpaController(UserTransaction utx, EntityManagerFactory emf) {
         this.utx = utx;
         this.emf = emf;
     }
@@ -35,12 +35,12 @@ public class SensorJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Sensor sensor) throws PreexistingEntityException, RollbackFailureException, Exception {
+    public void create(Sensordetail sensordetail) throws PreexistingEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            em.persist(sensor);
+            em.persist(sensordetail);
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -48,8 +48,8 @@ public class SensorJpaController implements Serializable {
             } catch (Exception re) {
                 throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
             }
-            if (findSensor(sensor.getIdsensor()) != null) {
-                throw new PreexistingEntityException("Sensor " + sensor + " already exists.", ex);
+            if (findSensordetail(sensordetail.getId()) != null) {
+                throw new PreexistingEntityException("Sensordetail " + sensordetail + " already exists.", ex);
             }
             throw ex;
         } finally {
@@ -59,12 +59,12 @@ public class SensorJpaController implements Serializable {
         }
     }
 
-    public void edit(Sensor sensor) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Sensordetail sensordetail) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            sensor = em.merge(sensor);
+            sensordetail = em.merge(sensordetail);
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -74,9 +74,9 @@ public class SensorJpaController implements Serializable {
             }
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                Integer id = sensor.getIdsensor();
-                if (findSensor(id) == null) {
-                    throw new NonexistentEntityException("The sensor with id " + id + " no longer exists.");
+                Integer id = sensordetail.getId();
+                if (findSensordetail(id) == null) {
+                    throw new NonexistentEntityException("The sensordetail with id " + id + " no longer exists.");
                 }
             }
             throw ex;
@@ -92,14 +92,14 @@ public class SensorJpaController implements Serializable {
         try {
             utx.begin();
             em = getEntityManager();
-            Sensor sensor;
+            Sensordetail sensordetail;
             try {
-                sensor = em.getReference(Sensor.class, id);
-                sensor.getIdsensor();
+                sensordetail = em.getReference(Sensordetail.class, id);
+                sensordetail.getId();
             } catch (EntityNotFoundException enfe) {
-                throw new NonexistentEntityException("The sensor with id " + id + " no longer exists.", enfe);
+                throw new NonexistentEntityException("The sensordetail with id " + id + " no longer exists.", enfe);
             }
-            em.remove(sensor);
+            em.remove(sensordetail);
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -115,19 +115,19 @@ public class SensorJpaController implements Serializable {
         }
     }
 
-    public List<Sensor> findSensorEntities() {
-        return findSensorEntities(true, -1, -1);
+    public List<Sensordetail> findSensordetailEntities() {
+        return findSensordetailEntities(true, -1, -1);
     }
 
-    public List<Sensor> findSensorEntities(int maxResults, int firstResult) {
-        return findSensorEntities(false, maxResults, firstResult);
+    public List<Sensordetail> findSensordetailEntities(int maxResults, int firstResult) {
+        return findSensordetailEntities(false, maxResults, firstResult);
     }
 
-    private List<Sensor> findSensorEntities(boolean all, int maxResults, int firstResult) {
+    private List<Sensordetail> findSensordetailEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Sensor.class));
+            cq.select(cq.from(Sensordetail.class));
             Query q = em.createQuery(cq);
             if (!all) {
                 q.setMaxResults(maxResults);
@@ -139,20 +139,20 @@ public class SensorJpaController implements Serializable {
         }
     }
 
-    public Sensor findSensor(Integer id) {
+    public Sensordetail findSensordetail(Integer id) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(Sensor.class, id);
+            return em.find(Sensordetail.class, id);
         } finally {
             em.close();
         }
     }
 
-    public int getSensorCount() {
+    public int getSensordetailCount() {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Sensor> rt = cq.from(Sensor.class);
+            Root<Sensordetail> rt = cq.from(Sensordetail.class);
             cq.select(em.getCriteriaBuilder().count(rt));
             Query q = em.createQuery(cq);
             return ((Long) q.getSingleResult()).intValue();

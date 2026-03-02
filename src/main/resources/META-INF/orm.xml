@@ -242,13 +242,15 @@
             AND t.taskdate &lt;= :enddate ORDER BY t.taskdate DESC
         </query>
     </named-query>
-    <named-query name="Sensor.getMaxSenId">
-        <query>SELECT MAX(s.idsensor) FROM Sensor s</query>
+    <named-query name="Sensordata.getMaxId">
+        <query>SELECT MAX(s.id) FROM Sensordata s</query>
     </named-query>
-    <named-query name="Sensor.listAll">
-        <query>SELECT s FROM Sensor s ORDER BY s.parameter</query>
+    <named-query name="Sensordata.listAll">
+        <query>SELECT s FROM Sensordata s ORDER BY s.sensorid</query>
     </named-query>
-
+    <named-query name="Sensordetail.paramForId">
+        <query>SELECT s FROM Sensordetail s WHERE s.id = :id</query>
+    </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 
         result-set-mapping="RescropSummaryMapping">
