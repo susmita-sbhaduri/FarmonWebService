@@ -1050,6 +1050,40 @@ public class MasterDataServices {
         }
     }
     
+    public List<ShopResDTO> getDistinctShopForResid() { // for MaintainShop.java
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+        List<ShopResDTO> recordList = new ArrayList<>();
+        ShopResDTO record = new ShopResDTO();
+       
+        try {  
+            List<Integer> shoplist = shopresdao.getDistictShopForRes();
+            for (int i = 0; i < shoplist.size(); i++) {
+                record.setId(null);
+                record.setShopId(String.valueOf(shoplist.get(i)));
+                record.setResourceId(null);
+                record.setShopName(null);
+                record.setResourceName(null);
+                record.setRate(null);              
+                record.setUnit(null);
+                record.setResAppId(null);
+                record.setAmtApplied(null);
+                record.setResRateDate(null);                
+                record.setStockPerRate(null);
+                recordList.add(record);
+                record = new ShopResDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No shopres records with distict shopids are found");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getDistinctShopForResid().");
+            return null;
+        }
+    }
+    
     public int addExpenseRecord(ExpenseDTO exrec) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
         Date mysqlDate;

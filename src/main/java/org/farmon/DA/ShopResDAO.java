@@ -91,6 +91,13 @@ public class ShopResDAO extends ShopresourceJpaController{
         return query.getSingleResult();
     }
     
+    public List<Integer> getDistictShopForRes() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Shopresource.disShopShopRes", Integer.class);
+        List<Integer> shopids = query.getResultList();
+        return shopids;
+    }
+    
     public int delForResid(int resid) throws Exception {
         EntityManager em = null;
         int rowsDeleted = 0;

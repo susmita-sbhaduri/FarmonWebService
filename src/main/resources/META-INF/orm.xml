@@ -127,6 +127,9 @@
     <named-query name="Shopresource.getMaxId">
         <query>SELECT MAX(s.id) FROM Shopresource s</query>
     </named-query>
+    <named-query name="Shopresource.disShopShopRes">
+        <query>SELECT DISTINCT s.shopid FROM Shopresource s</query>
+    </named-query>
     <named-query name="Shoprescrop.getMaxId">
         <query>SELECT MAX(s.id) FROM Shoprescrop s</query>
     </named-query>
@@ -163,6 +166,7 @@
     <named-query name="Resourceaquire.disResAcqPerRes">
         <query>SELECT DISTINCT r.resourceid FROM Resourceaquire r</query>
     </named-query>
+    
     <named-query name="Resourceaquire.recForAcqid">
         <query>SELECT r FROM Resourceaquire r WHERE r.aquireid = :aquireid</query>
     </named-query>    
