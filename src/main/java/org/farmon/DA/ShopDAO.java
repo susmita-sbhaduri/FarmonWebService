@@ -34,4 +34,10 @@ public class ShopDAO extends ShopJpaController{
         List<Shop> listofshop = query.getResultList();
         return listofshop;
     }
+    
+    public int getMaxShopId() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Shop.getMaxShopId", Integer.class);        
+        return query.getSingleResult();
+    }
 }

@@ -2158,6 +2158,59 @@ public class MasterDataServices {
         }
     }
     
+    public int getMaxShopId() {
+        ShopDAO shopdao = new ShopDAO(utx, emf);
+        try {
+            return shopdao.getMaxShopId();
+        } catch (NoResultException e) {
+            System.out.println("No records in Shop table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxShopId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+    
+    public int addShopRecord(ShopDTO shoprec) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        try {
+            Shop rec = new Shop();
+            rec.setShopid(Integer.valueOf(shoprec.getShopId()));
+            rec.setShopname(shoprec.getShopName());
+            rec.setLocation(shoprec.getLocation());
+            rec.setContact(shoprec.getContact());
+            rec.setAvailabilitytime(shoprec.getAvailabilityTime());
+            shopdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Shop record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addShopRecord.");
+            return DB_SEVERE;
+        }
+    }
+    public int editShopRecord(ShopDTO shoprec) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);
+        
+        try {
+            Shop rec = new Shop();
+            rec.setShopid(Integer.valueOf(shoprec.getShopId()));
+            rec.setShopname(shoprec.getShopName());
+            rec.setLocation(shoprec.getLocation());
+            rec.setContact(shoprec.getContact());
+            rec.setAvailabilitytime(shoprec.getAvailabilityTime());
+            shopdao.edit(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("This Shop record to be edited, does not exist ");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editShopRecord.");
+            return DB_SEVERE;
+        }
+    }
     
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {

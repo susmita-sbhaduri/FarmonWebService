@@ -148,6 +148,9 @@
     <named-query name="Shop.allShops">
         <query>SELECT s FROM Shop s</query>
     </named-query>
+    <named-query name="Shop.getMaxShopId">
+        <query>SELECT MAX(s.shopid) FROM Shop s</query>
+    </named-query>
     <named-query name="Farmresource.resNameForId">
         <query>SELECT f FROM Farmresource f WHERE f.resourceid = :resourceid</query>
     </named-query>
