@@ -2212,6 +2212,24 @@ public class MasterDataServices {
         }
     }
     
+    public int delShop(ShopDTO shopres) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);                
+        try {
+            Shop shopentity = new Shop();
+            shopentity.setShopid(Integer.valueOf(shopres.getShopId())); 
+            shopdao.destroy(shopentity.getShopid());
+            return SUCCESS;
+        }
+        catch (NonexistentEntityException e) {
+            System.out.println("Record for this Shop does not exist");            
+            return DB_NON_EXISTING;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in delShop.");
+            return DB_SEVERE;
+        }
+    }
+    
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
 //        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
