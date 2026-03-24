@@ -11,10 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -26,10 +30,11 @@ import java.io.Serializable;
 @NamedQueries({
     @NamedQuery(name = "Crop.findAll", query = "SELECT c FROM Crop c"),
     @NamedQuery(name = "Crop.findByCropid", query = "SELECT c FROM Crop c WHERE c.cropid = :cropid"),
-    @NamedQuery(name = "Crop.findByCropcategory", query = "SELECT c FROM Crop c WHERE c.cropcategory = :cropcategory"),
-    @NamedQuery(name = "Crop.findByCrop", query = "SELECT c FROM Crop c WHERE c.crop = :crop"),
-    @NamedQuery(name = "Crop.findBySiteid", query = "SELECT c FROM Crop c WHERE c.siteid = :siteid"),
-    @NamedQuery(name = "Crop.findByDetails", query = "SELECT c FROM Crop c WHERE c.details = :details")})
+    @NamedQuery(name = "Crop.findByCropname", query = "SELECT c FROM Crop c WHERE c.cropname = :cropname"),
+    @NamedQuery(name = "Crop.findByTotalstock", query = "SELECT c FROM Crop c WHERE c.totalstock = :totalstock"),
+    @NamedQuery(name = "Crop.findByUnit", query = "SELECT c FROM Crop c WHERE c.unit = :unit"),
+    @NamedQuery(name = "Crop.findByStartdate", query = "SELECT c FROM Crop c WHERE c.startdate = :startdate"),
+    @NamedQuery(name = "Crop.findByEnddate", query = "SELECT c FROM Crop c WHERE c.enddate = :enddate")})
 public class Crop implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -38,33 +43,27 @@ public class Crop implements Serializable {
     @NotNull
     @Column(name = "cropid")
     private Integer cropid;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 100)
-    @Column(name = "cropcategory")
-    private String cropcategory;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
-    @Column(name = "crop")
-    private String crop;
-    @Column(name = "siteid")
-    private Integer siteid;
-    @Size(max = 45)
-    @Column(name = "details")
-    private String details;
+    @Size(max = 100)
+    @Column(name = "cropname")
+    private String cropname;
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    @Column(name = "totalstock")
+    private BigDecimal totalstock;
+    @Size(max = 50)
+    @Column(name = "unit")
+    private String unit;
+    @Column(name = "startdate")
+    @Temporal(TemporalType.DATE)
+    private Date startdate;
+    @Column(name = "enddate")
+    @Temporal(TemporalType.DATE)
+    private Date enddate;
 
     public Crop() {
     }
 
     public Crop(Integer cropid) {
         this.cropid = cropid;
-    }
-
-    public Crop(Integer cropid, String cropcategory, String crop) {
-        this.cropid = cropid;
-        this.cropcategory = cropcategory;
-        this.crop = crop;
     }
 
     public Integer getCropid() {
@@ -75,36 +74,44 @@ public class Crop implements Serializable {
         this.cropid = cropid;
     }
 
-    public String getCropcategory() {
-        return cropcategory;
+    public String getCropname() {
+        return cropname;
     }
 
-    public void setCropcategory(String cropcategory) {
-        this.cropcategory = cropcategory;
+    public void setCropname(String cropname) {
+        this.cropname = cropname;
     }
 
-    public String getCrop() {
-        return crop;
+    public BigDecimal getTotalstock() {
+        return totalstock;
     }
 
-    public void setCrop(String crop) {
-        this.crop = crop;
+    public void setTotalstock(BigDecimal totalstock) {
+        this.totalstock = totalstock;
     }
 
-    public Integer getSiteid() {
-        return siteid;
+    public String getUnit() {
+        return unit;
     }
 
-    public void setSiteid(Integer siteid) {
-        this.siteid = siteid;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
-    public String getDetails() {
-        return details;
+    public Date getStartdate() {
+        return startdate;
     }
 
-    public void setDetails(String details) {
-        this.details = details;
+    public void setStartdate(Date startdate) {
+        this.startdate = startdate;
+    }
+
+    public Date getEnddate() {
+        return enddate;
+    }
+
+    public void setEnddate(Date enddate) {
+        this.enddate = enddate;
     }
 
     @Override

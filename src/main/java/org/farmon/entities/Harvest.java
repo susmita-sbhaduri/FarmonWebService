@@ -31,7 +31,7 @@ import java.util.Date;
     @NamedQuery(name = "Harvest.findAll", query = "SELECT h FROM Harvest h"),
     @NamedQuery(name = "Harvest.findByHarvestid", query = "SELECT h FROM Harvest h WHERE h.harvestid = :harvestid"),
     @NamedQuery(name = "Harvest.findBySiteid", query = "SELECT h FROM Harvest h WHERE h.siteid = :siteid"),
-    @NamedQuery(name = "Harvest.findByCropid", query = "SELECT h FROM Harvest h WHERE h.cropid = :cropid"),
+    @NamedQuery(name = "Harvest.findByHarvestname", query = "SELECT h FROM Harvest h WHERE h.harvestname = :harvestname"),
     @NamedQuery(name = "Harvest.findBySowingdt", query = "SELECT h FROM Harvest h WHERE h.sowingdt = :sowingdt"),
     @NamedQuery(name = "Harvest.findByHarvestingdt", query = "SELECT h FROM Harvest h WHERE h.harvestingdt = :harvestingdt")})
 public class Harvest implements Serializable {
@@ -48,8 +48,9 @@ public class Harvest implements Serializable {
     private int siteid;
     @Basic(optional = false)
     @NotNull
-    @Column(name = "cropid")
-    private int cropid;
+    @Size(min = 1, max = 100)
+    @Column(name = "harvestname")
+    private String harvestname;
     @Basic(optional = false)
     @NotNull
     @Column(name = "sowingdt")
@@ -70,10 +71,10 @@ public class Harvest implements Serializable {
         this.harvestid = harvestid;
     }
 
-    public Harvest(Integer harvestid, int siteid, int cropid, Date sowingdt) {
+    public Harvest(Integer harvestid, int siteid, String harvestname, Date sowingdt) {
         this.harvestid = harvestid;
         this.siteid = siteid;
-        this.cropid = cropid;
+        this.harvestname = harvestname;
         this.sowingdt = sowingdt;
     }
 
@@ -93,12 +94,12 @@ public class Harvest implements Serializable {
         this.siteid = siteid;
     }
 
-    public int getCropid() {
-        return cropid;
+    public String getHarvestname() {
+        return harvestname;
     }
 
-    public void setCropid(int cropid) {
-        this.cropid = cropid;
+    public void setHarvestname(String harvestname) {
+        this.harvestname = harvestname;
     }
 
     public Date getSowingdt() {
