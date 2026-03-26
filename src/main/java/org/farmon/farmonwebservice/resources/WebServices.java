@@ -32,6 +32,7 @@ import org.farmon.farmondto.FarmonDTO;
 import org.farmon.farmondto.FarmonResponse;
 import org.farmon.farmondto.FarmresourceDTO;
 import org.farmon.farmondto.HarvestDTO;
+import org.farmon.farmondto.InventoryDTO;
 import org.farmon.farmondto.LabourCropDTO;
 import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
@@ -2371,6 +2372,34 @@ public class WebServices {
         MasterDataServices masterDataService = new MasterDataServices();
         List<CropDTO> croplist = masterDataService.getCropList();
         farmondto.setCroplist(croplist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+     @Path("nonZeroInv")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getNonzeroInventory(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");           
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        List<InventoryDTO> inventory = masterDataService.getNonzeroInventoryForCrop(
+        farmondto.getCroprec().getCropId());
+        farmondto.setInventorylist(inventory);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;

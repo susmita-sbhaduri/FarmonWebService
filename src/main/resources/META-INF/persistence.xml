@@ -21,5 +21,7 @@
     <class>org.farmon.entities.Empleave</class>
     <class>org.farmon.entities.Sensordata</class>
     <class>org.farmon.entities.Sensordetail</class>
+    <class>org.farmon.entities.Crop</class>
+    <class>org.farmon.entities.Inventory</class>
   </persistence-unit>
 </persistence>

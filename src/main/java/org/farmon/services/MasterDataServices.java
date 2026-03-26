@@ -29,6 +29,7 @@ import org.farmon.DA.EmpexpenseDAO;
 //import org.bhaduri.machh.DA.EmployeeDAO;
 //import org.bhaduri.machh.DA.ExpenseDAO;
 import org.farmon.DA.HarvestDAO;
+import org.farmon.DA.InventoryDAO;
 import org.farmon.DA.LabourCropDAO;
 import org.farmon.DA.ResAcquireDAO;
 import org.farmon.DA.ResourceCropDAO;
@@ -87,9 +88,11 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+import org.farmon.entities.Inventory;
 
 import org.farmon.entities.Sensordata;
 import org.farmon.entities.Sensordetail;
+import org.farmon.farmondto.InventoryDTO;
 import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.SensordtlsDTO;
 
@@ -2603,7 +2606,48 @@ public class MasterDataServices {
             return null;
         }
     }
-     public int addSensorDataRecord(SensorDTO sensorRec) {
+    
+    public List<InventoryDTO> getNonzeroInventoryForCrop(String cropid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);        
+        InventoryDTO record = new InventoryDTO();
+        List<InventoryDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {  
+            List<Inventory> inventorylist = invdao.getNonzeroInvForCrop(Integer.parseInt(cropid));
+            for (int i = 0; i < inventorylist.size(); i++) {
+                record.setInventoryId(inventorylist.get(i).getId().toString());
+                record.setCropId(inventorylist.get(i).getCropid().toString());
+                record.setHarvestId(inventorylist.get(i).getHasvestid().toString());
+                
+                if(inventorylist.get(i).getCurrentqty()==null){
+                    record.setCurrentQty(null);
+                } else {
+                   record.setCurrentQty(String.format("%.2f", inventorylist.get(i).getCurrentqty()));
+                }
+                mysqlDate = inventorylist.get(i).getLastupdatedate();
+                if(mysqlDate == null){
+                    record.setLastupdatedate(null);
+                } else{
+                    record.setLastupdatedate(formatter.format(mysqlDate));
+                }
+               
+                recordList.add(record);
+                record = new InventoryDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No Inventory for this crop are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getNonzeroInventoryForCrop().");
+            return null;
+        }
+    }
+    public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
         try {
             Sensordata rec = new Sensordata();
