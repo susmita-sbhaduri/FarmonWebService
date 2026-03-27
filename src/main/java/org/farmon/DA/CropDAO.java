@@ -20,22 +20,21 @@ public class CropDAO extends CropJpaController{
     public CropDAO(UserTransaction utx, EntityManagerFactory emf) {
         super(utx, emf);
     }
-    public List<String> listCropCat() {
-        EntityManager em = getEntityManager();
-        TypedQuery<String> query = em.createNamedQuery("Crop.listAllCropCat", String.class);
-//        query.setParameter("scripid", scripid);        
-        List<String> listofcropcat = query.getResultList();
-        return listofcropcat;
-    }
+//    public List<String> listCropCat() {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> query = em.createNamedQuery("Crop.listAllCropCat", String.class);
+//        List<String> listofcropcat = query.getResultList();
+//        return listofcropcat;
+//    }
     
-    public List<String> listCropName(String cropcategory) {
-        EntityManager em = getEntityManager();
-        TypedQuery<String> query = em.createNamedQuery("Crop.listNameByCat", String.class);
-        query.setParameter("cropcategory", cropcategory);        
-        List<String> listofcroppk = query.getResultList();
-        return listofcroppk;
-    }
-    
+//    public List<String> listCropName(String cropcategory) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> query = em.createNamedQuery("Crop.listNameByCat", String.class);
+//        query.setParameter("cropcategory", cropcategory);        
+//        List<String> listofcroppk = query.getResultList();
+//        return listofcroppk;
+//    }
+//    
     public List<Crop> getCropListAll() {
         EntityManager em = getEntityManager();
         TypedQuery<Crop> query = em.createNamedQuery("Crop.listAll", Crop.class);            
@@ -43,13 +42,13 @@ public class CropDAO extends CropJpaController{
         return listofcrop;
     }
     
-    public List<Crop> getCropsPerSite(int siteid) {
-        EntityManager em = getEntityManager();
-        TypedQuery<Crop> query = em.createNamedQuery("Crop.getCropsPerSite", Crop.class);   
-        query.setParameter("siteid", siteid);
-        List<Crop> listofcrop = query.getResultList();
-        return listofcrop;
-    }
+//    public List<Crop> getCropsPerSite(int siteid) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<Crop> query = em.createNamedQuery("Crop.getCropsPerSite", Crop.class);   
+//        query.setParameter("siteid", siteid);
+//        List<Crop> listofcrop = query.getResultList();
+//        return listofcrop;
+//    }
     
     public Crop getCropPerPK(int id) {
         EntityManager em = getEntityManager();
@@ -59,6 +58,10 @@ public class CropDAO extends CropJpaController{
         return cropsperpk;
     }
     
-   
+    public int getMaxDropId() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Crop.getMaxDropId", Integer.class);        
+        return query.getSingleResult();
+    }
     
 }

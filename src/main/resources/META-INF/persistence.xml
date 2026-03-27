@@ -23,5 +23,6 @@
     <class>org.farmon.entities.Sensordetail</class>
     <class>org.farmon.entities.Crop</class>
     <class>org.farmon.entities.Inventory</class>
+    <class>org.farmon.entities.Sales</class>
   </persistence-unit>
 </persistence>

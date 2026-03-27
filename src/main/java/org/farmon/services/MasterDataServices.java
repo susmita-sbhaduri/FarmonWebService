@@ -2647,6 +2647,21 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public int getMaxCropId(){
+        CropDAO cropdao = new CropDAO(utx, emf); 
+        try {
+            return cropdao.getMaxDropId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in Crop table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxCropId().");
+            return 0;
+        }
+    }
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
         try {

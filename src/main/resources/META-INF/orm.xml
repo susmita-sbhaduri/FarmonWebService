@@ -46,10 +46,10 @@
     </named-query>
     <named-query name="Crop.listAll">
         <query>SELECT c FROM Crop c</query>
-    </named-query>
-    <named-query name="Crop.getCropsPerSite">
-        <query>SELECT c FROM Crop c WHERE c.siteid = :siteid</query>
-    </named-query>
+    </named-query>   
+    <named-query name="Crop.getMaxDropId">
+        <query>SELECT MAX(c.cropid) FROM Crop c</query>
+    </named-query> 
     <named-query name="Farmresource.listAll">
         <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>
