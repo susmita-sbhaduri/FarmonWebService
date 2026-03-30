@@ -58,9 +58,9 @@ public class CropDAO extends CropJpaController{
         return cropsperpk;
     }
     
-    public int getMaxDropId() {
+    public int getMaxCropId() {
         EntityManager em = getEntityManager();
-        TypedQuery<Integer> query = em.createNamedQuery("Crop.getMaxDropId", Integer.class);        
+        TypedQuery<Integer> query = em.createNamedQuery("Crop.getMaxCropId", Integer.class);        
         return query.getSingleResult();
     }
     

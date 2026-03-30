@@ -47,7 +47,7 @@
     <named-query name="Crop.listAll">
         <query>SELECT c FROM Crop c</query>
     </named-query>   
-    <named-query name="Crop.getMaxDropId">
+    <named-query name="Crop.getMaxCropId">
         <query>SELECT MAX(c.cropid) FROM Crop c</query>
     </named-query> 
     <named-query name="Farmresource.listAll">
@@ -257,6 +257,9 @@
     </named-query>
     <named-query name="Sensordetail.paramForId">
         <query>SELECT s FROM Sensordetail s WHERE s.id = :id</query>
+    </named-query>
+    <named-query name="Inventory.getMaxInventoryId">
+        <query>SELECT MAX(i.id) FROM Inventory i</query>
     </named-query>
     <named-query name="Inventory.listNonzeroInvForCrop">
         <query>SELECT i FROM Inventory i WHERE i.cropid =:cropid AND i.currentqty &gt; 0</query>

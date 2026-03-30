@@ -2651,7 +2651,7 @@ public class MasterDataServices {
     public int getMaxCropId(){
         CropDAO cropdao = new CropDAO(utx, emf); 
         try {
-            return cropdao.getMaxDropId();
+            return cropdao.getMaxCropId();
         }
         catch (NoResultException e) {
             System.out.println("No records in Crop table");            
@@ -2662,6 +2662,88 @@ public class MasterDataServices {
             return 0;
         }
     }
+    
+    public int addCropRecord(CropDTO croprec) {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Crop rec = new Crop();
+            rec.setCropid(Integer.valueOf(croprec.getCropId()));
+            rec.setCropname(croprec.getCropName());
+            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble("0.00")));
+            mysqlDate = formatter.parse(croprec.getStartDate());
+            rec.setStartdate(mysqlDate);
+            rec.setEnddate(null);
+            rec.setUnit(croprec.getUnit());
+            
+            cropdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this crop record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addCropRecord.");
+            return DB_SEVERE;
+        }
+    }
+    public int delCropRecord(CropDTO croprec) {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        try {
+            Crop rec = new Crop();
+            rec.setCropid(Integer.valueOf(croprec.getCropId()));
+            cropdao.destroy(rec.getCropid());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This crop record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " delCropRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int getMaxInventoryId(){
+        InventoryDAO invdao = new InventoryDAO(utx, emf); 
+        try {
+            return invdao.getMaxInventoryId();
+        }
+        catch (NoResultException e) {
+            System.out.println("No records in Inventory table");            
+            return 0;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxInventoryId().");
+            return 0;
+        }
+    }
+    public int addInventoryRecord(InventoryDTO invrec) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf); 
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Inventory rec = new Inventory();
+            rec.setId(Integer.valueOf(invrec.getInventoryId()));
+            rec.setCropid(Integer.valueOf(invrec.getCropId()));
+            rec.setHasvestid(Integer.valueOf(invrec.getHarvestId()));
+            
+            rec.setCurrentqty(BigDecimal.valueOf(Double.parseDouble(invrec.getCurrentQty())));
+            mysqlDate = formatter.parse(invrec.getLastupdatedate());
+            rec.setLastupdatedate(mysqlDate);            
+            invdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this inventory record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addInventoryRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
+    
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
         try {
