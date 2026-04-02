@@ -32,7 +32,6 @@ import java.util.Date;
     @NamedQuery(name = "Crop.findByCropid", query = "SELECT c FROM Crop c WHERE c.cropid = :cropid"),
     @NamedQuery(name = "Crop.findByCropname", query = "SELECT c FROM Crop c WHERE c.cropname = :cropname"),
     @NamedQuery(name = "Crop.findByTotalstock", query = "SELECT c FROM Crop c WHERE c.totalstock = :totalstock"),
-    @NamedQuery(name = "Crop.findByUnit", query = "SELECT c FROM Crop c WHERE c.unit = :unit"),
     @NamedQuery(name = "Crop.findByStartdate", query = "SELECT c FROM Crop c WHERE c.startdate = :startdate"),
     @NamedQuery(name = "Crop.findByEnddate", query = "SELECT c FROM Crop c WHERE c.enddate = :enddate")})
 public class Crop implements Serializable {
@@ -49,9 +48,6 @@ public class Crop implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "totalstock")
     private BigDecimal totalstock;
-    @Size(max = 50)
-    @Column(name = "unit")
-    private String unit;
     @Column(name = "startdate")
     @Temporal(TemporalType.DATE)
     private Date startdate;
@@ -88,14 +84,6 @@ public class Crop implements Serializable {
 
     public void setTotalstock(BigDecimal totalstock) {
         this.totalstock = totalstock;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
     }
 
     public Date getStartdate() {

@@ -10,7 +10,6 @@ import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import java.util.List;
 import org.farmon.JPA.InventoryJpaController;
-import org.farmon.entities.Crop;
 import org.farmon.entities.Inventory;
 
 /**
@@ -28,6 +27,13 @@ public class InventoryDAO extends InventoryJpaController{
         query.setParameter("cropid", cropid);
         List<Inventory> listofinv = query.getResultList();
         return listofinv;
+    }
+    public List<Integer> getInvHarForCrop(int id) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Inventory.invHarForCrop", Integer.class);
+        query.setParameter("cropid", id);
+        List<Integer> harvestids = query.getResultList();
+        return harvestids;
     }
     public int getMaxInventoryId() {
         EntityManager em = getEntityManager();

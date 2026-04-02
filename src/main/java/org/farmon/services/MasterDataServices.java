@@ -191,24 +191,7 @@ public class MasterDataServices {
         }        
     }
     
-//    public CropDTO getCropPerPk(String cropid) {
-//        CropDAO cropdao = new CropDAO(utx, emf);
-//        CropDTO record = new CropDTO();
-//
-//        try {
-//            Crop croprec = cropdao.getCropPerPK(Integer.parseInt(cropid));
-//            record.setCropCategory(croprec.getCropcategory());
-//            record.setCropName(croprec.getCrop());
-//            record.setDetails(croprec.getDetails());
-//            return record;
-//        } catch (NoResultException e) {
-//            System.out.println("No crop record is found for this cropid.");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getCropPerPk(String cropid).");
-//            return null;
-//        }
-//    }
+
     
     public HarvestDTO getHarvestRecForId(String harvestid) {
         HarvestDAO harvestdao = new HarvestDAO(utx, emf);
@@ -2562,6 +2545,43 @@ public class MasterDataServices {
         }
     }
     
+    public CropDTO getCropForId(String cropid) {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        CropDTO record = new CropDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Crop croprec = cropdao.getCropForId(Integer.parseInt(cropid));
+            record.setCropId(croprec.getCropid().toString());
+            record.setCropName(croprec.getCropname());
+            if (croprec.getTotalstock() == null) {
+                record.setTotalStock(null);
+            } else {
+                record.setTotalStock(String.format("%.2f", croprec.getTotalstock()));
+            }
+            mysqlDate = croprec.getStartdate();
+            if (mysqlDate == null) {
+                record.setStartDate(null);
+            } else {
+                record.setStartDate(formatter.format(mysqlDate));
+            }
+            mysqlDate = croprec.getEnddate();
+            if (mysqlDate == null) {
+                record.setEndDate(null);
+            } else {
+                record.setEndDate(formatter.format(mysqlDate));
+            }
+            
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No crop record is found for this cropid.");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCropFerId.");
+            return null;
+        }
+    }
     public List<CropDTO> getCropList() {
         CropDAO cropdao = new CropDAO(utx, emf);        
         CropDTO record = new CropDTO();
@@ -2591,7 +2611,7 @@ public class MasterDataServices {
                 } else{
                     record.setEndDate(formatter.format(mysqlDate));
                 }
-                record.setUnit(croplist.get(i).getUnit());
+                
                 recordList.add(record);
                 record = new CropDTO();
             }        
@@ -2648,6 +2668,30 @@ public class MasterDataServices {
         }
     }
     
+    public List<HarvestDTO> getInvHarvForCropid(String cropid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);        
+        HarvestDTO record = new HarvestDTO();
+        List<HarvestDTO> recordList = new ArrayList<>();
+        
+        try {  
+            List<Integer> harvestlist = invdao.getInvHarForCrop(Integer.parseInt(cropid));
+            for (int i = 0; i < harvestlist.size(); i++) {
+                record = getHarvestRecForId(String.valueOf(harvestlist.get(i)));                
+                recordList.add(record);
+                record = new HarvestDTO();
+            }        
+            return recordList;
+        }
+        catch (NoResultException e) {
+            System.out.println("No zero or non-zero Inventory for this crop are added");            
+            return null;
+        }
+        catch (Exception exception) {
+            System.out.println(exception + " has occurred in getInvHarvForCropid().");
+            return null;
+        }
+    }
+    
     public int getMaxCropId(){
         CropDAO cropdao = new CropDAO(utx, emf); 
         try {
@@ -2676,7 +2720,7 @@ public class MasterDataServices {
             mysqlDate = formatter.parse(croprec.getStartDate());
             rec.setStartdate(mysqlDate);
             rec.setEnddate(null);
-            rec.setUnit(croprec.getUnit());
+            
             
             cropdao.create(rec);
             return SUCCESS;

@@ -11,30 +11,28 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  *
  * @author sb
  */
 @Entity
-@Table(name = "inventory")
+@Table(name = "cropproduct")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Inventory.findAll", query = "SELECT i FROM Inventory i"),
-    @NamedQuery(name = "Inventory.findById", query = "SELECT i FROM Inventory i WHERE i.id = :id"),
-    @NamedQuery(name = "Inventory.findByCropid", query = "SELECT i FROM Inventory i WHERE i.cropid = :cropid"),
-    @NamedQuery(name = "Inventory.findByProductid", query = "SELECT i FROM Inventory i WHERE i.productid = :productid"),
-    @NamedQuery(name = "Inventory.findByHasvestid", query = "SELECT i FROM Inventory i WHERE i.hasvestid = :hasvestid"),
-    @NamedQuery(name = "Inventory.findByCurrentqty", query = "SELECT i FROM Inventory i WHERE i.currentqty = :currentqty"),
-    @NamedQuery(name = "Inventory.findByLastupdatedate", query = "SELECT i FROM Inventory i WHERE i.lastupdatedate = :lastupdatedate")})
-public class Inventory implements Serializable {
+    @NamedQuery(name = "Cropproduct.findAll", query = "SELECT c FROM Cropproduct c"),
+    @NamedQuery(name = "Cropproduct.findById", query = "SELECT c FROM Cropproduct c WHERE c.id = :id"),
+    @NamedQuery(name = "Cropproduct.findByCropid", query = "SELECT c FROM Cropproduct c WHERE c.cropid = :cropid"),
+    @NamedQuery(name = "Cropproduct.findByProductid", query = "SELECT c FROM Cropproduct c WHERE c.productid = :productid"),
+    @NamedQuery(name = "Cropproduct.findByProductname", query = "SELECT c FROM Cropproduct c WHERE c.productname = :productname"),
+    @NamedQuery(name = "Cropproduct.findByTotalstock", query = "SELECT c FROM Cropproduct c WHERE c.totalstock = :totalstock"),
+    @NamedQuery(name = "Cropproduct.findByUnit", query = "SELECT c FROM Cropproduct c WHERE c.unit = :unit")})
+public class Cropproduct implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -46,19 +44,20 @@ public class Inventory implements Serializable {
     private Integer cropid;
     @Column(name = "productid")
     private Integer productid;
-    @Column(name = "hasvestid")
-    private Integer hasvestid;
+    @Size(max = 100)
+    @Column(name = "productname")
+    private String productname;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "currentqty")
-    private BigDecimal currentqty;
-    @Column(name = "lastupdatedate")
-    @Temporal(TemporalType.DATE)
-    private Date lastupdatedate;
+    @Column(name = "totalstock")
+    private BigDecimal totalstock;
+    @Size(max = 50)
+    @Column(name = "unit")
+    private String unit;
 
-    public Inventory() {
+    public Cropproduct() {
     }
 
-    public Inventory(Integer id) {
+    public Cropproduct(Integer id) {
         this.id = id;
     }
 
@@ -86,28 +85,28 @@ public class Inventory implements Serializable {
         this.productid = productid;
     }
 
-    public Integer getHasvestid() {
-        return hasvestid;
+    public String getProductname() {
+        return productname;
     }
 
-    public void setHasvestid(Integer hasvestid) {
-        this.hasvestid = hasvestid;
+    public void setProductname(String productname) {
+        this.productname = productname;
     }
 
-    public BigDecimal getCurrentqty() {
-        return currentqty;
+    public BigDecimal getTotalstock() {
+        return totalstock;
     }
 
-    public void setCurrentqty(BigDecimal currentqty) {
-        this.currentqty = currentqty;
+    public void setTotalstock(BigDecimal totalstock) {
+        this.totalstock = totalstock;
     }
 
-    public Date getLastupdatedate() {
-        return lastupdatedate;
+    public String getUnit() {
+        return unit;
     }
 
-    public void setLastupdatedate(Date lastupdatedate) {
-        this.lastupdatedate = lastupdatedate;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     @Override
@@ -120,10 +119,10 @@ public class Inventory implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Inventory)) {
+        if (!(object instanceof Cropproduct)) {
             return false;
         }
-        Inventory other = (Inventory) object;
+        Cropproduct other = (Cropproduct) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -132,7 +131,7 @@ public class Inventory implements Serializable {
 
     @Override
     public String toString() {
-        return "org.farmon.entities.Inventory[ id=" + id + " ]";
+        return "org.farmon.entities.Cropproduct[ id=" + id + " ]";
     }
     
 }

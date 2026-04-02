@@ -50,9 +50,9 @@ public class CropDAO extends CropJpaController{
 //        return listofcrop;
 //    }
     
-    public Crop getCropPerPK(int id) {
+    public Crop getCropForId(int id) {
         EntityManager em = getEntityManager();
-        TypedQuery<Crop> query = em.createNamedQuery("Crop.cropPerPK", Crop.class); 
+        TypedQuery<Crop> query = em.createNamedQuery("Crop.cropForId", Crop.class); 
         query.setParameter("cropid", id);
         Crop cropsperpk = query.getSingleResult();
         return cropsperpk;
