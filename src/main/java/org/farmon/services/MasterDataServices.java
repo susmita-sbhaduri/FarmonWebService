@@ -4,6 +4,7 @@
  */
 package org.farmon.services;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.NoResultException;
@@ -21,6 +22,7 @@ import javax.naming.NamingException;
 
 import org.farmon.DA.UserDAO;
 import org.farmon.DA.CropDAO;
+import org.farmon.DA.CropprodDAO;
 import org.farmon.DA.EmployeeDAO;
 import org.farmon.DA.ExpenseDAO;
 import org.farmon.DA.FarmresourceDAO;
@@ -40,7 +42,6 @@ import org.farmon.DA.TaskplanDAO;
 import org.farmon.DA.SensorDataDAO;
 import org.farmon.DA.SensorDtlsDAO;
 //import org.bhaduri.machh.DA.ShopResCropDAO;
-
 
 import org.farmon.farmondto.EmpExpDTO;
 import org.farmon.farmondto.EmpLeaveDTO;
@@ -88,111 +89,104 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Inventory;
 
 import org.farmon.entities.Sensordata;
 import org.farmon.entities.Sensordetail;
+import org.farmon.farmondto.CropProductDTO;
 import org.farmon.farmondto.InventoryDTO;
 import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.SensordtlsDTO;
 
-
-
-
 public class MasterDataServices {
+
     private final EntityManagerFactory emf;
     private final UserTransaction utx;
 
-    
     public MasterDataServices() throws NamingException {
         emf = Persistence.createEntityManagerFactory("org.farmon_Farmon_jar_1.0-SNAPSHOT");
         utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
-//        utx = null;
     }
+
     public UserDTO getUserAuthDetails(String username, String password) {
-        UserDAO useraccess = new UserDAO(utx,emf);  
+        UserDAO useraccess = new UserDAO(utx, emf);
         UserDTO userAuthDto = new UserDTO();
-        try {            
+        try {
             Users userInfo = useraccess.getUserDetails(username, password);
             userAuthDto.setID(userInfo.getId());
             userAuthDto.setUsername(userInfo.getUsername());
             userAuthDto.setPassword(userInfo.getPassword());
             return userAuthDto;
-        }
-        catch (NoResultException e) {
+        } catch (NoResultException e) {
             System.out.println("No user found with provided credentials.");
             userAuthDto.setID("null");
             userAuthDto.setResponseMsg(e.getMessage());
             return userAuthDto;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getUserAuthDetails.");
             userAuthDto.setID("null");
             userAuthDto.setResponseMsg(exception.getMessage());
             return userAuthDto;
         }
     }
-    
+
     public List<HarvestDTO> getActiveHarvestList() {
-        HarvestDAO harvestdao = new HarvestDAO(utx, emf);  
+        HarvestDAO harvestdao = new HarvestDAO(utx, emf);
         List<HarvestDTO> recordList = new ArrayList<>();
         HarvestDTO record = new HarvestDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Harvest> harvestlist = harvestdao.getActiveList();
             for (int i = 0; i < harvestlist.size(); i++) {
                 record.setHarvestid(String.valueOf(harvestlist.get(i).getHarvestid()));
                 record.setSiteid(String.valueOf(harvestlist.get(i).getSiteid()));
                 record.setSiteName(getSiteNameForId(String.valueOf(harvestlist.get(i).getSiteid()))
                         .getSiteName());
-                record.setHarvestName(harvestlist.get(i).getHarvestname());                
-                
-                mysqlDate = harvestlist.get(i).getSowingdt();                    
+                record.setHarvestName(harvestlist.get(i).getHarvestname());
+
+                mysqlDate = harvestlist.get(i).getSowingdt();
                 record.setSowingDate(formatter.format(mysqlDate));
                 record.setDesc(harvestlist.get(i).getDescription());
                 recordList.add(record);
                 record = new HarvestDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No crops are found");            
+        } catch (NoResultException e) {
+            System.out.println("No crops are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getActiveHarvestList.");
             return null;
         }
     }
-    
+
     public SiteDTO getSiteNameForId(String siteid) {
-        SiteDAO sitedao = new SiteDAO(utx, emf);        
-        SiteDTO record = new SiteDTO();        
-        try {  
-           Site siterec = sitedao.getSiteName(Integer.parseInt(siteid)); 
-           record.setSiteID(siteid);
-           record.setSiteType(siterec.getSitetype());
-           record.setSiteName(siterec.getSitename());
-           if(siterec.getSize()!=null){
-             record.setSize(String.format("%.2f",siterec.getSize().floatValue()));
-           } else record.setSize(null);           
-           record.setUnit(siterec.getUnit());
-           return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Site found for this siteid");            
+        SiteDAO sitedao = new SiteDAO(utx, emf);
+        SiteDTO record = new SiteDTO();
+        try {
+            Site siterec = sitedao.getSiteName(Integer.parseInt(siteid));
+            record.setSiteID(siteid);
+            record.setSiteType(siterec.getSitetype());
+            record.setSiteName(siterec.getSitename());
+            if (siterec.getSize() != null) {
+                record.setSize(String.format("%.2f", siterec.getSize().floatValue()));
+            } else {
+                record.setSize(null);
+            }
+            record.setUnit(siterec.getUnit());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No Site found for this siteid");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getSiteNameForId(String siteid).");
             return null;
-        }        
+        }
     }
-    
 
-    
     public HarvestDTO getHarvestRecForId(String harvestid) {
         HarvestDAO harvestdao = new HarvestDAO(utx, emf);
         HarvestDTO record = new HarvestDTO();
@@ -205,9 +199,9 @@ public class MasterDataServices {
             record.setSiteid(String.valueOf(harvestrec.getSiteid()));
             record.setSiteName(getSiteNameForId(String.valueOf(harvestrec.getSiteid()))
                     .getSiteName());
-            
+
             record.setHarvestName(harvestrec.getHarvestname());
-            
+
             mysqlDate = harvestrec.getSowingdt();
             record.setSowingDate(formatter.format(mysqlDate));
             mysqlDate = harvestrec.getHarvestingdt();
@@ -225,7 +219,7 @@ public class MasterDataServices {
             System.out.println(exception + " has occurred in getHarvestRecForId(String harvestid).");
             return null;
         }
-    }     
+    }
 
     public List<ResourceCropDTO> getResCropForHarvest(String harvestid) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
@@ -236,7 +230,7 @@ public class MasterDataServices {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             List<Resourcecrop> reclist = rescropdao.getResCropHarvest(Integer.parseInt(harvestid));
-            
+
             for (int i = 0; i < reclist.size(); i++) {
                 record.setApplicationId(reclist.get(i).getApplicationid().toString());
                 record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));
@@ -250,7 +244,7 @@ public class MasterDataServices {
                 record.setResUnit(getResourceNameForId(reclist.get(i).getResourceid()).getUnit());
                 recordlist.add(record);
                 record = new ResourceCropDTO();
-            }  
+            }
             return recordlist;
         } catch (NoResultException e) {
             System.out.println("No resourcecrop record is found for this harvest.");
@@ -260,34 +254,32 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public FarmresourceDTO getResourceNameForId(int resourceid) {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-        FarmresourceDTO record = new FarmresourceDTO();        
-        try {  
-           Farmresource resrec = resourcedao.getResourceName(resourceid); 
-           record.setResourceId(Integer.toString(resourceid));
-           record.setResourceName(resrec.getResourcename());
-           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
-           record.setUnit(resrec.getUnit());
-           if(resrec.getCropweight()!=null){
-             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
-           }
-           if(resrec.getCropwtunit()!=null){
-               record.setCropwtunit(resrec.getCropwtunit());
-           }
-           return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resource found for this resourceid");            
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
+        FarmresourceDTO record = new FarmresourceDTO();
+        try {
+            Farmresource resrec = resourcedao.getResourceName(resourceid);
+            record.setResourceId(Integer.toString(resourceid));
+            record.setResourceName(resrec.getResourcename());
+            record.setAvailableAmt(String.format("%.2f", resrec.getAvailableamount().floatValue()));
+            record.setUnit(resrec.getUnit());
+            if (resrec.getCropweight() != null) {
+                record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));
+            }
+            if (resrec.getCropwtunit() != null) {
+                record.setCropwtunit(resrec.getCropwtunit());
+            }
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No resource found for this resourceid");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
             return null;
         }
     }
-    
+
     public List<LabourCropDTO> getLabCropForHarvest(String harvestid) {
         LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
         List<LabourCropDTO> recordlist = new ArrayList<>();
@@ -297,20 +289,20 @@ public class MasterDataServices {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             List<Labourcrop> reclist = labcropdao.getLabCropHarvest(Integer.parseInt(harvestid));
-            
+
             for (int i = 0; i < reclist.size(); i++) {
                 record.setApplicationId(reclist.get(i).getApplicationid().toString());
-                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));                
+                record.setHarvestId(Integer.toString(reclist.get(i).getHarvestid()));
                 mysqlDate = reclist.get(i).getAppldate();
                 record.setApplicationDate(formatter.format(mysqlDate));
                 String labourCategory = "LABHRVST";
-                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId()
-                        , labourCategory).getExpenditure());  
-                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId()
-                        , labourCategory).getCommString());
+                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId(),
+                        labourCategory).getExpenditure());
+                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId(),
+                        labourCategory).getCommString());
                 recordlist.add(record);
                 record = new LabourCropDTO();
-            }  
+            }
             return recordlist;
         } catch (NoResultException e) {
             System.out.println("No labourcrop record is found for this harvest.");
@@ -320,7 +312,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public int getMaxIdForLabCrop() {
         LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
         try {
@@ -334,7 +326,7 @@ public class MasterDataServices {
             return 0;
         }
     }
-    
+
     public int addLabourCropRecord(LabourCropDTO labourcroprec) {
         LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
         Date mysqlDate;
@@ -357,7 +349,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public int delLabourCropRecord(LabourCropDTO labourcroprec) {
         LabourCropDAO labourcropdao = new LabourCropDAO(utx, emf);
         try {
@@ -374,46 +366,43 @@ public class MasterDataServices {
         }
     }
 
-    
     public ExpenseDTO getLabExpenseForHrvst(String labappid, String expensecat) {
-        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf);
         ExpenseDTO retexpdto = new ExpenseDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             Expense rec = expdao.getExpRecForLabHarvest(Integer.parseInt(labappid), expensecat);
-            
+
             retexpdto.setExpenseId(rec.getExpenseid().toString());
             mysqlDate = rec.getDate();
             retexpdto.setDate(formatter.format(mysqlDate));
-            retexpdto.setExpenseType(rec.getExpensetype());            
+            retexpdto.setExpenseType(rec.getExpensetype());
             retexpdto.setExpenseRefId(rec.getExpenserefid().toString());
             retexpdto.setExpenditure(String.format("%.2f", rec.getExpediture()));
             retexpdto.setCommString(rec.getComments());
-            
+
             return retexpdto;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Expense record found for this labor.");            
+        } catch (NoResultException e) {
+            System.out.println("No Expense record found for this labor.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getLabExpenseForHrvst().");
             return null;
         }
     }
-    
-     public List<FarmresourceDTO> getResourceList() {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+
+    public List<FarmresourceDTO> getResourceList() {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         FarmresourceDTO record = new FarmresourceDTO();
         List<FarmresourceDTO> recordList = new ArrayList<>();
-        try {  
+        try {
             List<Farmresource> resourcelist = resourcedao.getAllResource();
             for (int i = 0; i < resourcelist.size(); i++) {
                 record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
                 record.setResourceName(resourcelist.get(i).getResourcename());
-                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
+                record.setAvailableAmt(String.format("%.2f", resourcelist.get(i).getAvailableamount().floatValue()));
                 record.setUnit(resourcelist.get(i).getUnit());
                 if (resourcelist.get(i).getCropweight() != null) {
                     record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
@@ -423,30 +412,28 @@ public class MasterDataServices {
                 }
                 recordList.add(record);
                 record = new FarmresourceDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Resoureces are added");            
+        } catch (NoResultException e) {
+            System.out.println("No Resoureces are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResourceList().");
             return null;
         }
     }
-     
+
     public List<FarmresourceDTO> getNonzeroResList() {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         FarmresourceDTO record = new FarmresourceDTO();
         List<FarmresourceDTO> recordList = new ArrayList<>();
-        try {  
+        try {
             List<Farmresource> resourcelist = resourcedao.getNonzeroResource();
             for (int i = 0; i < resourcelist.size(); i++) {
                 record.setResourceId(Integer.toString(resourcelist.get(i).getResourceid()));
                 record.setResourceName(resourcelist.get(i).getResourcename());
-                record.setAvailableAmt(String.format("%.2f",resourcelist.get(i).getAvailableamount().floatValue()));
-                record.setUnit(resourcelist.get(i).getUnit());  
+                record.setAvailableAmt(String.format("%.2f", resourcelist.get(i).getAvailableamount().floatValue()));
+                record.setUnit(resourcelist.get(i).getUnit());
                 if (resourcelist.get(i).getCropweight() != null) {
                     record.setCropweight(String.format("%.2f", resourcelist.get(i).getCropweight().floatValue()));
                 }
@@ -455,41 +442,35 @@ public class MasterDataServices {
                 }
                 recordList.add(record);
                 record = new FarmresourceDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Resoureces are added");            
+        } catch (NoResultException e) {
+            System.out.println("No Resoureces are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResourceList().");
             return null;
         }
     }
-     
-  
-    
-    public int getMaxFarmresId(){
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf); 
+
+    public int getMaxFarmresId() {
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         try {
             return resourcedao.getMaxId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in Farmresource table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in Farmresource table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMacFarmresId().");
             return 0;
         }
     }
-    
+
     public List<ShopDTO> getShopList() {
-        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        ShopDAO shopdao = new ShopDAO(utx, emf);
         ShopDTO record = new ShopDTO();
         List<ShopDTO> recordList = new ArrayList<>();
-        try {  
+        try {
             List<Shop> shoplist = shopdao.getAllShops();
             for (int i = 0; i < shoplist.size(); i++) {
                 record.setShopId(shoplist.get(i).getShopid().toString());
@@ -499,47 +480,42 @@ public class MasterDataServices {
                 record.setAvailabilityTime(shoplist.get(i).getAvailabilitytime());
                 recordList.add(record);
                 record = new ShopDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Shops are added");            
+        } catch (NoResultException e) {
+            System.out.println("No Shops are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getShopList().");
             return null;
         }
     }
-    
-    
+
     public FarmresourceDTO getResourceIdForName(String resourcename) {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);        
-        FarmresourceDTO record = new FarmresourceDTO();        
-        try {  
-           Farmresource resrec = resourcedao.getResourceId(resourcename); 
-           record.setResourceId(Integer.toString(resrec.getResourceid()));
-           record.setResourceName(resourcename);
-           record.setAvailableAmt(String.format("%.2f",resrec.getAvailableamount().floatValue()));
-           record.setUnit(resrec.getUnit());
-           if(resrec.getCropweight()!=null){
-             record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));  
-           }
-           if(resrec.getCropwtunit()!=null){
-               record.setCropwtunit(resrec.getCropwtunit());
-           }
-           return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resourceid found for this resourcename");            
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
+        FarmresourceDTO record = new FarmresourceDTO();
+        try {
+            Farmresource resrec = resourcedao.getResourceId(resourcename);
+            record.setResourceId(Integer.toString(resrec.getResourceid()));
+            record.setResourceName(resourcename);
+            record.setAvailableAmt(String.format("%.2f", resrec.getAvailableamount().floatValue()));
+            record.setUnit(resrec.getUnit());
+            if (resrec.getCropweight() != null) {
+                record.setCropweight(String.format("%.2f", resrec.getCropweight().floatValue()));
+            }
+            if (resrec.getCropwtunit() != null) {
+                record.setCropwtunit(resrec.getCropwtunit());
+            }
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No resourceid found for this resourcename");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResourceIdForName.");
             return null;
         }
     }
-    
+
     public List<ShopResDTO> getResShopForPk(String resourceId, String shopId) {
         ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         List<ShopResDTO> recordList = new ArrayList<>();
@@ -555,9 +531,9 @@ public class MasterDataServices {
                 record.setResourceId(String.valueOf(shopreslist.get(i).getResourceid()));
                 record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i).getShopid())).getShopName());
                 record.setResourceName(getResourceNameForId(shopreslist.get(i).getResourceid()).getResourceName());
-                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));              
+                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));
                 mysqlDate = shopreslist.get(i).getResrtdate();
-                
+
                 if (mysqlDate != null) {
                     record.setResRateDate(formatter.format(mysqlDate));
                 } else {
@@ -566,45 +542,40 @@ public class MasterDataServices {
                 record.setStockPerRate(String.format("%.2f", shopreslist.get(i).getStockperrt()));
                 recordList.add(record);
                 record = new ShopResDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No ShopResource record is found for shop and resource id");            
+        } catch (NoResultException e) {
+            System.out.println("No ShopResource record is found for shop and resource id");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResShopForPk.");
             return null;
         }
     }
-    
+
     public ShopDTO getShopNameForId(String shopid) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        ShopDAO shopdao = new ShopDAO(utx, emf);
         ShopDTO record = new ShopDTO();
-        
-        try {  
-           Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));           
-           record.setShopName(shoprec.getShopname());
-           record.setShopId(shopid);
-           record.setLocation(shoprec.getLocation());
-           record.setContact(shoprec.getContact());
-           record.setAvailabilityTime(shoprec.getAvailabilitytime());
-           return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No shop found for this shopid");            
+
+        try {
+            Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));
+            record.setShopName(shoprec.getShopname());
+            record.setShopId(shopid);
+            record.setLocation(shoprec.getLocation());
+            record.setContact(shoprec.getContact());
+            record.setAvailabilityTime(shoprec.getAvailabilitytime());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No shop found for this shopid");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getShopNameForId(int shopid).");
             return null;
         }
     }
-    
-    
+
     public int addResource(FarmresourceDTO res) {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         try {
             Farmresource recentity = new Farmresource();
             recentity.setResourceid(Integer.valueOf(res.getResourceId()));
@@ -618,46 +589,41 @@ public class MasterDataServices {
 //            } else 
 //                recentity.setCropweight(null);
 //            recentity.setCropwtunit(res.getCropwtunit());
-            
+
             recentity.setCropweight(null);
             recentity.setCropwtunit(null);
-            
+
             resourcedao.create(recentity);
             return SUCCESS;
-        }
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this Resource record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Resource record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addResource(FarmresourceDTO res).");
             return DB_SEVERE;
         }
     }
-           
-        
-    public int getMaxIdForShopRes(){
+
+    public int getMaxIdForShopRes() {
         ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         try {
             return shopresdao.getMaxId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in shopresource table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in shopresource table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxIdForShopRes().");
             //            return DB_SEVERE;
             return 0;
         }
     }
-    
+
     public int addShopResource(ShopResDTO shopres) {
-        ShopResDAO shopresdao = new ShopResDAO(utx, emf); 
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {            
+        try {
             Shopresource shopresrec = new Shopresource();
             shopresrec.setId(Integer.valueOf(shopres.getId()));
             shopresrec.setResourceid(Integer.parseInt(shopres.getResourceId()));
@@ -666,35 +632,33 @@ public class MasterDataServices {
 //            shopresrec.setResappid(Integer.valueOf(shopres.getResAppId()));            
 //            shopresrec.setAppliedamt(BigDecimal
 //                    .valueOf(Double.parseDouble(shopres.getAmtApplied())));
-            if(shopres.getResRateDate()==null){
+            if (shopres.getResRateDate() == null) {
                 shopresrec.setResrtdate(null);
             } else {
                 mysqlDate = formatter.parse(shopres.getResRateDate());
                 shopresrec.setResrtdate(mysqlDate);
             }
             shopresrec.setStockperrt(BigDecimal.valueOf(Double.parseDouble(shopres.getStockPerRate())));
-            shopresrec.setResappid(Integer.valueOf("0"));            
+            shopresrec.setResappid(Integer.valueOf("0"));
             shopresrec.setAppliedamt(BigDecimal
                     .valueOf(Double.parseDouble("0.00")));
             shopresdao.create(shopresrec);
             return SUCCESS;
-        }
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this ShopResource record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this ShopResource record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addShopResource(ShopResDTO shopres).");
             return DB_SEVERE;
         }
     }
-    
+
     public int editShopForRes(ShopResDTO shopres) {
         ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {            
+        try {
             Shopresource shopresrec = new Shopresource();
             shopresrec.setId(Integer.valueOf(shopres.getId()));
             shopresrec.setShopid(Integer.parseInt(shopres.getShopId()));
@@ -704,23 +668,20 @@ public class MasterDataServices {
             shopresrec.setResrtdate(mysqlDate);
             shopresrec.setStockperrt(BigDecimal
                     .valueOf(Double.parseDouble(shopres.getStockPerRate())));
-            shopresrec.setResappid(Integer.valueOf("0"));            
+            shopresrec.setResappid(Integer.valueOf("0"));
             shopresrec.setAppliedamt(BigDecimal
                     .valueOf(Double.parseDouble("0.00")));
             shopresdao.edit(shopresrec);
             return SUCCESS;
-        }
-        catch (NoResultException e) {
-            System.out.println("No shopresource record is found for shioid and resourceid");            
+        } catch (NoResultException e) {
+            System.out.println("No shopresource record is found for shioid and resourceid");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in editShopForRes(ShopResDTO shopres).");
             return DB_SEVERE;
         }
-    }  
-    
-    
+    }
+
     public int deleteShopResForResid(String resid) {
         ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         try {
@@ -736,33 +697,30 @@ public class MasterDataServices {
         }
     }
 
-    
     public int delResource(FarmresourceDTO res) {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         try {
             Farmresource recentity = new Farmresource();
-            recentity.setResourceid(Integer.valueOf(res.getResourceId())); 
+            recentity.setResourceid(Integer.valueOf(res.getResourceId()));
             resourcedao.destroy(recentity.getResourceid());
             return SUCCESS;
-        }
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this Farmresource does not exist");            
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this Farmresource does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in delResource(FarmresourceDTO res).");
             return DB_SEVERE;
         }
     }
-        
+
     public List<ShopResDTO> getAllShopResForResid(String resid) { // for AcquireResource.java
-        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         List<ShopResDTO> recordList = new ArrayList<>();
         ShopResDTO record = new ShopResDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Shopresource> shopreslist = shopresdao.getShopResLstPerRes(Integer.parseInt(resid));
             for (int i = 0; i < shopreslist.size(); i++) {
                 record.setId(String.valueOf(shopreslist.get(i).getId()));
@@ -770,12 +728,12 @@ public class MasterDataServices {
                 record.setResourceId(String.valueOf(shopreslist.get(i).getResourceid()));
                 record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i).getShopid())).getShopName());
                 record.setResourceName(getResourceNameForId(shopreslist.get(i).getResourceid()).getResourceName());
-                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));              
+                record.setRate(String.format("%.2f", shopreslist.get(i).getRate().floatValue()));
                 record.setUnit(getResourceNameForId(shopreslist.get(i).getResourceid()).getUnit());
                 record.setResAppId(String.valueOf(shopreslist.get(i).getResappid()));
                 record.setAmtApplied(String.format("%.2f", shopreslist.get(i).getAppliedamt().floatValue()));
                 mysqlDate = shopreslist.get(i).getResrtdate();
-                
+
                 if (mysqlDate != null) {
                     record.setResRateDate(formatter.format(mysqlDate));
                 } else {
@@ -784,19 +742,17 @@ public class MasterDataServices {
                 record.setStockPerRate(String.format("%.2f", shopreslist.get(i).getStockperrt()));
                 recordList.add(record);
                 record = new ShopResDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No ShopResource records are found");            
+        } catch (NoResultException e) {
+            System.out.println("No ShopResource records are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getAllShopResForResid().");
             return null;
         }
     }
-    
+
     public List<ShopResDTO> getShopResForResid(String resid) { //shopres records with non-zero stock
         ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         List<ShopResDTO> recordList = new ArrayList<>();
@@ -836,13 +792,13 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<ShopResDTO> getDistictShopResForResid(String resid) { // for EditResource.java
-        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         List<ShopResDTO> recordList = new ArrayList<>();
         ShopResDTO record = new ShopResDTO();
-       
-        try {  
+
+        try {
             List<Integer> shopreslist = shopresdao.getDistictShopResPerRes(Integer.parseInt(resid));
             for (int i = 0; i < shopreslist.size(); i++) {
                 record.setId(null);
@@ -850,54 +806,47 @@ public class MasterDataServices {
                 record.setResourceId(null);
                 record.setShopName(getShopNameForId(String.valueOf(shopreslist.get(i))).getShopName());
                 record.setResourceName(null);
-                record.setRate(null);              
+                record.setRate(null);
                 record.setUnit(null);
                 record.setResAppId(null);
                 record.setAmtApplied(null);
-                record.setResRateDate(null);                
+                record.setResRateDate(null);
                 record.setStockPerRate(null);
                 recordList.add(record);
                 record = new ShopResDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No shopid for ShopResource records are found");            
+        } catch (NoResultException e) {
+            System.out.println("No shopid for ShopResource records are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getDistictShopResForResid().");
             return null;
         }
     }
-    
-    
-    public int getMaxIdForResAquire(){
+
+    public int getMaxIdForResAquire() {
         ResAcquireDAO resourcedao = new ResAcquireDAO(utx, emf);
         try {
             return resourcedao.getMaxAqId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in resource acquire table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in resource acquire table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxIdForResAquire().");
             //            return DB_SEVERE;
             return 0;
         }
     }
- 
-    public int getMaxIdForExpense(){
+
+    public int getMaxIdForExpense() {
         ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
         try {
             return expensedao.getMaxExpId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in expense table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in expense table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxIdForExpense().");
             //            return DB_SEVERE;
             return 0;
@@ -905,7 +854,7 @@ public class MasterDataServices {
     }
 
     public int addAcquireResource(ResAcquireDTO acqres) {
-        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf); 
+        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -918,58 +867,52 @@ public class MasterDataServices {
             rec.setAquiredate(mysqlDate);
             acqresdao.create(rec);
             return SUCCESS;
-        }
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this ResourceAcquire record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this ResourceAcquire record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addAcquireResource(ResAcquireDTO acqres).");
             return DB_SEVERE;
         }
     }
-    
+
     public int delAcquireResource(ResAcquireDTO acqres) {
-        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);                
+        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);
         try {
             Resourceaquire rec = new Resourceaquire();
-            rec.setAquireid(Integer.valueOf(acqres.getAcquireId())); 
+            rec.setAquireid(Integer.valueOf(acqres.getAcquireId()));
             acqresdao.destroy(rec.getAquireid());
             return SUCCESS;
-        }
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this resourceacquire does not exist");            
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this resourceacquire does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in delAcquireResource(ResAcquireDTO acqres).");
             return DB_SEVERE;
         }
-    }    
-    
+    }
+
     public ResAcquireDTO getResIdForAcqid(String resacqid) {
-        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);        
-        ResAcquireDTO record = new ResAcquireDTO();  
+        ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);
+        ResAcquireDTO record = new ResAcquireDTO();
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
-           Resourceaquire resacqrec = acqresdao.recAcqForAcqid(Integer.parseInt(resacqid));
-           record.setAcquireId(Integer.toString(resacqrec.getAquireid()));
-           record.setResoureId(Integer.toString(resacqrec.getResourceid()));
-           record.setAmount(String.format("%.2f",resacqrec.getAmount().floatValue()));
-           record.setAcquireDate(formatter.format(resacqrec.getAquiredate()));
-           return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resourceid found for this resacqid");            
+        try {
+            Resourceaquire resacqrec = acqresdao.recAcqForAcqid(Integer.parseInt(resacqid));
+            record.setAcquireId(Integer.toString(resacqrec.getAquireid()));
+            record.setResoureId(Integer.toString(resacqrec.getResourceid()));
+            record.setAmount(String.format("%.2f", resacqrec.getAmount().floatValue()));
+            record.setAcquireDate(formatter.format(resacqrec.getAquiredate()));
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No resourceid found for this resacqid");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResIdForAcqid.");
             return null;
         }
     }
-    
+
     public ResAcquireDTO getResAcqPerResid(String resid) {
         ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);
         Date mysqlDate;
@@ -999,13 +942,13 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<ResAcquireDTO> getDistinctResAcqForResid() { // for MaintainResource.java
-        ResAcquireDAO resacqdao = new ResAcquireDAO(utx, emf);  
+        ResAcquireDAO resacqdao = new ResAcquireDAO(utx, emf);
         List<ResAcquireDTO> recordList = new ArrayList<>();
         ResAcquireDTO record = new ResAcquireDTO();
-       
-        try {  
+
+        try {
             List<Integer> reslist = resacqdao.getDistictResAcqPerRes();
             for (int i = 0; i < reslist.size(); i++) {
                 record.setAcquireId(null);
@@ -1014,25 +957,23 @@ public class MasterDataServices {
                 record.setAcquireDate(null);
                 recordList.add(record);
                 record = new ResAcquireDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resacquired(resid) records for resourceid are found");            
+        } catch (NoResultException e) {
+            System.out.println("No resacquired(resid) records for resourceid are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getDistinctResAcqForResid().");
             return null;
         }
     }
-    
+
     public List<ShopResDTO> getDistinctShopForResid() { // for MaintainShop.java
-        ShopResDAO shopresdao = new ShopResDAO(utx, emf);  
+        ShopResDAO shopresdao = new ShopResDAO(utx, emf);
         List<ShopResDTO> recordList = new ArrayList<>();
         ShopResDTO record = new ShopResDTO();
-       
-        try {  
+
+        try {
             List<Integer> shoplist = shopresdao.getDistictShopForRes();
             for (int i = 0; i < shoplist.size(); i++) {
                 record.setId(null);
@@ -1040,29 +981,27 @@ public class MasterDataServices {
                 record.setResourceId(null);
                 record.setShopName(null);
                 record.setResourceName(null);
-                record.setRate(null);              
+                record.setRate(null);
                 record.setUnit(null);
                 record.setResAppId(null);
                 record.setAmtApplied(null);
-                record.setResRateDate(null);                
+                record.setResRateDate(null);
                 record.setStockPerRate(null);
                 recordList.add(record);
                 record = new ShopResDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No shopres records with distict shopids are found");            
+        } catch (NoResultException e) {
+            System.out.println("No shopres records with distict shopids are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getDistinctShopForResid().");
             return null;
         }
     }
-    
+
     public int addExpenseRecord(ExpenseDTO exrec) {
-        ExpenseDAO expdao = new ExpenseDAO(utx, emf); 
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -1074,48 +1013,41 @@ public class MasterDataServices {
             rec.setExpensetype(exrec.getExpenseType());
             rec.setExpenserefid(Integer.valueOf(exrec.getExpenseRefId()));
             rec.setExpediture(BigDecimal.valueOf(Double.parseDouble(exrec.getExpenditure())));
-            rec.setComments(exrec.getCommString());            
+            rec.setComments(exrec.getCommString());
             expdao.create(rec);
             return SUCCESS;
-        }
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this Expense record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Expense record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addExpenseRecord(ExpenseDTO exrec).");
             return DB_SEVERE;
         }
     }
-    
-    
+
     public int delExpenseRecord(ExpenseDTO exrec) {
-        ExpenseDAO expdao = new ExpenseDAO(utx, emf);                 
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf);
         try {
             Expense rec = new Expense();
-            rec.setExpenseid(Integer.valueOf(exrec.getExpenseId())); 
+            rec.setExpenseid(Integer.valueOf(exrec.getExpenseId()));
             expdao.destroy(rec.getExpenseid());
             return SUCCESS;
-        }
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this expense record does not exist");            
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this expense record does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in delExpenseRecord(ExpenseDTO exrec).");
             return DB_SEVERE;
         }
     }
-        
-    
+
     public int editResource(FarmresourceDTO res) {
-        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);                
+        FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         try {
             Farmresource recentity = new Farmresource();
             recentity.setResourceid(Integer.valueOf(res.getResourceId()));
             recentity.setResourcename(res.getResourceName());
-            recentity.setAvailableamount(BigDecimal.valueOf(Double.parseDouble
-            (res.getAvailableAmt())));
+            recentity.setAvailableamount(BigDecimal.valueOf(Double.parseDouble(res.getAvailableAmt())));
             recentity.setUnit(res.getUnit());
 //            if (res.getCropweight() != null) {
 //                recentity.setCropweight(BigDecimal.
@@ -1123,72 +1055,71 @@ public class MasterDataServices {
 //            } else 
 //                recentity.setCropweight(null);
 //            recentity.setCropwtunit(res.getCropwtunit());
-            
+
             recentity.setCropweight(null);
             recentity.setCropwtunit(null);
             resourcedao.edit(recentity);
             return SUCCESS;
-        }
-        catch (NoResultException e) {
-            System.out.println("This Resource record does not exist");            
+        } catch (NoResultException e) {
+            System.out.println("This Resource record does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in editResource(FarmresourceDTO res).");
             return DB_SEVERE;
         }
     }
-  
+
     public List<TaskPlanDTO> getAllTaskPlanList() {
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         List<TaskPlanDTO> recordList = new ArrayList<>();
         TaskPlanDTO record = new TaskPlanDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Taskplan> taskplanlist = taskplandao.getAllData();
             for (int i = 0; i < taskplanlist.size(); i++) {
                 record.setTaskId(taskplanlist.get(i).getId().toString());
                 record.setTaskType(taskplanlist.get(i).getTasktype());
-                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+                mysqlDate = taskplanlist.get(i).getTaskdate();
                 record.setTaskDt(formatter.format(mysqlDate));
                 record.setTaskName(taskplanlist.get(i).getTaskname());
                 record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
                 record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-                if (taskplanlist.get(i).getResourceid() == null)
+                if (taskplanlist.get(i).getResourceid() == null) {
                     record.setResourceId(null);
-                else
+                } else {
                     record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
-                
-                if (taskplanlist.get(i).getAppamtcost() == null)
+                }
+
+                if (taskplanlist.get(i).getAppamtcost() == null) {
                     record.setAppliedAmtCost(null);
-                else
+                } else {
                     record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-                
-                if (taskplanlist.get(i).getAppliedamt() == null)
+                }
+
+                if (taskplanlist.get(i).getAppliedamt() == null) {
                     record.setAppliedAmount(null);
-                else
+                } else {
                     record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+                }
                 record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
                 record.setComments(taskplanlist.get(i).getComments());
                 recordList.add(record);
                 record = new TaskPlanDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No task is planned so far.");            
+        } catch (NoResultException e) {
+            System.out.println("No task is planned so far.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getAllTaskPlanList.");
             return null;
         }
     }
-  
+
     public int addResCropRecord(ResourceCropDTO rescroprec) {
-        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf); 
+        ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -1203,17 +1134,15 @@ public class MasterDataServices {
             rec.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(rescroprec.getAppliedAmtCost())));
             rescropdao.create(rec);
             return SUCCESS;
-        }
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this resourcecrop record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this resourcecrop record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addResCropRecord(ResourceCropDTO rescroprec).");
             return DB_SEVERE;
         }
     }
-    
+
     public int delResCropRecord(ResourceCropDTO rescroprec) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         try {
@@ -1229,6 +1158,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+
     public int getMaxIdForResCrop() {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         try {
@@ -1244,7 +1174,6 @@ public class MasterDataServices {
     }
 
 //    #################################Report batch#####################################################
-    
     public List<AllExpenseReportDTO> getRescropExpRpt(String startdate, String enddate) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
@@ -1263,7 +1192,7 @@ public class MasterDataServices {
                     formatter.parse(enddate));
             pattern = "dd MMM yyyy";
             formatter = new SimpleDateFormat(pattern);
-            
+
             for (int i = 0; i < rescroplist.size(); i++) {
                 record.setExpenseCategory("ResourceApp");
                 record.setExpenseName(getResourceNameForId(rescroplist.get(i).getResourceid()).getResourceName());
@@ -1279,26 +1208,26 @@ public class MasterDataServices {
                 recordList.add(record);
                 record = new AllExpenseReportDTO();
             }
-            
-            for (int i = 0; i < explist.size(); i++) {                
-                if(explist.get(i).getExpensetype().equals("RES")){
+
+            for (int i = 0; i < explist.size(); i++) {
+                if (explist.get(i).getExpensetype().equals("RES")) {
                     record.setExpenseCategory("ResourceAcq");
                     acqid = getResIdForAcqid(explist.get(i).getExpenserefid().toString()).getResoureId();
                     record.setExpenseName(getResourceNameForId(Integer.parseInt(acqid)).getResourceName());
                 }
-                if(explist.get(i).getExpensetype().equals("LABHRVST")){
+                if (explist.get(i).getExpensetype().equals("LABHRVST")) {
                     record.setExpenseCategory("Labour");
                     record.setExpenseName("Paid Labor");
                 }
-                
-                if(explist.get(i).getExpensetype().equals("SALARY")||
-                   explist.get(i).getExpensetype().equals("LOAN")||
-                   explist.get(i).getExpensetype().equals("BONUS")||
-                   explist.get(i).getExpensetype().equals("LEAVE")){
-                   record.setExpenseCategory(explist.get(i).getExpensetype()); 
-                   record.setExpenseName(getEmpNameForId(explist.get(i).getExpenserefid().toString()).getName());
-                }               
-               
+
+                if (explist.get(i).getExpensetype().equals("SALARY")
+                        || explist.get(i).getExpensetype().equals("LOAN")
+                        || explist.get(i).getExpensetype().equals("BONUS")
+                        || explist.get(i).getExpensetype().equals("LEAVE")) {
+                    record.setExpenseCategory(explist.get(i).getExpensetype());
+                    record.setExpenseName(getEmpNameForId(explist.get(i).getExpenserefid().toString()).getName());
+                }
+
                 record.setCost(String.format("%.2f", explist.get(i).getExpediture()));
                 totalcost = totalcost + explist.get(i).getExpediture().floatValue();
                 mysqlDate = explist.get(i).getDate();
@@ -1308,7 +1237,7 @@ public class MasterDataServices {
                     record.setDate("");
                 }
                 recordList.add(record);
-                record = new AllExpenseReportDTO(); 
+                record = new AllExpenseReportDTO();
                 if (i == explist.size() - 1) {
                     record.setExpenseCategory("Total");
                     record.setExpenseName("");
@@ -1317,8 +1246,7 @@ public class MasterDataServices {
                     recordList.add(record);
                 }
             }
-            
-            
+
 //####################### with resource wise total ###################################            
 //            for (int i = 0; i < reclist.size(); i++) {
 //                record.setResourceName(getResourceNameForId(reclist.get(i).getResourceid()).getResourceName());
@@ -1355,17 +1283,15 @@ public class MasterDataServices {
 //            }
 //####################### with resource wise total ###################################
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Resourcecrop record is found.");            
+        } catch (NoResultException e) {
+            System.out.println("No Resourcecrop record is found.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getRescropCostMonthly.");
             return null;
         }
-    }        
-    
+    }
+
     public List<ResAcqReportDTO> getAcqResources() {
         ResAcquireDAO acqresdao = new ResAcquireDAO(utx, emf);
         Date mysqlDate;
@@ -1385,7 +1311,7 @@ public class MasterDataServices {
                 record.setAcqAmt(String.format("%.2f", reclist.get(i).getAmount()));
                 String expenseCategory = "RES";
                 record.setCost(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
-                         expenseCategory).getExpenditure());
+                        expenseCategory).getExpenditure());
                 mysqlDate = reclist.get(i).getAquiredate();
                 if (mysqlDate != null) {
                     record.setAcqDt(formatter.format(mysqlDate));
@@ -1394,11 +1320,11 @@ public class MasterDataServices {
                 }
                 recordList.add(record);
                 record = new ResAcqReportDTO();
-                
-                if((i+1) == reclist.size()){//if the record is the lat one total record to be constructed.
+
+                if ((i + 1) == reclist.size()) {//if the record is the lat one total record to be constructed.
                     amounttotal = amounttotal + reclist.get(i).getAmount().floatValue();
                     totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
-                             expenseCategory).getExpenditure());
+                            expenseCategory).getExpenditure());
                     record.setResName("Total");
                     record.setUnit(unit);
                     record.setAcqDt("");
@@ -1425,8 +1351,8 @@ public class MasterDataServices {
                         amounttotal = 0;
                         totalcost = 0;
                     }
-                }                
-            }            
+                }
+            }
             return recordList;
         } catch (NoResultException e) {
             System.out.println("No Resourceaquire record is found.");
@@ -1553,7 +1479,7 @@ public class MasterDataServices {
             for (int i = 0; i < reclist.size(); i++) {
                 String labourCategory = "LABHRVST";
                 appliedamt = appliedamt + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getApplicationid().toString(),
-                         labourCategory).getExpenditure());
+                        labourCategory).getExpenditure());
             }
             record.setApplicationId("0");
             record.setHarvestId(harvestid);
@@ -1569,7 +1495,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<ResourceCropDTO> getRescropDetails(String harvestid, Date sdate, Date edate) {
         ResourceCropDAO rescropdao = new ResourceCropDAO(utx, emf);
         List<ResourceCropDTO> recordlist = new ArrayList<>();
@@ -1608,7 +1534,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<LabourCropDTO> getLabcropDetails(String harvestid, Date sdate, Date edate) {
         LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
         List<LabourCropDTO> recordlist = new ArrayList<>();
@@ -1627,9 +1553,9 @@ public class MasterDataServices {
                 record.setApplicationDate(formatter.format(mysqlDate));
                 String labourCategory = "LABHRVST";
                 record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId(),
-                         labourCategory).getExpenditure());
+                        labourCategory).getExpenditure());
                 record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId(),
-                         labourCategory).getCommString());
+                        labourCategory).getCommString());
                 recordlist.add(record);
                 record = new LabourCropDTO();
             }
@@ -1643,7 +1569,7 @@ public class MasterDataServices {
             return null;
         }
     }
-        
+
     public int getMaxEmployeeId() {
         EmployeeDAO empdao = new EmployeeDAO(utx, emf);
         try {
@@ -1673,7 +1599,7 @@ public class MasterDataServices {
 
             mysqlDate = formatter.parse(employeerec.getSdate());
             rec.setStartdate(mysqlDate);
-            
+
             if (employeerec.getEdate() != null) {
                 rec.setEnddate(formatter.parse(employeerec.getEdate()));
             } else {
@@ -1689,7 +1615,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public int editEmployeeRecord(EmployeeDTO employeerec) {
         EmployeeDAO empdao = new EmployeeDAO(utx, emf);
         Date mysqlDate;
@@ -1705,7 +1631,7 @@ public class MasterDataServices {
 
             mysqlDate = formatter.parse(employeerec.getSdate());
             rec.setStartdate(mysqlDate);
-            
+
             if (employeerec.getEdate() != null) {
                 rec.setEnddate(formatter.parse(employeerec.getEdate()));
             } else {
@@ -1721,47 +1647,45 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public List<EmployeeDTO> getActiveEmployeeList() {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);  
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
         List<EmployeeDTO> recordList = new ArrayList<>();
         EmployeeDTO record = new EmployeeDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Employee> emplist = empdao.getActiveList();
             for (int i = 0; i < emplist.size(); i++) {
                 record.setId(String.valueOf(emplist.get(i).getId()));
                 record.setName(emplist.get(i).getName());
                 record.setAddress(emplist.get(i).getAddress());
-                record.setPhno(emplist.get(i).getContact());               
+                record.setPhno(emplist.get(i).getContact());
                 record.setSalary(String.format("%.2f", emplist.get(i).getSalary()));
-                mysqlDate = emplist.get(i).getStartdate();                    
+                mysqlDate = emplist.get(i).getStartdate();
                 record.setSdate(formatter.format(mysqlDate));
                 record.setEdate(null);
                 recordList.add(record);
                 record = new EmployeeDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No employee are found");            
+        } catch (NoResultException e) {
+            System.out.println("No employee are found");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getActiveEmployeeList.");
             return null;
         }
     }
-    
+
     public EmployeeDTO getEmpNameForId(String empid) {
-        EmployeeDAO empdao = new EmployeeDAO(utx, emf);        
-        EmployeeDTO record = new EmployeeDTO(); 
+        EmployeeDAO empdao = new EmployeeDAO(utx, emf);
+        EmployeeDTO record = new EmployeeDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             Employee emprec = empdao.getEmpName(Integer.parseInt(empid));
             record.setId(empid);
             record.setName(emprec.getName());
@@ -1771,20 +1695,18 @@ public class MasterDataServices {
             record.setSalary(String.format("%.2f", emprec.getSalary()));
             mysqlDate = emprec.getStartdate();
             record.setSdate(formatter.format(mysqlDate));
-            if(emprec.getEnddate()==null){
+            if (emprec.getEnddate() == null) {
                 record.setEdate(null);
             } else {
                 mysqlDate = emprec.getEnddate();
                 record.setEdate(formatter.format(mysqlDate));
             }
-                
+
             return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No resource found for this resourceid");            
+        } catch (NoResultException e) {
+            System.out.println("No resource found for this resourceid");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResourceNameForId(int resourceid).");
             return null;
         }
@@ -1821,7 +1743,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public EmpExpDTO getEmpActiveExpRec(String empid, String expcat) {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
 
@@ -1854,7 +1776,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public int getMaxEmpExpenseId() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         try {
@@ -1888,7 +1810,7 @@ public class MasterDataServices {
             }
             mysqlDate = formatter.parse(empexprec.getSdate());
             rec.setStartdate(mysqlDate);
-            
+
             if (empexprec.getEdate() != null) {
                 rec.setEnddate(formatter.parse(empexprec.getEdate()));
             } else {
@@ -1905,7 +1827,6 @@ public class MasterDataServices {
         }
     }
 
-
     public int getCountLeaveEmp(String empid) {
         EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
         try {
@@ -1919,7 +1840,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public int getMaxEmpLeaveId() {
         EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
         try {
@@ -1933,7 +1854,7 @@ public class MasterDataServices {
             return 0;
         }
     }
-    
+
     public int addEmpleaveRecord(EmpLeaveDTO leaverec) {
         EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
         Date mysqlDate;
@@ -1957,7 +1878,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public List<EmpLeaveDTO> getEmpleaveRecords() {
         EmpLeaveDAO leavedao = new EmpLeaveDAO(utx, emf);
         List<EmpLeaveDTO> recordList = new ArrayList<>();
@@ -1987,7 +1908,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<EmpExpDTO> getEmpActiveLoans() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
@@ -2023,7 +1944,7 @@ public class MasterDataServices {
             return null;
         }
     }
-    
+
     public List<EmpExpDTO> getEmpPaidLoans() {
         EmpexpenseDAO empexpdao = new EmpexpenseDAO(utx, emf);
         List<EmpExpDTO> recordList = new ArrayList<>();
@@ -2109,32 +2030,32 @@ public class MasterDataServices {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
             Empexpense rec = new Empexpense();
-            
+
             rec.setId(Integer.valueOf(empexprec.getId()));
             rec.setEmployeeid(Integer.parseInt(empexprec.getEmpid()));
             rec.setTotalloan(BigDecimal.valueOf(Double.parseDouble(empexprec.getTotal())));
             rec.setOutstanding(BigDecimal.valueOf(Double.parseDouble(empexprec.getOutstanding())));
             rec.setExpcategory(empexprec.getExpcategory());
-            
+
             mysqlDate = formatter.parse(empexprec.getSdate());
             rec.setStartdate(mysqlDate);
-            
-            if (empexprec.getEdate()!= null) {
+
+            if (empexprec.getEdate() != null) {
                 rec.setEnddate(formatter.parse(empexprec.getEdate()));
-            } else rec.setEnddate(null);            
+            } else {
+                rec.setEnddate(null);
+            }
             empexpdao.edit(rec);
             return SUCCESS;
-        }
-        catch (NoResultException e) {
-            System.out.println("This empexpense record does not exist.");            
+        } catch (NoResultException e) {
+            System.out.println("This empexpense record does not exist.");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in editEmpExpRecord.");
             return DB_SEVERE;
         }
     }
-    
+
     public int getMaxShopId() {
         ShopDAO shopdao = new ShopDAO(utx, emf);
         try {
@@ -2148,9 +2069,9 @@ public class MasterDataServices {
             return 0;
         }
     }
-    
+
     public int addShopRecord(ShopDTO shoprec) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);        
+        ShopDAO shopdao = new ShopDAO(utx, emf);
         try {
             Shop rec = new Shop();
             rec.setShopid(Integer.valueOf(shoprec.getShopId()));
@@ -2168,9 +2089,10 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+
     public int editShopRecord(ShopDTO shoprec) {
         ShopDAO shopdao = new ShopDAO(utx, emf);
-        
+
         try {
             Shop rec = new Shop();
             rec.setShopid(Integer.valueOf(shoprec.getShopId()));
@@ -2188,25 +2110,23 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public int delShop(ShopDTO shopres) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);                
+        ShopDAO shopdao = new ShopDAO(utx, emf);
         try {
             Shop shopentity = new Shop();
-            shopentity.setShopid(Integer.valueOf(shopres.getShopId())); 
+            shopentity.setShopid(Integer.valueOf(shopres.getShopId()));
             shopdao.destroy(shopentity.getShopid());
             return SUCCESS;
-        }
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this Shop does not exist");            
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this Shop does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in delShop.");
             return DB_SEVERE;
         }
     }
-    
+
 //#######################  monthly expense total ###################################    
 //    public List<ExpenseDTO> getExpenseMonthly(String startdate, String enddate) {
 //        ExpenseDAO expensedao = new ExpenseDAO(utx, emf);
@@ -2272,10 +2192,9 @@ public class MasterDataServices {
 //            return null;
 //        }
 //    }     
-    
 //    #################################Report batch#####################################################    
     public LabourCropDTO getLabCropForId(String appliedid) {
-        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);       
+        LabourCropDAO labcropdao = new LabourCropDAO(utx, emf);
         LabourCropDTO record = new LabourCropDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
@@ -2284,11 +2203,11 @@ public class MasterDataServices {
             Labourcrop rec = labcropdao.getLabCropHarvestId(Integer.parseInt(appliedid));
 
             record.setApplicationId(rec.getApplicationid().toString());
-            record.setHarvestId(Integer.toString(rec.getHarvestid()));            
+            record.setHarvestId(Integer.toString(rec.getHarvestid()));
             mysqlDate = rec.getAppldate();
             record.setApplicationDate(formatter.format(mysqlDate));
             String labourCategory = "LABHRVST";
-            record.setAppliedAmount(getLabExpenseForHrvst(appliedid, labourCategory).getExpenditure());            
+            record.setAppliedAmount(getLabExpenseForHrvst(appliedid, labourCategory).getExpenditure());
             record.setExpenseComments(getLabExpenseForHrvst(appliedid, labourCategory).getCommString());
             return record;
         } catch (NoResultException e) {
@@ -2299,17 +2218,15 @@ public class MasterDataServices {
             return null;
         }
     }
-    
-    public int getMaxTaskplanId(){
+
+    public int getMaxTaskplanId() {
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         try {
             return taskplandao.getMaxId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in resourcecrop table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in resourcecrop table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxTaskplanId().");
             //            return DB_SEVERE;
             return 0;
@@ -2317,57 +2234,58 @@ public class MasterDataServices {
     }
 
     public List<TaskPlanDTO> getTaskdDetailsBetweenDates(Date startdate, Date enddate) {
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);  
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         List<TaskPlanDTO> recordList = new ArrayList<>();
         TaskPlanDTO record = new TaskPlanDTO();
         Date mysqlDate;
         String pattern = "dd MMM yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Taskplan> taskplanlist = taskplandao.detailsBetweenDates(startdate, enddate);
             for (int i = 0; i < taskplanlist.size(); i++) {
                 record.setTaskId(taskplanlist.get(i).getId().toString());
                 record.setTaskType(taskplanlist.get(i).getTasktype());
-                mysqlDate = taskplanlist.get(i).getTaskdate();                    
+                mysqlDate = taskplanlist.get(i).getTaskdate();
                 record.setTaskDt(formatter.format(mysqlDate));
                 record.setTaskName(taskplanlist.get(i).getTaskname());
                 record.setHarvestId(String.valueOf(taskplanlist.get(i).getHasvestid()));
                 record.setHarvestDto(getHarvestRecForId(String.valueOf(taskplanlist.get(i).getHasvestid())));
-                if (taskplanlist.get(i).getResourceid() == null){
+                if (taskplanlist.get(i).getResourceid() == null) {
                     record.setResourceId(null);
                     record.setResourceName(null);
-                }else{
+                } else {
                     record.setResourceId(String.valueOf(taskplanlist.get(i).getResourceid()));
                     record.setResourceName(getResourceNameForId(taskplanlist.get(i).getResourceid())
-                            .getResourceName()+"(" +getResourceNameForId(taskplanlist.get(i).getResourceid())
-                                    .getUnit()+")");
+                            .getResourceName() + "(" + getResourceNameForId(taskplanlist.get(i).getResourceid())
+                                    .getUnit() + ")");
                 }
-                if (taskplanlist.get(i).getAppamtcost() == null)
+                if (taskplanlist.get(i).getAppamtcost() == null) {
                     record.setAppliedAmtCost(null);
-                else
+                } else {
                     record.setAppliedAmtCost(String.format("%.2f", taskplanlist.get(i).getAppamtcost()));
-                
-                if (taskplanlist.get(i).getAppliedamt() == null)
+                }
+
+                if (taskplanlist.get(i).getAppliedamt() == null) {
                     record.setAppliedAmount(null);
-                else
+                } else {
                     record.setAppliedAmount(String.format("%.2f", taskplanlist.get(i).getAppliedamt()));
+                }
                 record.setAppliedFlag(taskplanlist.get(i).getAppliedflag());
                 record.setComments(taskplanlist.get(i).getComments());
                 recordList.add(record);
                 record = new TaskPlanDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No task is planned for this date range.");            
+        } catch (NoResultException e) {
+            System.out.println("No task is planned for this date range.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getTaskdDetailsBetweenDates.");
             return null;
         }
     }
-    public int addTaskplanRecord(TaskPlanDTO taskrec) {        
+
+    public int addTaskplanRecord(TaskPlanDTO taskrec) {
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
@@ -2378,37 +2296,42 @@ public class MasterDataServices {
             record.setTasktype(taskrec.getTaskType());
             record.setTaskname(taskrec.getTaskName());
             record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-            if(taskrec.getResourceId()==null){
-               record.setResourceid(null);
-            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
-            
-            if(taskrec.getAppliedAmount()==null){
-               record.setAppliedamt(null);
-            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmount())));
-             
-            if(taskrec.getAppliedAmtCost()==null){
-               record.setAppamtcost(null);
-            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmtCost())));
-            
+            if (taskrec.getResourceId() == null) {
+                record.setResourceid(null);
+            } else {
+                record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
+            }
+
+            if (taskrec.getAppliedAmount() == null) {
+                record.setAppliedamt(null);
+            } else {
+                record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                        .getAppliedAmount())));
+            }
+
+            if (taskrec.getAppliedAmtCost() == null) {
+                record.setAppamtcost(null);
+            } else {
+                record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                        .getAppliedAmtCost())));
+            }
+
             mysqlDate = formatter.parse(taskrec.getTaskDt());
-            record.setTaskdate(mysqlDate);  
+            record.setTaskdate(mysqlDate);
             record.setAppliedflag(taskrec.getAppliedFlag());
             record.setComments(taskrec.getComments());
             taskplandao.create(record);
             return SUCCESS;
-        } 
-        catch (PreexistingEntityException e) {
-            System.out.println("Record is already there for this taskplan record");            
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this taskplan record");
             return DB_DUPLICATE;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in addTaskplanRecord.");
             return DB_SEVERE;
         }
     }
-    public int editTaskplanRecord(TaskPlanDTO taskrec) {        
+
+    public int editTaskplanRecord(TaskPlanDTO taskrec) {
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
@@ -2419,57 +2342,59 @@ public class MasterDataServices {
             record.setTasktype(taskrec.getTaskType());
             record.setTaskname(taskrec.getTaskName());
             record.setHasvestid(Integer.parseInt(taskrec.getHarvestId()));
-            if(taskrec.getResourceId()==null){
-               record.setResourceid(null);
-            } else record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
-             if(taskrec.getAppliedAmount()==null){
-               record.setAppliedamt(null);
-            } else record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmount())));
-             
-            if(taskrec.getAppliedAmtCost()==null){
-               record.setAppamtcost(null);
-            } else record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
-                    .getAppliedAmtCost())));
-            
+            if (taskrec.getResourceId() == null) {
+                record.setResourceid(null);
+            } else {
+                record.setResourceid(Integer.valueOf(taskrec.getResourceId()));
+            }
+            if (taskrec.getAppliedAmount() == null) {
+                record.setAppliedamt(null);
+            } else {
+                record.setAppliedamt(BigDecimal.valueOf(Double.parseDouble(taskrec
+                        .getAppliedAmount())));
+            }
+
+            if (taskrec.getAppliedAmtCost() == null) {
+                record.setAppamtcost(null);
+            } else {
+                record.setAppamtcost(BigDecimal.valueOf(Double.parseDouble(taskrec
+                        .getAppliedAmtCost())));
+            }
+
             mysqlDate = formatter.parse(taskrec.getTaskDt());
-            record.setTaskdate(mysqlDate);    
+            record.setTaskdate(mysqlDate);
             record.setAppliedflag(taskrec.getAppliedFlag());
             record.setComments(taskrec.getComments());
             taskplandao.edit(record);
             return SUCCESS;
-        } 
-        catch (NoResultException e) {
-            System.out.println("This taskplan record does not exist.");            
+        } catch (NoResultException e) {
+            System.out.println("This taskplan record does not exist.");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in editTaskplanRecord.");
             return DB_SEVERE;
         }
     }
-    
-    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {        
+
+    public int deleteTaskplanRecord(TaskPlanDTO taskrec) {
         TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
-        
+
         try {
             Taskplan record = new Taskplan();
-            record.setId(Integer.valueOf(taskrec.getTaskId()));            
+            record.setId(Integer.valueOf(taskrec.getTaskId()));
             taskplandao.destroy(record.getId());
             return SUCCESS;
-        } 
-        catch (NonexistentEntityException e) {
-            System.out.println("Record for this Taskplan does not exist");            
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this Taskplan does not exist");
             return DB_NON_EXISTING;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in deleteTaskplanRecord.");
             return DB_SEVERE;
         }
     }
-    
+
     public TaskPlanDTO getTaskPlanForId(String id) {
-        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf); 
+        TaskplanDAO taskplandao = new TaskplanDAO(utx, emf);
         TaskPlanDTO record = new TaskPlanDTO();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
@@ -2489,12 +2414,13 @@ public class MasterDataServices {
             } else {
                 record.setResourceId(String.valueOf(taskplanrec.getResourceid()));
             }
-            
-            if (taskplanrec.getAppamtcost() == null)
-                    record.setAppliedAmtCost(null);
-                else
-                    record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
-            
+
+            if (taskplanrec.getAppamtcost() == null) {
+                record.setAppliedAmtCost(null);
+            } else {
+                record.setAppliedAmtCost(String.format("%.2f", taskplanrec.getAppamtcost()));
+            }
+
             if (taskplanrec.getAppliedamt() == null) {
                 record.setAppliedAmount(null);
             } else {
@@ -2503,17 +2429,15 @@ public class MasterDataServices {
             record.setAppliedFlag(taskplanrec.getAppliedflag());
             record.setComments(taskplanrec.getComments());
             return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No task is found for this id.");            
+        } catch (NoResultException e) {
+            System.out.println("No task is found for this id.");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getTaskPlanForId.");
             return null;
         }
     }
-    
+
     public int editHarvestRecord(HarvestDTO harvestrec) {
         HarvestDAO harvestdao = new HarvestDAO(utx, emf);
         Date mysqlDate;
@@ -2544,7 +2468,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
+
     public CropDTO getCropForId(String cropid) {
         CropDAO cropdao = new CropDAO(utx, emf);
         CropDTO record = new CropDTO();
@@ -2572,7 +2496,7 @@ public class MasterDataServices {
             } else {
                 record.setEndDate(formatter.format(mysqlDate));
             }
-            
+
             return record;
         } catch (NoResultException e) {
             System.out.println("No crop record is found for this cropid.");
@@ -2582,131 +2506,124 @@ public class MasterDataServices {
             return null;
         }
     }
+
     public List<CropDTO> getCropList() {
-        CropDAO cropdao = new CropDAO(utx, emf);        
+        CropDAO cropdao = new CropDAO(utx, emf);
         CropDTO record = new CropDTO();
         List<CropDTO> recordList = new ArrayList<>();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Crop> croplist = cropdao.getCropListAll();
             for (int i = 0; i < croplist.size(); i++) {
                 record.setCropId(croplist.get(i).getCropid().toString());
                 record.setCropName(croplist.get(i).getCropname());
-                if(croplist.get(i).getTotalstock()==null){
+                if (croplist.get(i).getTotalstock() == null) {
                     record.setTotalStock(null);
                 } else {
-                   record.setTotalStock(String.format("%.2f", croplist.get(i).getTotalstock()));
+                    record.setTotalStock(String.format("%.2f", croplist.get(i).getTotalstock()));
                 }
                 mysqlDate = croplist.get(i).getStartdate();
-                if(mysqlDate == null){
+                if (mysqlDate == null) {
                     record.setStartDate(null);
-                } else{
+                } else {
                     record.setStartDate(formatter.format(mysqlDate));
                 }
                 mysqlDate = croplist.get(i).getEnddate();
-                if(mysqlDate == null){
+                if (mysqlDate == null) {
                     record.setEndDate(null);
-                } else{
+                } else {
                     record.setEndDate(formatter.format(mysqlDate));
                 }
-                
+
                 recordList.add(record);
                 record = new CropDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Crops are added");            
+        } catch (NoResultException e) {
+            System.out.println("No Crops are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getCropList().");
             return null;
         }
     }
-    
+
     public List<InventoryDTO> getNonzeroInventoryForCrop(String cropid) {
-        InventoryDAO invdao = new InventoryDAO(utx, emf);        
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
         InventoryDTO record = new InventoryDTO();
         List<InventoryDTO> recordList = new ArrayList<>();
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        try {  
+        try {
             List<Inventory> inventorylist = invdao.getNonzeroInvForCrop(Integer.parseInt(cropid));
             for (int i = 0; i < inventorylist.size(); i++) {
                 record.setInventoryId(inventorylist.get(i).getId().toString());
                 record.setCropId(inventorylist.get(i).getCropid().toString());
                 record.setHarvestId(inventorylist.get(i).getHasvestid().toString());
-                
-                if(inventorylist.get(i).getCurrentqty()==null){
+
+                if (inventorylist.get(i).getCurrentqty() == null) {
                     record.setCurrentQty(null);
                 } else {
-                   record.setCurrentQty(String.format("%.2f", inventorylist.get(i).getCurrentqty()));
+                    record.setCurrentQty(String.format("%.2f", inventorylist.get(i).getCurrentqty()));
                 }
                 mysqlDate = inventorylist.get(i).getLastupdatedate();
-                if(mysqlDate == null){
+                if (mysqlDate == null) {
                     record.setLastupdatedate(null);
-                } else{
+                } else {
                     record.setLastupdatedate(formatter.format(mysqlDate));
                 }
-               
+
                 recordList.add(record);
                 record = new InventoryDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No Inventory for this crop are added");            
+        } catch (NoResultException e) {
+            System.out.println("No Inventory for this crop are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getNonzeroInventoryForCrop().");
             return null;
         }
     }
-    
+
     public List<HarvestDTO> getInvHarvForCropid(String cropid) {
-        InventoryDAO invdao = new InventoryDAO(utx, emf);        
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
         HarvestDTO record = new HarvestDTO();
         List<HarvestDTO> recordList = new ArrayList<>();
-        
-        try {  
+
+        try {
             List<Integer> harvestlist = invdao.getInvHarForCrop(Integer.parseInt(cropid));
             for (int i = 0; i < harvestlist.size(); i++) {
-                record = getHarvestRecForId(String.valueOf(harvestlist.get(i)));                
+                record = getHarvestRecForId(String.valueOf(harvestlist.get(i)));
                 recordList.add(record);
                 record = new HarvestDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No zero or non-zero Inventory for this crop are added");            
+        } catch (NoResultException e) {
+            System.out.println("No zero or non-zero Inventory for this crop are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getInvHarvForCropid().");
             return null;
         }
     }
-    
-    public int getMaxCropId(){
-        CropDAO cropdao = new CropDAO(utx, emf); 
+
+    public int getMaxCropId() {
+        CropDAO cropdao = new CropDAO(utx, emf);
         try {
             return cropdao.getMaxCropId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in Crop table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in Crop table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxCropId().");
             return 0;
         }
     }
-    
+
     public int addCropRecord(CropDTO croprec) {
         CropDAO cropdao = new CropDAO(utx, emf);
         Date mysqlDate;
@@ -2720,8 +2637,7 @@ public class MasterDataServices {
             mysqlDate = formatter.parse(croprec.getStartDate());
             rec.setStartdate(mysqlDate);
             rec.setEnddate(null);
-            
-            
+
             cropdao.create(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
@@ -2732,6 +2648,7 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+
     public int delCropRecord(CropDTO croprec) {
         CropDAO cropdao = new CropDAO(utx, emf);
         try {
@@ -2747,23 +2664,22 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
-    public int getMaxInventoryId(){
-        InventoryDAO invdao = new InventoryDAO(utx, emf); 
+
+    public int getMaxInventoryId() {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
         try {
             return invdao.getMaxInventoryId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in Inventory table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in Inventory table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxInventoryId().");
             return 0;
         }
     }
+
     public int addInventoryRecord(InventoryDTO invrec) {
-        InventoryDAO invdao = new InventoryDAO(utx, emf); 
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
         Date mysqlDate;
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -2772,10 +2688,10 @@ public class MasterDataServices {
             rec.setId(Integer.valueOf(invrec.getInventoryId()));
             rec.setCropid(Integer.valueOf(invrec.getCropId()));
             rec.setHasvestid(Integer.valueOf(invrec.getHarvestId()));
-            
+            rec.setProductid(Integer.valueOf(invrec.getProductId()));
             rec.setCurrentqty(BigDecimal.valueOf(Double.parseDouble(invrec.getCurrentQty())));
             mysqlDate = formatter.parse(invrec.getLastupdatedate());
-            rec.setLastupdatedate(mysqlDate);            
+            rec.setLastupdatedate(mysqlDate);
             invdao.create(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
@@ -2786,13 +2702,82 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    
-    
+
+    public int getMaxCropProdId() {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        try {
+            return cropproddao.getMaxCropProdId();
+        } catch (NoResultException e) {
+            System.out.println("No records in Cropproduct table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxCropProdId().");
+            return 0;
+        }
+    }
+
+    public int addCropproductRecord(CropProductDTO cropprodrec) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        try {
+            Cropproduct rec = new Cropproduct();
+            rec.setId(Integer.valueOf(cropprodrec.getId()));
+            rec.setCropid(Integer.valueOf(cropprodrec.getCropId()));
+            rec.setProductid(Integer.valueOf(cropprodrec.getProductId()));
+            rec.setProductname(cropprodrec.getProductName());
+            rec.setUnit(cropprodrec.getUnit());
+            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble(cropprodrec.getTotalstock())));
+
+            cropproddao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this cropproduct record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addCropproductRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+    public int delCropProductRecord(CropProductDTO cropprodrec) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        try {
+            Cropproduct rec = new Cropproduct();
+            rec.setId(Integer.valueOf(cropprodrec.getId()));
+            cropproddao.destroy(rec.getId());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This crop record does not exist for the Id");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " delCropProductRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+    public int delCropProductForCropid(CropProductDTO cropprodrec) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        try {
+            int rowsDeleted = cropproddao.deleteByCropId(
+                    Integer.parseInt(cropprodrec.getCropId()));
+
+            if (rowsDeleted > 0) {
+                return SUCCESS;
+            } else {
+                return DB_NON_EXISTING;
+            }
+
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in "
+                    + "delCropProductForCropid(String resid).");
+            return DB_SEVERE;
+        }
+    }
+
     public int addSensorDataRecord(SensorDTO sensorRec) {
-        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
+        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
             Sensordata rec = new Sensordata();
-            int idsensordata = getMaxSensDataId()+1; 
+            int idsensordata = getMaxSensDataId() + 1;
             rec.setId(idsensordata);
             rec.setSensorid(Integer.toString(sensorRec.getBoardId()));
             rec.setData(BigDecimal.valueOf(sensorRec.getData()));
@@ -2800,7 +2785,7 @@ public class MasterDataServices {
             Date dateForDatabase = Date.from(nowHrMin.atZone(ZoneId.systemDefault()).toInstant());
             rec.setUpdatetime(dateForDatabase);
             sensordao.create(rec);
-            
+
             return SUCCESS;
         } catch (PreexistingEntityException e) {
             System.out.println("Record is already there for this Sensordata record");
@@ -2810,72 +2795,65 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-    public int getMaxSensDataId(){
+
+    public int getMaxSensDataId() {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
             return sensordao.getMaxSenId();
-        }
-        catch (NoResultException e) {
-            System.out.println("No records in Sensordata table");            
+        } catch (NoResultException e) {
+            System.out.println("No records in Sensordata table");
             return 0;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getMaxSensDataId().");
             return 0;
         }
     }
-    
+
     public List<SensorDataDTO> getSensorDataList() {
-        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);        
+        SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         SensorDataDTO record = new SensorDataDTO();
         List<SensorDataDTO> recordList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MMM-dd HH:mm");
         String formattedDate;
-        try {  
+        try {
             List<Sensordata> sensordata = sensordao.getAllSensorData();
             for (int i = 0; i < sensordata.size(); i++) {
                 record.setId(Integer.toString(sensordata.get(i).getId()));
-                record.setIdsensor(getSendtlsForId
-                                  (sensordata.get(i).getSensorid()).getParameter());
-                record.setData(String.format("%.2f",sensordata.get(i).getData().floatValue()));
+                record.setIdsensor(getSendtlsForId(sensordata.get(i).getSensorid()).getParameter());
+                record.setData(String.format("%.2f", sensordata.get(i).getData().floatValue()));
                 Date dbDate = sensordata.get(i).getUpdatetime();
                 formattedDate = sdf.format(dbDate);
                 record.setUpdatetime(formattedDate);
                 recordList.add(record);
                 record = new SensorDataDTO();
-            }        
+            }
             return recordList;
-        }
-        catch (NoResultException e) {
-            System.out.println("No sensor data are added");            
+        } catch (NoResultException e) {
+            System.out.println("No sensor data are added");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getSensorDataList().");
             return null;
         }
     }
-    
+
     public SensordtlsDTO getSendtlsForId(String id) {
-        SensorDtlsDAO sensordao = new SensorDtlsDAO(utx, emf);        
-        SensordtlsDTO record = new SensordtlsDTO(); 
-        
-        try {  
+        SensorDtlsDAO sensordao = new SensorDtlsDAO(utx, emf);
+        SensordtlsDTO record = new SensordtlsDTO();
+
+        try {
             Sensordetail sensorec = sensordao.getParamName(Integer.parseInt(id));
             record.setId(id);
             record.setIdsensor(sensorec.getSensorid());
             record.setParameter(sensorec.getParameter());
             return record;
-        }
-        catch (NoResultException e) {
-            System.out.println("No sensor found for this id");            
+        } catch (NoResultException e) {
+            System.out.println("No sensor found for this id");
             return null;
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception + " has occurred in getSendtlsForId.");
             return null;
         }
     }
-    
-}
 
+}

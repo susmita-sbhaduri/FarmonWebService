@@ -49,7 +49,13 @@
     </named-query>   
     <named-query name="Crop.getMaxCropId">
         <query>SELECT MAX(c.cropid) FROM Crop c</query>
-    </named-query> 
+    </named-query>
+    <named-query name="Cropproduct.getMaxCropprodId">
+        <query>SELECT MAX(c.id) FROM Cropproduct c</query>
+    </named-query>
+    <named-query name="Cropproduct.deleteByCropId">
+        <query>DELETE FROM Cropproduct c WHERE c.cropid = :cropid</query>
+    </named-query>
     <named-query name="Farmresource.listAll">
         <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>
