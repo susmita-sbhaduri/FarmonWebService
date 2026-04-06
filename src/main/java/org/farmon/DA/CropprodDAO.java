@@ -9,7 +9,9 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.util.List;
 import org.farmon.JPA.CropproductJpaController;
+import org.farmon.entities.Cropproduct;
 
 /**
  *
@@ -26,7 +28,15 @@ public class CropprodDAO extends CropproductJpaController{
         TypedQuery<Integer> query = em.createNamedQuery("Cropproduct.getMaxCropprodId", Integer.class);        
         return query.getSingleResult();
     }
-    
+
+    public List<Cropproduct> getNonzeroProdForCrop(int cropid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Cropproduct> query = em.createNamedQuery("Cropproduct.listNonzeroProdForCrop", Cropproduct.class);
+        query.setParameter("cropid", cropid);
+        List<Cropproduct> listofprod = query.getResultList();
+        return listofprod;
+    }
+
     public int deleteByCropId(int targetCropId) throws Exception {
         EntityManager em = null;
         int rowsDeleted = 0;

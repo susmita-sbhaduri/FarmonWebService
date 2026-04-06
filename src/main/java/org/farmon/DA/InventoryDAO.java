@@ -6,6 +6,7 @@ package org.farmon.DA;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import java.util.List;
@@ -17,17 +18,18 @@ import org.farmon.entities.Inventory;
  * @author sb
  */
 public class InventoryDAO extends InventoryJpaController{
-    
+    private UserTransaction myUtx;
     public InventoryDAO(UserTransaction utx, EntityManagerFactory emf) {
         super(utx, emf);
+        this.myUtx = utx; // store reference for your own use
     }
-    public List<Inventory> getNonzeroInvForCrop(int cropid) {
-        EntityManager em = getEntityManager();
-        TypedQuery<Inventory> query = em.createNamedQuery("Inventory.listNonzeroInvForCrop", Inventory.class);            
-        query.setParameter("cropid", cropid);
-        List<Inventory> listofinv = query.getResultList();
-        return listofinv;
-    }
+//    public List<Inventory> getNonzeroInvForCrop(int cropid) {
+//        EntityManager em = getEntityManager();
+//        TypedQuery<Inventory> query = em.createNamedQuery("Inventory.listNonzeroInvForCrop", Inventory.class);            
+//        query.setParameter("cropid", cropid);
+//        List<Inventory> listofinv = query.getResultList();
+//        return listofinv;
+//    }
     public List<Integer> getInvHarForCrop(int id) {
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Inventory.invHarForCrop", Integer.class);
@@ -39,5 +41,25 @@ public class InventoryDAO extends InventoryJpaController{
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Inventory.getMaxInventoryId", Integer.class);        
         return query.getSingleResult();
+    }
+    
+    public int deleteInvByCropId(int targetCropId) throws Exception {
+        EntityManager em = null;
+        int rowsDeleted = 0;
+        try {
+            myUtx.begin();
+            em = getEntityManager();
+            Query query = em.createNamedQuery("Inventory.deleteByCropId");
+            query.setParameter("cropid", targetCropId);
+            rowsDeleted = query.executeUpdate();
+            myUtx.commit();
+        } catch (Exception ex) {
+            if (myUtx != null) myUtx.rollback();
+            throw ex;
+        } finally {
+            if (em != null) em.close();
+        }
+        return rowsDeleted;
+               
     }
 }

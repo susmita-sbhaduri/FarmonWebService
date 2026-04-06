@@ -56,6 +56,9 @@
     <named-query name="Cropproduct.deleteByCropId">
         <query>DELETE FROM Cropproduct c WHERE c.cropid = :cropid</query>
     </named-query>
+    <named-query name="Cropproduct.listNonzeroProdForCrop">
+        <query>SELECT c FROM Cropproduct c WHERE c.cropid =:cropid AND c.totalstock &gt; 0</query>
+    </named-query>
     <named-query name="Farmresource.listAll">
         <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>
@@ -267,11 +270,12 @@
     <named-query name="Inventory.getMaxInventoryId">
         <query>SELECT MAX(i.id) FROM Inventory i</query>
     </named-query>
-    <named-query name="Inventory.listNonzeroInvForCrop">
-        <query>SELECT i FROM Inventory i WHERE i.cropid =:cropid AND i.currentqty &gt; 0</query>
-    </named-query>
+   
     <named-query name="Inventory.invHarForCrop">
         <query>SELECT DISTINCT i.hasvestid FROM Inventory i WHERE i.cropid = :cropid</query>
+    </named-query>
+    <named-query name="Inventory.deleteByCropId">
+        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid</query>
     </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 

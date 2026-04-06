@@ -2550,41 +2550,28 @@ public class MasterDataServices {
         }
     }
 
-    public List<InventoryDTO> getNonzeroInventoryForCrop(String cropid) {
-        InventoryDAO invdao = new InventoryDAO(utx, emf);
-        InventoryDTO record = new InventoryDTO();
-        List<InventoryDTO> recordList = new ArrayList<>();
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+    public List<CropProductDTO> getNonzeroCropprodForCrop(String cropid) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        CropProductDTO record = new CropProductDTO();
+        List<CropProductDTO> recordList = new ArrayList<>();
         try {
-            List<Inventory> inventorylist = invdao.getNonzeroInvForCrop(Integer.parseInt(cropid));
-            for (int i = 0; i < inventorylist.size(); i++) {
-                record.setInventoryId(inventorylist.get(i).getId().toString());
-                record.setCropId(inventorylist.get(i).getCropid().toString());
-                record.setHarvestId(inventorylist.get(i).getHasvestid().toString());
-
-                if (inventorylist.get(i).getCurrentqty() == null) {
-                    record.setCurrentQty(null);
-                } else {
-                    record.setCurrentQty(String.format("%.2f", inventorylist.get(i).getCurrentqty()));
-                }
-                mysqlDate = inventorylist.get(i).getLastupdatedate();
-                if (mysqlDate == null) {
-                    record.setLastupdatedate(null);
-                } else {
-                    record.setLastupdatedate(formatter.format(mysqlDate));
-                }
-
+            List<Cropproduct> prodlist = cropproddao.getNonzeroProdForCrop(Integer.parseInt(cropid));
+            for (int i = 0; i < prodlist.size(); i++) {
+                record.setId(prodlist.get(i).getId().toString());
+                record.setCropId(prodlist.get(i).getCropid().toString());
+                record.setProductId(prodlist.get(i).getProductid().toString());
+                record.setProductName(prodlist.get(i).getProductname());
+                record.setTotalstock(String.format("%.2f", prodlist.get(i).getTotalstock()));
+                record.setUnit(prodlist.get(i).getUnit());
                 recordList.add(record);
-                record = new InventoryDTO();
+                record = new CropProductDTO();
             }
             return recordList;
         } catch (NoResultException e) {
-            System.out.println("No Inventory for this crop are added");
+            System.out.println("No product for this crop are added");
             return null;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getNonzeroInventoryForCrop().");
+            System.out.println(exception + " has occurred in getNonzeroCropprodForCrop().");
             return null;
         }
     }
@@ -2633,7 +2620,7 @@ public class MasterDataServices {
             Crop rec = new Crop();
             rec.setCropid(Integer.valueOf(croprec.getCropId()));
             rec.setCropname(croprec.getCropName());
-            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble("0.00")));
+            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble(croprec.getTotalStock())));
             mysqlDate = formatter.parse(croprec.getStartDate());
             rec.setStartdate(mysqlDate);
             rec.setEnddate(null);
@@ -2702,7 +2689,26 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int delInventoryForCropid(InventoryDTO invrec) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        try {
+            int rowsDeleted = invdao.deleteInvByCropId(
+                    Integer.parseInt(invrec.getCropId()));
 
+            if (rowsDeleted > 0) {
+                return SUCCESS;
+            } else {
+                return DB_NON_EXISTING;
+            }
+
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in "
+                    + "delInventoryForCropid.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int getMaxCropProdId() {
         CropprodDAO cropproddao = new CropprodDAO(utx, emf);
         try {
