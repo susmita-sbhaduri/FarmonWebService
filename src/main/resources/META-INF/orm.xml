@@ -59,6 +59,9 @@
     <named-query name="Cropproduct.listNonzeroProdForCrop">
         <query>SELECT c FROM Cropproduct c WHERE c.cropid =:cropid AND c.totalstock &gt; 0</query>
     </named-query>
+    <named-query name="Cropproduct.listAllProdForCrop">
+        <query>SELECT c FROM Cropproduct c WHERE c.cropid =:cropid</query>
+    </named-query>
     <named-query name="Farmresource.listAll">
         <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>

@@ -2575,6 +2575,32 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public List<CropProductDTO> getAllCropprodForCrop(String cropid) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        CropProductDTO record = new CropProductDTO();
+        List<CropProductDTO> recordList = new ArrayList<>();
+        try {
+            List<Cropproduct> prodlist = cropproddao.getAllProdForCrop(Integer.parseInt(cropid));
+            for (int i = 0; i < prodlist.size(); i++) {
+                record.setId(prodlist.get(i).getId().toString());
+                record.setCropId(prodlist.get(i).getCropid().toString());
+                record.setProductId(prodlist.get(i).getProductid().toString());
+                record.setProductName(prodlist.get(i).getProductname());
+                record.setTotalstock(String.format("%.2f", prodlist.get(i).getTotalstock()));
+                record.setUnit(prodlist.get(i).getUnit());
+                recordList.add(record);
+                record = new CropProductDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No product for this crop are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getAllCropprodForCrop().");
+            return null;
+        }
+    }
 
     public List<HarvestDTO> getInvHarvForCropid(String cropid) {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
@@ -2651,7 +2677,33 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int editCropRecord(CropDTO croprec) {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Crop rec = new Crop();
+            rec.setCropid(Integer.valueOf(croprec.getCropId()));
+            rec.setCropname(croprec.getCropName());
+            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble(croprec.getTotalStock())));
+            mysqlDate = formatter.parse(croprec.getStartDate());
+            rec.setStartdate(mysqlDate);
+            mysqlDate = formatter.parse(croprec.getEndDate());
+            rec.setEnddate(mysqlDate);
 
+            cropdao.edit(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("This crop record to be edited, does not exist");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editCropRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int getMaxInventoryId() {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         try {

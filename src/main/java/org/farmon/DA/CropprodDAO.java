@@ -36,6 +36,14 @@ public class CropprodDAO extends CropproductJpaController{
         List<Cropproduct> listofprod = query.getResultList();
         return listofprod;
     }
+    
+    public List<Cropproduct> getAllProdForCrop(int cropid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Cropproduct> query = em.createNamedQuery("Cropproduct.listAllProdForCrop", Cropproduct.class);
+        query.setParameter("cropid", cropid);
+        List<Cropproduct> listofprod = query.getResultList();
+        return listofprod;
+    }
 
     public int deleteByCropId(int targetCropId) throws Exception {
         EntityManager em = null;
