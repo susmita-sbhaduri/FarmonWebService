@@ -62,6 +62,9 @@
     <named-query name="Cropproduct.listAllProdForCrop">
         <query>SELECT c FROM Cropproduct c WHERE c.cropid =:cropid</query>
     </named-query>
+    <named-query name="Cropproduct.cropprodForcropProd">
+        <query>SELECT c FROM Cropproduct c WHERE c.cropid = :cropid AND c.productid = :productid</query>
+    </named-query>
     <named-query name="Farmresource.listAll">
         <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
     </named-query>
@@ -276,6 +279,9 @@
    
     <named-query name="Inventory.invHarForCrop">
         <query>SELECT DISTINCT i.hasvestid FROM Inventory i WHERE i.cropid = :cropid</query>
+    </named-query>
+    <named-query name="Inventory.distinctHarInv">
+        <query>SELECT DISTINCT i.hasvestid FROM Inventory i</query>
     </named-query>
     <named-query name="Inventory.deleteByCropId">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid</query>

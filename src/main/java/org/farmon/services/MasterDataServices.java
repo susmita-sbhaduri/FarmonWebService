@@ -2601,7 +2601,29 @@ public class MasterDataServices {
             return null;
         }
     }
-
+    
+    public CropProductDTO getCropprodForCropProd(String cropid, String prodid) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        CropProductDTO record = new CropProductDTO();
+        
+        try {
+            Cropproduct prodrec = cropproddao.getCropprodForcropProd(Integer.parseInt(cropid),
+                    Integer.parseInt(prodid));
+            record.setId(prodrec.getId().toString());
+            record.setCropId(prodrec.getCropid().toString());
+            record.setProductId(prodrec.getProductid().toString());
+            record.setProductName(prodrec.getProductname());
+            record.setTotalstock(String.format("%.2f", prodrec.getTotalstock()));
+            record.setUnit(prodrec.getUnit());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No products for this crop and product id are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCropprodForCropProd().");
+            return null;
+        }
+    }
     public List<HarvestDTO> getInvHarvForCropid(String cropid) {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         HarvestDTO record = new HarvestDTO();
@@ -2620,6 +2642,27 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getInvHarvForCropid().");
+            return null;
+        }
+    }
+    
+    public List<HarvestDTO> getDistinctHarvInv() {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        HarvestDTO record = new HarvestDTO();
+        List<HarvestDTO> recordList = new ArrayList<>();
+        try {
+            List<Integer> harvestlist = invdao.getDintictHarInv();
+            for (int i = 0; i < harvestlist.size(); i++) {
+                record = getHarvestRecForId(String.valueOf(harvestlist.get(i)));
+                recordList.add(record);
+                record = new HarvestDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No zero or non-zero Inventory record");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getDistinctHarvInv().");
             return null;
         }
     }

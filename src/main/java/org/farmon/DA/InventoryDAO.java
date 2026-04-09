@@ -37,6 +37,14 @@ public class InventoryDAO extends InventoryJpaController{
         List<Integer> harvestids = query.getResultList();
         return harvestids;
     }
+    
+    public List<Integer> getDintictHarInv() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Inventory.distinctHarInv", Integer.class);
+        
+        List<Integer> harvestids = query.getResultList();
+        return harvestids;
+    }
     public int getMaxInventoryId() {
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Inventory.getMaxInventoryId", Integer.class);        
