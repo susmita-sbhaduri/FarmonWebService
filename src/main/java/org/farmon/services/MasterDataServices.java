@@ -4,7 +4,6 @@
  */
 package org.farmon.services;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.NoResultException;
@@ -14,7 +13,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.naming.InitialContext;
@@ -2738,9 +2736,9 @@ public class MasterDataServices {
 
             cropdao.edit(rec);
             return SUCCESS;
-        } catch (PreexistingEntityException e) {
-            System.out.println("This crop record to be edited, does not exist");
-            return DB_DUPLICATE;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This crop record does not exist");
+            return DB_NON_EXISTING;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in editCropRecord.");
             return DB_SEVERE;
@@ -2804,6 +2802,22 @@ public class MasterDataServices {
         }
     }
     
+    public int delInventoryRecord(InventoryDTO invrec) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        try {
+            Inventory rec = new Inventory();
+            rec.setId(Integer.valueOf(invrec.getInventoryId()));
+            invdao.destroy(rec.getId());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This inventory record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " delInventoryRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int getMaxCropProdId() {
         CropprodDAO cropproddao = new CropprodDAO(utx, emf);
         try {
@@ -2838,7 +2852,30 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int editCropProdRecord(CropProductDTO cropprodrec) {
+        CropprodDAO cropproddao = new CropprodDAO(utx, emf);
+        
+        try {
+            Cropproduct rec = new Cropproduct();
+            rec.setId(Integer.valueOf(cropprodrec.getId()));
+            rec.setCropid(Integer.valueOf(cropprodrec.getCropId()));
+            rec.setProductid(Integer.valueOf(cropprodrec.getProductId()));
+            rec.setProductname(cropprodrec.getProductName());
+            rec.setUnit(cropprodrec.getUnit());
+            rec.setTotalstock(BigDecimal.valueOf(Double.parseDouble(cropprodrec.getTotalstock())));
 
+            cropproddao.edit(rec);
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This cropproduct record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editCropProdRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int delCropProductRecord(CropProductDTO cropprodrec) {
         CropprodDAO cropproddao = new CropprodDAO(utx, emf);
         try {
