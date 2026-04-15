@@ -30,6 +30,24 @@ public class InventoryDAO extends InventoryJpaController{
 //        List<Inventory> listofinv = query.getResultList();
 //        return listofinv;
 //    }
+    public Inventory getLastInvHarForCrop(int id) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Inventory> query = em.createNamedQuery("Inventory.lastInvHarForCrop", Inventory.class);
+        query.setParameter("cropid", id);
+        query.setMaxResults(1);            
+        return query.getSingleResult();
+    }
+    
+    public Inventory getLastInvForCrop(int cropid, int prodid, int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Inventory> query = em.createNamedQuery("Inventory.lastInvForCrop", Inventory.class);
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        query.setMaxResults(1);            
+        return query.getSingleResult();
+    }
+    
     public List<Integer> getInvHarForCrop(int id) {
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Inventory.invHarForCrop", Integer.class);
