@@ -2674,6 +2674,7 @@ public class MasterDataServices {
             record.setCropName("");
             record.setProductId(prodid);
             record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
+            record.setProductUnit(getCropprodForCropProd(cropid, prodid).getUnit());
             record.setHarvestId(harvestid);            
             record.setCurrentQty(String.format("%.2f", invrecord.getCurrentqty()));
             mysqlDate = invrecord.getLastupdatedate();
