@@ -2831,6 +2831,31 @@ public class MasterDataServices {
         }
     }
     
+    public int editInventoryRecord(InventoryDTO invrec) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Inventory rec = new Inventory();
+            rec.setId(Integer.valueOf(invrec.getInventoryId()));
+            rec.setCropid(Integer.valueOf(invrec.getCropId()));
+            rec.setHasvestid(Integer.valueOf(invrec.getHarvestId()));
+            rec.setProductid(Integer.valueOf(invrec.getProductId()));
+            rec.setCurrentqty(BigDecimal.valueOf(Double.parseDouble(invrec.getCurrentQty())));
+            mysqlDate = formatter.parse(invrec.getLastupdatedate());
+            rec.setLastupdatedate(mysqlDate);
+            invdao.edit(rec);
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This inventory record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editInventoryRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int delInventoryForCropid(InventoryDTO invrec) {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         try {
