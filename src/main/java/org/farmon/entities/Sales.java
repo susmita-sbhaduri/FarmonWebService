@@ -11,10 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -27,9 +30,11 @@ import java.math.BigDecimal;
     @NamedQuery(name = "Sales.findAll", query = "SELECT s FROM Sales s"),
     @NamedQuery(name = "Sales.findById", query = "SELECT s FROM Sales s WHERE s.id = :id"),
     @NamedQuery(name = "Sales.findByCropid", query = "SELECT s FROM Sales s WHERE s.cropid = :cropid"),
+    @NamedQuery(name = "Sales.findByProductid", query = "SELECT s FROM Sales s WHERE s.productid = :productid"),
     @NamedQuery(name = "Sales.findByHarvestid", query = "SELECT s FROM Sales s WHERE s.harvestid = :harvestid"),
     @NamedQuery(name = "Sales.findByQuantitysold", query = "SELECT s FROM Sales s WHERE s.quantitysold = :quantitysold"),
-    @NamedQuery(name = "Sales.findByTotalincome", query = "SELECT s FROM Sales s WHERE s.totalincome = :totalincome")})
+    @NamedQuery(name = "Sales.findByPriceperunit", query = "SELECT s FROM Sales s WHERE s.priceperunit = :priceperunit"),
+    @NamedQuery(name = "Sales.findByDate", query = "SELECT s FROM Sales s WHERE s.date = :date")})
 public class Sales implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,13 +45,18 @@ public class Sales implements Serializable {
     private Integer id;
     @Column(name = "cropid")
     private Integer cropid;
+    @Column(name = "productid")
+    private Integer productid;
     @Column(name = "harvestid")
     private Integer harvestid;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "quantitysold")
     private BigDecimal quantitysold;
-    @Column(name = "totalincome")
-    private BigDecimal totalincome;
+    @Column(name = "priceperunit")
+    private BigDecimal priceperunit;
+    @Column(name = "date")
+    @Temporal(TemporalType.DATE)
+    private Date date;
 
     public Sales() {
     }
@@ -71,6 +81,14 @@ public class Sales implements Serializable {
         this.cropid = cropid;
     }
 
+    public Integer getProductid() {
+        return productid;
+    }
+
+    public void setProductid(Integer productid) {
+        this.productid = productid;
+    }
+
     public Integer getHarvestid() {
         return harvestid;
     }
@@ -87,12 +105,20 @@ public class Sales implements Serializable {
         this.quantitysold = quantitysold;
     }
 
-    public BigDecimal getTotalincome() {
-        return totalincome;
+    public BigDecimal getPriceperunit() {
+        return priceperunit;
     }
 
-    public void setTotalincome(BigDecimal totalincome) {
-        this.totalincome = totalincome;
+    public void setPriceperunit(BigDecimal priceperunit) {
+        this.priceperunit = priceperunit;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     @Override
