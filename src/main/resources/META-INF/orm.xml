@@ -46,7 +46,10 @@
     </named-query>
     <named-query name="Crop.listAll">
         <query>SELECT c FROM Crop c</query>
-    </named-query>   
+    </named-query>  
+    <named-query name="Crop.listActiveCrops">
+        <query>SELECT c FROM Crop c WHERE c.enddate IS NULL</query>
+    </named-query> 
     <named-query name="Crop.getMaxCropId">
         <query>SELECT MAX(c.cropid) FROM Crop c</query>
     </named-query>

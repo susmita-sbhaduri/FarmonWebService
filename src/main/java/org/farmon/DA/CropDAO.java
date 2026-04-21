@@ -42,6 +42,13 @@ public class CropDAO extends CropJpaController{
         return listofcrop;
     }
     
+    public List<Crop> getActiveCropList() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Crop> query = em.createNamedQuery("Crop.listActiveCrops", Crop.class);            
+        List<Crop> listofcrop = query.getResultList();
+        return listofcrop;
+    }
+    
 //    public List<Crop> getCropsPerSite(int siteid) {
 //        EntityManager em = getEntityManager();
 //        TypedQuery<Crop> query = em.createNamedQuery("Crop.getCropsPerSite", Crop.class);   

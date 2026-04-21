@@ -2548,6 +2548,49 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public List<CropDTO> getActiveCropList() {
+        CropDAO cropdao = new CropDAO(utx, emf);
+        CropDTO record = new CropDTO();
+        List<CropDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Crop> croplist = cropdao.getActiveCropList();
+            for (int i = 0; i < croplist.size(); i++) {
+                record.setCropId(croplist.get(i).getCropid().toString());
+                record.setCropName(croplist.get(i).getCropname());
+                if (croplist.get(i).getTotalstock() == null) {
+                    record.setTotalStock(null);
+                } else {
+                    record.setTotalStock(String.format("%.2f", croplist.get(i).getTotalstock()));
+                }
+                mysqlDate = croplist.get(i).getStartdate();
+                if (mysqlDate == null) {
+                    record.setStartDate(null);
+                } else {
+                    record.setStartDate(formatter.format(mysqlDate));
+                }
+                mysqlDate = croplist.get(i).getEnddate();
+                if (mysqlDate == null) {
+                    record.setEndDate(null);
+                } else {
+                    record.setEndDate(formatter.format(mysqlDate));
+                }
+
+                recordList.add(record);
+                record = new CropDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No Crops are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getActiveCropList().");
+            return null;
+        }
+    }
 
     public List<CropProductDTO> getNonzeroCropprodForCrop(String cropid) {
         CropprodDAO cropproddao = new CropprodDAO(utx, emf);
