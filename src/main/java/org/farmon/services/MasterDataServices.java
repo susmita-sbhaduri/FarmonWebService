@@ -2735,6 +2735,23 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public InventoryDTO getTotalInvCropProdHar(String cropid, String prodid, String harvestid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        InventoryDTO record = new InventoryDTO();
+        try {
+            BigDecimal total = invdao.getTotalInvStock(Integer.parseInt(cropid)
+                    , Integer.parseInt(prodid), Integer.parseInt(harvestid));
+            record.setCurrentQty(total.toPlainString());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No records in Inventory table");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getTotalInvCropProdHar().");
+            return null;
+        }
+    }
     public List<HarvestDTO> getDistinctHarvInv() {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         HarvestDTO record = new HarvestDTO();
@@ -2848,6 +2865,8 @@ public class MasterDataServices {
             return 0;
         }
     }
+    
+    
 
     public int addInventoryRecord(InventoryDTO invrec) {
         InventoryDAO invdao = new InventoryDAO(utx, emf);

@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.math.BigDecimal;
 import java.util.List;
 import org.farmon.JPA.InventoryJpaController;
 import org.farmon.entities.Inventory;
@@ -62,6 +63,16 @@ public class InventoryDAO extends InventoryJpaController{
         
         List<Integer> harvestids = query.getResultList();
         return harvestids;
+    }
+    
+    public BigDecimal getTotalInvStock(int cropid, int prodid, int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<BigDecimal> query = em.createNamedQuery("Inventory.totalCropProdHar", BigDecimal.class);
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        BigDecimal total = query.getSingleResult();
+        return (total != null) ? total : BigDecimal.ZERO;
     }
     public int getMaxInventoryId() {
         EntityManager em = getEntityManager();
