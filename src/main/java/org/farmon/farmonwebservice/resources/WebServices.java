@@ -39,6 +39,7 @@ import org.farmon.farmondto.LabourCropDTO;
 import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
 import org.farmon.farmondto.ResourceCropDTO;
+import org.farmon.farmondto.SalesDTO;
 import org.farmon.farmondto.SensorDTO;
 import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.ShopDTO;
@@ -3026,6 +3027,64 @@ public class WebServices {
         int cropprodcropid = masterDataService.delCropProductForCropid(farmondto.getCropprodrec());
         FarmonResponse farmonres = new FarmonResponse();
         farmonres.setFarmon_DEL_RES(cropprodcropid);
+        farmondto.setResponses(farmonres);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("maxSalesId")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getMaxSalesId(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");         
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        String maxsalesid = String.valueOf(masterDataService.getMaxSalesId());
+        SalesDTO salesdto = new SalesDTO();
+        salesdto.setSalesId(maxsalesid);
+        farmondto.setSalesrec(salesdto);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("addSales")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String addSalesRec(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");           
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        int addres = masterDataService.addSalesRecord(farmondto.getSalesrec());
+        FarmonResponse farmonres = new FarmonResponse();
+        farmonres.setFarmon_ADD_RES(addres);
         farmondto.setResponses(farmonres);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);

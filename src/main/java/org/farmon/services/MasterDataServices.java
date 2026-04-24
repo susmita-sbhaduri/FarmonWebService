@@ -33,6 +33,7 @@ import org.farmon.DA.InventoryDAO;
 import org.farmon.DA.LabourCropDAO;
 import org.farmon.DA.ResAcquireDAO;
 import org.farmon.DA.ResourceCropDAO;
+import org.farmon.DA.SalesDAO;
 import org.farmon.DA.ShopDAO;
 import org.farmon.DA.ShopResDAO;
 import org.farmon.DA.SiteDAO;
@@ -89,12 +90,14 @@ import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Inventory;
+import org.farmon.entities.Sales;
 
 import org.farmon.entities.Sensordata;
 import org.farmon.entities.Sensordetail;
 import org.farmon.farmondto.CropProductDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
+import org.farmon.farmondto.SalesDTO;
 import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.SensordtlsDTO;
 
@@ -3045,7 +3048,45 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
-
+    
+    public int getMaxSalesId() {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        try {
+            return salesdao.getMaxSalesId();
+        } catch (NoResultException e) {
+            System.out.println("No records in Sales table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxSalesId().");
+            return 0;
+        }
+    }
+    
+    public int addSalesRecord(SalesDTO salesrec) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Sales rec = new Sales();
+            rec.setId(Integer.valueOf(salesrec.getSalesId()));
+            rec.setCropid(Integer.valueOf(salesrec.getCropId()));
+            rec.setHarvestid(Integer.valueOf(salesrec.getHarvestId()));
+            rec.setProductid(Integer.valueOf(salesrec.getProdId()));
+            rec.setQuantitysold(BigDecimal.valueOf(Double.parseDouble(salesrec.getQuantitySold())));
+            rec.setPriceperunit(BigDecimal.valueOf(Double.parseDouble(salesrec.getPriceperUnit())));
+            mysqlDate = formatter.parse(salesrec.getSalesDate());
+            rec.setDate(mysqlDate);
+            salesdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Sales record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addSalesRecord.");
+            return DB_SEVERE;
+        }
+    }
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {

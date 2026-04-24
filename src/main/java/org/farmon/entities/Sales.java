@@ -27,7 +27,7 @@ import java.util.Date;
 @Table(name = "sales")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Sales.findAll", query = "SELECT s FROM Sales s"),
+    @NamedQuery(name = "Sales.findAll", query = "SELECT MAX(s.id) FROM Sales s"),
     @NamedQuery(name = "Sales.findById", query = "SELECT s FROM Sales s WHERE s.id = :id"),
     @NamedQuery(name = "Sales.findByCropid", query = "SELECT s FROM Sales s WHERE s.cropid = :cropid"),
     @NamedQuery(name = "Sales.findByProductid", query = "SELECT s FROM Sales s WHERE s.productid = :productid"),

@@ -300,6 +300,9 @@
     <named-query name="Inventory.deleteByCropId">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid</query>
     </named-query>
+    <named-query name="Sales.getMaxSalesId">
+        <query>SELECT MAX(s.id) FROM Sales s</query>
+    </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 
         result-set-mapping="RescropSummaryMapping">
