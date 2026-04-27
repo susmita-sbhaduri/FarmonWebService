@@ -3087,6 +3087,23 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int delSalesRecord(SalesDTO salesrec) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        try {
+            Sales rec = new Sales();
+            rec.setId(Integer.valueOf(salesrec.getSalesId()));
+            salesdao.destroy(rec.getId());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This sales record does not exist for the Id");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " delSalesRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
