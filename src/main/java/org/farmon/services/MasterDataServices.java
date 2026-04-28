@@ -3104,6 +3104,41 @@ public class MasterDataServices {
         }
     }
     
+    public SalesDTO getLatestSalesForCrop(String cropid, String prodid, String harvestid) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        SalesDTO record = new SalesDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Sales salesrec = salesdao.getLastInvForCrop(Integer.parseInt(cropid),
+                    Integer.parseInt(prodid), Integer.parseInt(harvestid));
+            record.setSalesId(salesrec.getId().toString());
+            record.setCropId(cropid);
+            record.setProdId(prodid);
+            record.setHarvestId(harvestid);
+            record.setProductname("");
+            record.setProdunit("");
+            record.setCurrentInventoryQty("");
+            record.setQuantitySold(String.format("%.2f", salesrec.getQuantitysold()));
+            record.setPriceperUnit(String.format("%.2f", salesrec.getPriceperunit()));
+            
+            mysqlDate = salesrec.getDate();
+            if (mysqlDate == null) {
+                record.setSalesDate(null);
+            } else {
+                record.setSalesDate(formatter.format(mysqlDate));
+            }
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("Sales for this crop+product+harvest");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getLatestSalesForCrop().");
+            return null;
+        }
+    }
+    
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {

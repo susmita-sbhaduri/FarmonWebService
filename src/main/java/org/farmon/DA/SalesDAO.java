@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import org.farmon.JPA.SalesJpaController;
+import org.farmon.entities.Sales;
 
 /**
  *
@@ -21,6 +22,16 @@ public class SalesDAO extends SalesJpaController{
     public int getMaxSalesId() {
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Sales.getMaxSalesId", Integer.class);        
+        return query.getSingleResult();
+    }
+    
+    public Sales getLastInvForCrop(int cropid, int prodid, int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Sales> query = em.createNamedQuery("Sales.lastSalesForCrop", Sales.class);
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        query.setMaxResults(1);            
         return query.getSingleResult();
     }
 }
