@@ -3140,8 +3140,8 @@ public class WebServices {
             farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");           
         }
         MasterDataServices masterDataService = new MasterDataServices();
-        HarvestDTO harvestrec = masterDataService.getLastInvHarvForCropid
-                                                     (farmondto.getInventoryrec().getCropId());
+        HarvestDTO harvestrec = masterDataService.getLastSalesHarvForCropid
+                                                     (farmondto.getSalesrec().getCropId());
         farmondto.setHarvestrecord(harvestrec);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);

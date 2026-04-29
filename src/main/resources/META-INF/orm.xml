@@ -303,6 +303,9 @@
     <named-query name="Sales.getMaxSalesId">
         <query>SELECT MAX(s.id) FROM Sales s</query>
     </named-query>
+    <named-query name="Sales.lastSalesHarForCrop">
+        <query>SELECT s FROM Sales s WHERE s.cropid = :cropid ORDER BY s.date DESC</query>
+    </named-query>
     <named-query name="Sales.lastSalesForCrop">
         <query>SELECT s FROM Sales s WHERE s.cropid = :cropid AND s.productid =:prodid AND s.harvestid =:harvestid ORDER BY s.date, s.id DESC</query>
     </named-query>

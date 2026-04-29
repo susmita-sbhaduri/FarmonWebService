@@ -25,6 +25,14 @@ public class SalesDAO extends SalesJpaController{
         return query.getSingleResult();
     }
     
+    public Sales getLastSalesHarForCrop(int id) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Sales> query = em.createNamedQuery("Sales.lastSalesHarForCrop", Sales.class);
+        query.setParameter("cropid", id);
+        query.setMaxResults(1);            
+        return query.getSingleResult();
+    }
+    
     public Sales getLastInvForCrop(int cropid, int prodid, int harvestid) {
         EntityManager em = getEntityManager();
         TypedQuery<Sales> query = em.createNamedQuery("Sales.lastSalesForCrop", Sales.class);

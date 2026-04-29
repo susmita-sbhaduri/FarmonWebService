@@ -3104,6 +3104,22 @@ public class MasterDataServices {
         }
     }
     
+    public HarvestDTO getLastSalesHarvForCropid(String cropid) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        HarvestDTO record = new HarvestDTO();
+        try {
+            Sales salesrec = salesdao.getLastSalesHarForCrop(Integer.parseInt(cropid));            
+            record = getHarvestRecForId(String.valueOf(salesrec.getHarvestid()));                
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No Sales record this crop");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getLastSalesHarvForCropid().");
+            return null;
+        }
+    }
+    
     public SalesDTO getLatestSalesForCrop(String cropid, String prodid, String harvestid) {
         SalesDAO salesdao = new SalesDAO(utx, emf);
         SalesDTO record = new SalesDTO();
@@ -3117,8 +3133,8 @@ public class MasterDataServices {
             record.setCropId(cropid);
             record.setProdId(prodid);
             record.setHarvestId(harvestid);
-            record.setProductname("");
-            record.setProdunit("");
+            record.setProductname(getCropprodForCropProd(cropid, prodid).getProductName());
+            record.setProdunit(getCropprodForCropProd(cropid, prodid).getUnit());
             record.setCurrentInventoryQty("");
             record.setQuantitySold(String.format("%.2f", salesrec.getQuantitysold()));
             record.setPriceperUnit(String.format("%.2f", salesrec.getPriceperunit()));
