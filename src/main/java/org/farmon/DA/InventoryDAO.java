@@ -10,6 +10,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import org.farmon.JPA.InventoryJpaController;
 import org.farmon.entities.Inventory;
@@ -40,6 +41,16 @@ public class InventoryDAO extends InventoryJpaController{
     }
     
     public Inventory getLastInvForCrop(int cropid, int prodid, int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Inventory> query = em.createNamedQuery("Inventory.lastInvForCrop", Inventory.class);
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        query.setMaxResults(1);            
+        return query.getSingleResult();
+    }
+    
+    public Inventory getLastInvForSales(int cropid, int prodid, int harvestid, Date salesdate) {
         EntityManager em = getEntityManager();
         TypedQuery<Inventory> query = em.createNamedQuery("Inventory.lastInvForCrop", Inventory.class);
         query.setParameter("cropid", cropid);

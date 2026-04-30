@@ -2739,6 +2739,37 @@ public class MasterDataServices {
         }
     }
     
+    public InventoryDTO getLastInvForSales(String cropid, String prodid, String harvestid, 
+            Date salesdate) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        InventoryDTO record = new InventoryDTO();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Inventory invrecord = invdao.getLastInvForSales(Integer.parseInt(cropid),
+                    Integer.parseInt(prodid), Integer.parseInt(harvestid), salesdate);
+            record.setInventoryId(invrecord.getId().toString());
+            record.setCropId(cropid);            
+            record.setProductId(prodid);            
+            record.setHarvestId(harvestid);            
+            record.setCurrentQty(String.format("%.2f", invrecord.getCurrentqty()));
+            mysqlDate = invrecord.getLastupdatedate();
+            if (mysqlDate == null) {
+                record.setLastupdatedate(null);
+            } else {
+                record.setLastupdatedate(formatter.format(mysqlDate));
+            }
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("Inventory for this crop+product+harvest+salesdate");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getLastInvForSales().");
+            return null;
+        }
+    }
+    
     public InventoryDTO getTotalInvCropProdHar(String cropid, String prodid, String harvestid) {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         InventoryDTO record = new InventoryDTO();

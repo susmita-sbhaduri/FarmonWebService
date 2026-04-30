@@ -290,7 +290,9 @@
     <named-query name="Inventory.lastInvForCrop">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC, i.id DESC</query>
     </named-query>
-    
+     <named-query name="Inventory.lastInvForCrop">
+        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.lastupdatedate =:salesdate</query>
+    </named-query>
     <named-query name="Inventory.totalCropProdHar">
         <query>SELECT SUM(i.currentqty) FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid= :harvestid</query>
     </named-query>

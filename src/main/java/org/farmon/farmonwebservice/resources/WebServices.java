@@ -2808,6 +2808,39 @@ public class WebServices {
         }
     }
     
+    @Path("lastInvForSales")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getLastInvForSales(String termDTOJSON) throws NamingException, ParseException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");           
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        Date lastupdatedate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        lastupdatedate = formatter.parse(farmondto.getInventoryrec().getLastupdatedate());
+        InventoryDTO invrec = masterDataService.getLastInvForSales(farmondto.getInventoryrec().getCropId(), farmondto.getInventoryrec().getProductId(),
+                farmondto.getInventoryrec().getHarvestId(), lastupdatedate);
+                              
+        farmondto.setInventoryrec(invrec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
     @Path("sumHarCropProd")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
