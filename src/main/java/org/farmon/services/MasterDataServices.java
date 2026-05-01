@@ -298,9 +298,9 @@ public class MasterDataServices {
                 mysqlDate = reclist.get(i).getAppldate();
                 record.setApplicationDate(formatter.format(mysqlDate));
                 String labourCategory = "LABHRVST";
-                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId(),
+                record.setAppliedAmount(getExpenseRefCat(record.getApplicationId(),
                         labourCategory).getExpenditure());
-                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId(),
+                record.setExpenseComments(getExpenseRefCat(record.getApplicationId(),
                         labourCategory).getCommString());
                 recordlist.add(record);
                 record = new LabourCropDTO();
@@ -368,7 +368,7 @@ public class MasterDataServices {
         }
     }
 
-    public ExpenseDTO getLabExpenseForHrvst(String labappid, String expensecat) {
+    public ExpenseDTO getExpenseRefCat(String labappid, String expensecat) {
         ExpenseDAO expdao = new ExpenseDAO(utx, emf);
         ExpenseDTO retexpdto = new ExpenseDTO();
         Date mysqlDate;
@@ -387,10 +387,10 @@ public class MasterDataServices {
 
             return retexpdto;
         } catch (NoResultException e) {
-            System.out.println("No Expense record found for this labor.");
+            System.out.println("No Expense record found for this refid and category.");
             return null;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getLabExpenseForHrvst().");
+            System.out.println(exception + " has occurred in getExpenseRefCat().");
             return null;
         }
     }
@@ -1016,13 +1016,38 @@ public class MasterDataServices {
             rec.setExpenserefid(Integer.valueOf(exrec.getExpenseRefId()));
             rec.setExpediture(BigDecimal.valueOf(Double.parseDouble(exrec.getExpenditure())));
             rec.setComments(exrec.getCommString());
-            expdao.create(rec);
+            expdao.edit(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
             System.out.println("Record is already there for this Expense record");
             return DB_DUPLICATE;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in addExpenseRecord(ExpenseDTO exrec).");
+            return DB_SEVERE;
+        }
+    }
+    
+    public int editExpenseRecord(ExpenseDTO exrec) {
+        ExpenseDAO expdao = new ExpenseDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Expense rec = new Expense();
+            rec.setExpenseid(Integer.valueOf(exrec.getExpenseId()));
+            mysqlDate = formatter.parse(exrec.getDate());
+            rec.setDate(mysqlDate);
+            rec.setExpensetype(exrec.getExpenseType());
+            rec.setExpenserefid(Integer.valueOf(exrec.getExpenseRefId()));
+            rec.setExpediture(BigDecimal.valueOf(Double.parseDouble(exrec.getExpenditure())));
+            rec.setComments(exrec.getCommString());
+            expdao.create(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("No expense record is found for expenseid");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editExpenseRecord.");
             return DB_SEVERE;
         }
     }
@@ -1312,7 +1337,7 @@ public class MasterDataServices {
                 record.setUnit(unit);
                 record.setAcqAmt(String.format("%.2f", reclist.get(i).getAmount()));
                 String expenseCategory = "RES";
-                record.setCost(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
+                record.setCost(getExpenseRefCat(reclist.get(i).getAquireid().toString(),
                         expenseCategory).getExpenditure());
                 mysqlDate = reclist.get(i).getAquiredate();
                 if (mysqlDate != null) {
@@ -1325,7 +1350,7 @@ public class MasterDataServices {
 
                 if ((i + 1) == reclist.size()) {//if the record is the lat one total record to be constructed.
                     amounttotal = amounttotal + reclist.get(i).getAmount().floatValue();
-                    totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
+                    totalcost = totalcost + Float.parseFloat(getExpenseRefCat(reclist.get(i).getAquireid().toString(),
                             expenseCategory).getExpenditure());
                     record.setResName("Total");
                     record.setUnit(unit);
@@ -1337,11 +1362,11 @@ public class MasterDataServices {
                     if (getResourceNameForId(reclist.get(i).getResourceid()).getResourceId().
                             equals(getResourceNameForId(reclist.get(i + 1).getResourceid()).getResourceId())) {
                         amounttotal = amounttotal + reclist.get(i).getAmount().floatValue();
-                        totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
+                        totalcost = totalcost + Float.parseFloat(getExpenseRefCat(reclist.get(i).getAquireid().toString(),
                                 expenseCategory).getExpenditure());
                     } else {
                         amounttotal = amounttotal + reclist.get(i).getAmount().floatValue();
-                        totalcost = totalcost + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getAquireid().toString(),
+                        totalcost = totalcost + Float.parseFloat(getExpenseRefCat(reclist.get(i).getAquireid().toString(),
                                 expenseCategory).getExpenditure());
                         record.setResName("Total");
                         record.setUnit(unit);
@@ -1480,7 +1505,7 @@ public class MasterDataServices {
             float appliedamt = 0;
             for (int i = 0; i < reclist.size(); i++) {
                 String labourCategory = "LABHRVST";
-                appliedamt = appliedamt + Float.parseFloat(getLabExpenseForHrvst(reclist.get(i).getApplicationid().toString(),
+                appliedamt = appliedamt + Float.parseFloat(getExpenseRefCat(reclist.get(i).getApplicationid().toString(),
                         labourCategory).getExpenditure());
             }
             record.setApplicationId("0");
@@ -1554,9 +1579,9 @@ public class MasterDataServices {
                 mysqlDate = reclist.get(i).getAppldate();
                 record.setApplicationDate(formatter.format(mysqlDate));
                 String labourCategory = "LABHRVST";
-                record.setAppliedAmount(getLabExpenseForHrvst(record.getApplicationId(),
+                record.setAppliedAmount(getExpenseRefCat(record.getApplicationId(),
                         labourCategory).getExpenditure());
-                record.setExpenseComments(getLabExpenseForHrvst(record.getApplicationId(),
+                record.setExpenseComments(getExpenseRefCat(record.getApplicationId(),
                         labourCategory).getCommString());
                 recordlist.add(record);
                 record = new LabourCropDTO();
@@ -2209,8 +2234,8 @@ public class MasterDataServices {
             mysqlDate = rec.getAppldate();
             record.setApplicationDate(formatter.format(mysqlDate));
             String labourCategory = "LABHRVST";
-            record.setAppliedAmount(getLabExpenseForHrvst(appliedid, labourCategory).getExpenditure());
-            record.setExpenseComments(getLabExpenseForHrvst(appliedid, labourCategory).getCommString());
+            record.setAppliedAmount(getExpenseRefCat(appliedid, labourCategory).getExpenditure());
+            record.setExpenseComments(getExpenseRefCat(appliedid, labourCategory).getCommString());
             return record;
         } catch (NoResultException e) {
             System.out.println("No laborcrop record is found for this application Id.");
@@ -3119,6 +3144,32 @@ public class MasterDataServices {
         }
     }
     
+    public int editSalesRecord(SalesDTO salesrec) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            Sales rec = new Sales();
+            rec.setId(Integer.valueOf(salesrec.getSalesId()));
+            rec.setCropid(Integer.valueOf(salesrec.getCropId()));
+            rec.setHarvestid(Integer.valueOf(salesrec.getHarvestId()));
+            rec.setProductid(Integer.valueOf(salesrec.getProdId()));
+            rec.setQuantitysold(BigDecimal.valueOf(Double.parseDouble(salesrec.getQuantitySold())));
+            rec.setPriceperunit(BigDecimal.valueOf(Double.parseDouble(salesrec.getPriceperUnit())));
+            mysqlDate = formatter.parse(salesrec.getSalesDate());
+            rec.setDate(mysqlDate);
+            salesdao.edit(rec);
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("This sales record does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editSalesRecord.");
+            return DB_SEVERE;
+        }
+    }
+    
     public int delSalesRecord(SalesDTO salesrec) {
         SalesDAO salesdao = new SalesDAO(utx, emf);
         try {
@@ -3158,7 +3209,7 @@ public class MasterDataServices {
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
-            Sales salesrec = salesdao.getLastInvForCrop(Integer.parseInt(cropid),
+            Sales salesrec = salesdao.getLastSalesForCrop(Integer.parseInt(cropid),
                     Integer.parseInt(prodid), Integer.parseInt(harvestid));
             record.setSalesId(salesrec.getId().toString());
             record.setCropId(cropid);

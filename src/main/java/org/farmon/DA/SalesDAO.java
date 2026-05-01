@@ -33,7 +33,7 @@ public class SalesDAO extends SalesJpaController{
         return query.getSingleResult();
     }
     
-    public Sales getLastInvForCrop(int cropid, int prodid, int harvestid) {
+    public Sales getLastSalesForCrop(int cropid, int prodid, int harvestid) {
         EntityManager em = getEntityManager();
         TypedQuery<Sales> query = em.createNamedQuery("Sales.lastSalesForCrop", Sales.class);
         query.setParameter("cropid", cropid);
