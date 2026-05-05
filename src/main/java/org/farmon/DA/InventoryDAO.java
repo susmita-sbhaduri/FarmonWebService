@@ -79,11 +79,21 @@ public class InventoryDAO extends InventoryJpaController{
     
     public BigDecimal getTotalInvStock(int cropid, int prodid, int harvestid) {
         EntityManager em = getEntityManager();
-        TypedQuery<BigDecimal> query = em.createNamedQuery("Inventory.totalCropProdHar", BigDecimal.class);
-        query.setParameter("cropid", cropid);
-        query.setParameter("prodid", prodid);
-        query.setParameter("harvestid", harvestid);
-        BigDecimal total = query.getSingleResult();
+        TypedQuery<BigDecimal> querypos = em.createNamedQuery("Inventory.totalCropProdHarPos", BigDecimal.class);
+        TypedQuery<BigDecimal> queryneg = em.createNamedQuery("Inventory.totalCropProdHarNeg", BigDecimal.class);
+        querypos.setParameter("cropid", cropid);
+        querypos.setParameter("prodid", prodid);
+        querypos.setParameter("harvestid", harvestid);
+        queryneg.setParameter("cropid", cropid);
+        queryneg.setParameter("prodid", prodid);
+        queryneg.setParameter("harvestid", harvestid);
+        BigDecimal totalPositive = querypos.getSingleResult();
+        if(totalPositive == null)
+           totalPositive = BigDecimal.ZERO;
+        BigDecimal totalNegative = queryneg.getSingleResult();
+        if(totalNegative == null)
+           totalNegative = BigDecimal.ZERO;
+        BigDecimal total = totalNegative.add(totalPositive);
         return (total != null) ? total : BigDecimal.ZERO;
     }
     public int getMaxInventoryId() {

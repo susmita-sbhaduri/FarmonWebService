@@ -1016,7 +1016,7 @@ public class MasterDataServices {
             rec.setExpenserefid(Integer.valueOf(exrec.getExpenseRefId()));
             rec.setExpediture(BigDecimal.valueOf(Double.parseDouble(exrec.getExpenditure())));
             rec.setComments(exrec.getCommString());
-            expdao.edit(rec);
+            expdao.create(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
             System.out.println("Record is already there for this Expense record");
@@ -1041,7 +1041,7 @@ public class MasterDataServices {
             rec.setExpenserefid(Integer.valueOf(exrec.getExpenseRefId()));
             rec.setExpediture(BigDecimal.valueOf(Double.parseDouble(exrec.getExpenditure())));
             rec.setComments(exrec.getCommString());
-            expdao.create(rec);
+            expdao.edit(rec);
             return SUCCESS;
         } catch (NoResultException e) {
             System.out.println("No expense record is found for expenseid");

@@ -291,10 +291,13 @@
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC, i.id DESC</query>
     </named-query>
     <named-query name="Inventory.lastInvForCropDt">
-        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.lastupdatedate =:lastupdatedate</query>
+        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.lastupdatedate =:lastupdatedate ORDER BY i.lastupdatedate DESC, i.id DESC</query>
     </named-query> 
-    <named-query name="Inventory.totalCropProdHar">
-        <query>SELECT SUM(i.currentqty) FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid= :harvestid</query>
+    <named-query name="Inventory.totalCropProdHarPos">
+        <query>SELECT SUM(i.currentqty) FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid= :harvestid AND i.currentqty &gt; 0</query>
+    </named-query>
+    <named-query name="Inventory.totalCropProdHarNeg">
+        <query>SELECT SUM(i.currentqty) FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid= :harvestid AND i.currentqty &lt; 0</query>
     </named-query>
     <named-query name="Inventory.distinctHarInv">
         <query>SELECT DISTINCT i.hasvestid FROM Inventory i</query>
