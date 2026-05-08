@@ -8,7 +8,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.util.List;
 import org.farmon.JPA.SalesJpaController;
+import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Sales;
 
 /**
@@ -41,5 +43,13 @@ public class SalesDAO extends SalesJpaController{
         query.setParameter("harvestid", harvestid);
         query.setMaxResults(1);            
         return query.getSingleResult();
+    }
+    
+    public List<Sales> getNonzeroSalesForCrop(int cropid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Sales> query = em.createNamedQuery("Sales.listNonzeroSalesForCrop", Sales.class);
+        query.setParameter("cropid", cropid);
+        List<Sales> listofsales = query.getResultList();
+        return listofsales;
     }
 }

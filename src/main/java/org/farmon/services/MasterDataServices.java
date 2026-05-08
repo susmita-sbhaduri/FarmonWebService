@@ -3105,6 +3105,46 @@ public class MasterDataServices {
         }
     }
     
+    public List<SalesDTO> getNonzeroSalesForCrop(String cropid) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        SalesDTO record = new SalesDTO();
+        List<SalesDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Sales> saleslist = salesdao.getNonzeroSalesForCrop(Integer.parseInt(cropid));
+            for (int i = 0; i < saleslist.size(); i++) {
+                record.setSalesId(saleslist.get(i).getId().toString());
+                record.setCropId(saleslist.get(i).getCropid().toString());
+                record.setProdId(saleslist.get(i).getProductid().toString());
+                record.setHarvestId(saleslist.get(i).getHarvestid().toString());
+                record.setProductname(getCropprodForCropProd(cropid, 
+                        saleslist.get(i).getProductid().toString()).getProductName());
+                record.setProdunit(getCropprodForCropProd(cropid, 
+                        saleslist.get(i).getProductid().toString()).getUnit());
+                record.setCurrentInventoryQty("");
+                record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
+                record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
+                mysqlDate = saleslist.get(i).getDate();
+                if (mysqlDate == null) {
+                    record.setSalesDate(null);
+                } else {
+                    record.setSalesDate(formatter.format(mysqlDate));
+                }
+                recordList.add(record);
+                record = new SalesDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No sales for this crop are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getNonzeroSalesForCrop().");
+            return null;
+        }
+    }
+    
     public int getMaxSalesId() {
         SalesDAO salesdao = new SalesDAO(utx, emf);
         try {
