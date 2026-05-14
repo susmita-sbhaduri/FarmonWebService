@@ -2811,6 +2811,43 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public List<InventoryDTO> getInvListCropProdHar(String cropid, String prodid, String harvestid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        InventoryDTO record = new InventoryDTO();
+        List<InventoryDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Inventory> invlist = invdao.getInvForCropProdHar(Integer.parseInt(cropid)
+                    , Integer.parseInt(prodid), Integer.parseInt(harvestid));
+            for (int i = 0; i < invlist.size(); i++) 
+            {
+                record.setInventoryId(invlist.get(i).getId().toString());
+                record.setCropId(cropid);            
+                record.setProductId(prodid);            
+                record.setHarvestId(harvestid);            
+                record.setCurrentQty(String.format("%.2f", invlist.get(i).getCurrentqty()));
+                mysqlDate = invlist.get(i).getLastupdatedate();
+                if (mysqlDate == null) {
+                    record.setLastupdatedate(null);
+                } else {
+                    record.setLastupdatedate(formatter.format(mysqlDate));
+                }
+                recordList.add(record);
+                record = new InventoryDTO();
+            }            
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No records in Inventory table for this crop, prod, harvest");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getInvListCropProdHar().");
+            return null;
+        }
+    }
+    
     public List<HarvestDTO> getDistinctHarvInv() {
         InventoryDAO invdao = new InventoryDAO(utx, emf);
         HarvestDTO record = new HarvestDTO();
