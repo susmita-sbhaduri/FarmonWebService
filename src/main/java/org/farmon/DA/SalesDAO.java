@@ -8,9 +8,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
+import java.util.Date;
 import java.util.List;
 import org.farmon.JPA.SalesJpaController;
-import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Sales;
 
 /**
@@ -51,5 +51,17 @@ public class SalesDAO extends SalesJpaController{
         query.setParameter("cropid", cropid);
         List<Sales> listofsales = query.getResultList();
         return listofsales;
+    }
+    
+    public Sales getSalesForCropProdHar(int cropid, int prodid, int harvestid, 
+            Date startdate, Date enddate) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Sales> query = em.createNamedQuery("Sales.salesForCropProdHar", Sales.class);
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        query.setParameter("startdate", startdate);
+        query.setParameter("enddate", enddate);
+        return query.getSingleResult();
     }
 }

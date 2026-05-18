@@ -3314,6 +3314,44 @@ public class MasterDataServices {
         }
     }
     
+     public SalesDTO getSalesSumCropProdHar(String cropid, String prodid, 
+             String harvestid, Date startDate, Date endDate) {
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        SalesDTO record = new SalesDTO();
+        List<SalesDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Sales> saleslist = salesdao.getSalesForCropProdHar(Integer.parseInt(cropid)
+                    , Integer.parseInt(prodid), Integer.parseInt(harvestid), startDate, endDate);
+            for (int i = 0; i < saleslist.size(); i++) 
+            {
+                record.setSalesId(saleslist.get(i).getId().toString());
+                record.setCropId(cropid);            
+                record.setProdId(prodid);                 
+                record.setHarvestId(harvestid);            
+                record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
+                record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
+                mysqlDate = saleslist.get(i).getDate();
+                if (mysqlDate == null) {
+                    record.setSalesDate(null);
+                } else {
+                    record.setSalesDate(formatter.format(mysqlDate));
+                }
+                recordList.add(record);
+                record = new SalesDTO();
+            }            
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No records in Sales table for this crop, prod, harvest and dates");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getSalesListCropProdHar().");
+            return null;
+        }
+    }
+    
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
