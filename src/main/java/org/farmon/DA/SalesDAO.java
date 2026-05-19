@@ -6,6 +6,7 @@ package org.farmon.DA;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.UserTransaction;
 import java.util.Date;
@@ -53,7 +54,7 @@ public class SalesDAO extends SalesJpaController{
         return listofsales;
     }
     
-    public Sales getSalesForCropProdHar(int cropid, int prodid, int harvestid, 
+    public List<Sales> getSalesForCropProdHar(int cropid, int prodid, int harvestid, 
             Date startdate, Date enddate) {
         EntityManager em = getEntityManager();
         TypedQuery<Sales> query = em.createNamedQuery("Sales.salesForCropProdHar", Sales.class);
@@ -61,7 +62,20 @@ public class SalesDAO extends SalesJpaController{
         query.setParameter("prodid", prodid);
         query.setParameter("harvestid", harvestid);
         query.setParameter("startdate", startdate);
+        query.setParameter("enddate", enddate);           
+        return query.getResultList();
+    }
+    
+    public Object[] getSalesSumCropProdHar(int cropid, int prodid, int harvestid, 
+            Date startdate, Date enddate) {
+        EntityManager em = getEntityManager();
+        Query query = em.createNamedQuery("Sales.salesSumCropProdHar");
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("harvestid", harvestid);
+        query.setParameter("startdate", startdate);
         query.setParameter("enddate", enddate);
-        return query.getSingleResult();
+        // Cast the single result to an Object array
+        return (Object[]) query.getSingleResult();
     }
 }

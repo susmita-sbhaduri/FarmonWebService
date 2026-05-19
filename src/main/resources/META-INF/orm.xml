@@ -320,7 +320,16 @@
     <named-query name="Sales.listNonzeroSalesForCrop">
         <query>SELECT s FROM Sales s WHERE s.cropid = :cropid AND s.quantitysold &gt; 0</query>
     </named-query>
-    <named-query name="Sales.salesForCropProdHar">
+<!--    <named-query name="Sales.salesForCropProdHar">
+        <query>SELECT s FROM Sales s 
+            WHERE s.cropid = :cropid 
+            AND s.productid =:prodid
+            AND s.harvestid =:harvestid
+            AND s.date &gt;= :startdate
+            AND s.date &lt;= :enddate
+        </query>
+    </named-query>-->
+    <named-query name="Sales.salesSumCropProdHar">
         <query>SELECT sum(s.quantitysold), sum(s.quantitysold * s.priceperunit) 
             FROM Sales s 
             WHERE s.cropid = :cropid 

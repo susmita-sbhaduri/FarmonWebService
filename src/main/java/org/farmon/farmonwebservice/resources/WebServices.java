@@ -3380,9 +3380,9 @@ public class WebServices {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         startDate = formatter.parse(farmondto.getReportstartdt());
         endDate = formatter.parse(farmondto.getReportenddt());
-        List<SalesDTO> recordlist = masterDataService.getSalesListCropProdHar(farmondto.getInventoryrec().getCropId(), farmondto.getInventoryrec().getProductId(),
-                farmondto.getInventoryrec().getHarvestId(), startDate, endDate);                              
-        farmondto.setSaleslist(recordlist);
+        SalesDTO record = masterDataService.getSalesSumCropProdHar(farmondto.getSalesrec().getCropId(), farmondto.getSalesrec().getProdId(),
+                farmondto.getSalesrec().getHarvestId(), startDate, endDate);                              
+        farmondto.setSalesrec(record);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;

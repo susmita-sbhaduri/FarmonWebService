@@ -3314,40 +3314,71 @@ public class MasterDataServices {
         }
     }
     
+//    public List<SalesDTO> getSalesListCropProdHar(String cropid, String prodid, 
+//             String harvestid, Date startDate, Date endDate) {
+//        SalesDAO salesdao = new SalesDAO(utx, emf);
+//        SalesDTO record = new SalesDTO();
+//        List<SalesDTO> recordList = new ArrayList<>();
+//        Date mysqlDate;
+//        String pattern = "yyyy-MM-dd";
+//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+//        try {
+//            List<Sales> saleslist = salesdao.getNonzeroSalesForCrop(Integer.parseInt(cropid));
+//            for (int i = 0; i < saleslist.size(); i++) {
+//                record.setSalesId(saleslist.get(i).getId().toString());
+//                record.setCropId(saleslist.get(i).getCropid().toString());
+//                record.setProdId(saleslist.get(i).getProductid().toString());
+//                record.setHarvestId(saleslist.get(i).getHarvestid().toString());
+//                record.setProductname(getCropprodForCropProd(cropid, 
+//                        saleslist.get(i).getProductid().toString()).getProductName());
+//                record.setProdunit(getCropprodForCropProd(cropid, 
+//                        saleslist.get(i).getProductid().toString()).getUnit());
+//                record.setCurrentInventoryQty("");
+//                record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
+//                record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
+//                mysqlDate = saleslist.get(i).getDate();
+//                if (mysqlDate == null) {
+//                    record.setSalesDate(null);
+//                } else {
+//                    record.setSalesDate(formatter.format(mysqlDate));
+//                }
+//                recordList.add(record);
+//                record = new SalesDTO();
+//            }
+//            return recordList;
+//        } catch (NoResultException e) {
+//            System.out.println("No sales for this crop are added");
+//            return null;
+//        } catch (Exception exception) {
+//            System.out.println(exception + " has occurred in getNonzeroSalesForCrop().");
+//            return null;
+//        }
+//    }
      public SalesDTO getSalesSumCropProdHar(String cropid, String prodid, 
              String harvestid, Date startDate, Date endDate) {
         SalesDAO salesdao = new SalesDAO(utx, emf);
-        SalesDTO record = new SalesDTO();
-        List<SalesDTO> recordList = new ArrayList<>();
-        Date mysqlDate;
-        String pattern = "yyyy-MM-dd";
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        SalesDTO record = new SalesDTO();        
         try {
-            List<Sales> saleslist = salesdao.getSalesForCropProdHar(Integer.parseInt(cropid)
+            Object[] totals = salesdao.getSalesSumCropProdHar(Integer.parseInt(cropid)
                     , Integer.parseInt(prodid), Integer.parseInt(harvestid), startDate, endDate);
-            for (int i = 0; i < saleslist.size(); i++) 
-            {
-                record.setSalesId(saleslist.get(i).getId().toString());
-                record.setCropId(cropid);            
-                record.setProdId(prodid);                 
-                record.setHarvestId(harvestid);            
-                record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
-                record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
-                mysqlDate = saleslist.get(i).getDate();
-                if (mysqlDate == null) {
-                    record.setSalesDate(null);
-                } else {
-                    record.setSalesDate(formatter.format(mysqlDate));
-                }
-                recordList.add(record);
-                record = new SalesDTO();
-            }            
-            return recordList;
+            BigDecimal totalQty = BigDecimal.ZERO;
+            if (totals[0] != null) {
+                // Depending on your DB column type, this might be a Long or Double. 
+                // Assuming BigDecimal based on your previous code!
+                totalQty = (BigDecimal) totals[0];
+            }
+            BigDecimal totalSalesRs = BigDecimal.ZERO;
+            if (totals[1] != null) {
+                totalSalesRs = (BigDecimal) totals[1];
+            }
+            record.setQuantitySold(String.format("%.2f", totalQty));
+            record.setPriceperUnit(String.format("%.2f", totalSalesRs));          
+            return record;
         } catch (NoResultException e) {
-            System.out.println("No records in Sales table for this crop, prod, harvest and dates");
+            System.out.println("No totals exist in Sales table for this crop, prod, harvest and dates");
             return null;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getSalesListCropProdHar().");
+            System.out.println(exception + " has occurred in getSalesSumCropProdHar().");
             return null;
         }
     }
