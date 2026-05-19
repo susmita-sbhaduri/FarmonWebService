@@ -54,17 +54,7 @@ public class SalesDAO extends SalesJpaController{
         return listofsales;
     }
     
-    public List<Sales> getSalesForCropProdHar(int cropid, int prodid, int harvestid, 
-            Date startdate, Date enddate) {
-        EntityManager em = getEntityManager();
-        TypedQuery<Sales> query = em.createNamedQuery("Sales.salesForCropProdHar", Sales.class);
-        query.setParameter("cropid", cropid);
-        query.setParameter("prodid", prodid);
-        query.setParameter("harvestid", harvestid);
-        query.setParameter("startdate", startdate);
-        query.setParameter("enddate", enddate);           
-        return query.getResultList();
-    }
+   
     
     public Object[] getSalesSumCropProdHar(int cropid, int prodid, int harvestid, 
             Date startdate, Date enddate) {
