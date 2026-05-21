@@ -291,7 +291,7 @@
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC, i.id DESC</query>
     </named-query>
     <named-query name="Inventory.invForCropProdHar">
-        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid</query>
+        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid ORDER BY i.lastupdatedate, i.id</query>
     </named-query>
     <named-query name="Inventory.lastInvForCropDt">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.lastupdatedate =:lastupdatedate ORDER BY i.lastupdatedate DESC, i.id DESC</query>
