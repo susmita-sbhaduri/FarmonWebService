@@ -14,6 +14,7 @@
     <class>org.farmon.entities.Resourceaquire</class>
     <class>org.farmon.entities.Resourcecrop</class>
     <class>org.farmon.entities.Shop</class>
+    <class>org.farmon.entities.Sales</class>
     <class>org.farmon.entities.Labourcrop</class>
     <class>org.farmon.entities.Shopresource</class>
     <class>org.farmon.entities.Shoprescrop</class>
@@ -24,6 +25,6 @@
     <class>org.farmon.entities.Crop</class>
     <class>org.farmon.entities.Cropproduct</class>
     <class>org.farmon.entities.Inventory</class>
-    <class>org.farmon.entities.Sales</class>
+    <class>org.farmon.entities.Buyer</class>
   </persistence-unit>
 </persistence>

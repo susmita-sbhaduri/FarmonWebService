@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import org.farmon.DA.BuyerDAO;
 
 import org.farmon.DA.UserDAO;
 import org.farmon.DA.CropDAO;
@@ -88,12 +89,14 @@ import static org.farmon.farmondto.FarmonResponseCodes.DB_SEVERE;
 import static org.farmon.farmondto.FarmonResponseCodes.SUCCESS;
 import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
+import org.farmon.entities.Buyer;
 import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Inventory;
 import org.farmon.entities.Sales;
 
 import org.farmon.entities.Sensordata;
 import org.farmon.entities.Sensordetail;
+import org.farmon.farmondto.BuyerDTO;
 import org.farmon.farmondto.CropProductDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
@@ -489,6 +492,31 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getShopList().");
+            return null;
+        }
+    }
+    
+    public List<BuyerDTO> getBuyerList() {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
+        BuyerDTO record = new BuyerDTO();
+        List<BuyerDTO> recordList = new ArrayList<>();
+        try {
+            List<Buyer> buyerlist = buyerdao.getAllBuyers();
+            for (int i = 0; i < buyerlist.size(); i++) {
+                record.setBuyerId(buyerlist.get(i).getBuyerid().toString());
+                record.setBuyerName(buyerlist.get(i).getBuyername());
+                record.setLocation(buyerlist.get(i).getLocation());
+                record.setContact(buyerlist.get(i).getContact());
+                record.setAvailabilityTime(buyerlist.get(i).getAvailabilitytime());
+                recordList.add(record);
+                record = new BuyerDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No Buyers are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getBuyerList().");
             return null;
         }
     }
@@ -3163,6 +3191,8 @@ public class MasterDataServices {
                 record.setCurrentInventoryQty("");
                 record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
                 record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
+                record.setBuyerId(saleslist.get(i).toString());
+                record.setBuyerName("");
                 mysqlDate = saleslist.get(i).getDate();
                 if (mysqlDate == null) {
                     record.setSalesDate(null);
@@ -3210,6 +3240,7 @@ public class MasterDataServices {
             rec.setPriceperunit(BigDecimal.valueOf(Double.parseDouble(salesrec.getPriceperUnit())));
             mysqlDate = formatter.parse(salesrec.getSalesDate());
             rec.setDate(mysqlDate);
+            rec.setBuyerid(Integer.valueOf(salesrec.getBuyerId()));
             salesdao.create(rec);
             return SUCCESS;
         } catch (PreexistingEntityException e) {
@@ -3236,6 +3267,7 @@ public class MasterDataServices {
             rec.setPriceperunit(BigDecimal.valueOf(Double.parseDouble(salesrec.getPriceperUnit())));
             mysqlDate = formatter.parse(salesrec.getSalesDate());
             rec.setDate(mysqlDate);
+            rec.setBuyerid(Integer.valueOf(salesrec.getBuyerId()));
             salesdao.edit(rec);
             return SUCCESS;
         } catch (NonexistentEntityException e) {
@@ -3297,6 +3329,8 @@ public class MasterDataServices {
             record.setCurrentInventoryQty("");
             record.setQuantitySold(String.format("%.2f", salesrec.getQuantitysold()));
             record.setPriceperUnit(String.format("%.2f", salesrec.getPriceperunit()));
+            record.setBuyerId(salesrec.getBuyerid().toString());
+            record.setBuyerName("");
             
             mysqlDate = salesrec.getDate();
             if (mysqlDate == null) {
@@ -3379,6 +3413,39 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getSalesSumCropProdHar().");
+            return null;
+        }
+    }
+     
+     public List<SalesDTO> getDistinctBuyerForSales() { // for MaintainBuyer.java
+        SalesDAO salesdao = new SalesDAO(utx, emf);
+        List<SalesDTO> recordList = new ArrayList<>();
+        SalesDTO record = new SalesDTO();
+
+        try {
+            List<Integer> buyerlist = salesdao.getDistictBuyerForSales();
+            for (int i = 0; i < buyerlist.size(); i++) {
+                record.setSalesId(null);
+                record.setCropId(null);
+                record.setProdId(null);
+                record.setHarvestId(null);
+                record.setProductname(null);
+                record.setProdunit(null);
+                record.setCurrentInventoryQty(null);
+                record.setQuantitySold(null);
+                record.setPriceperUnit(null);
+                record.setBuyerId(String.valueOf(buyerlist.get(i)));
+                record.setBuyerName(null);
+                record.setSalesDate(null);
+                recordList.add(record);
+                record = new SalesDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No sales records with distict buyerids are found");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getDistinctBuyerForSales().");
             return null;
         }
     }

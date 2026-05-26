@@ -169,6 +169,9 @@
     <named-query name="Shop.getMaxShopId">
         <query>SELECT MAX(s.shopid) FROM Shop s</query>
     </named-query>
+    <named-query name="Buyer.allBuyers">
+        <query>SELECT b FROM Buyer b</query>
+    </named-query>
     <named-query name="Farmresource.resNameForId">
         <query>SELECT f FROM Farmresource f WHERE f.resourceid = :resourceid</query>
     </named-query>
@@ -329,6 +332,9 @@
             AND s.date &gt;= :startdate
             AND s.date &lt;= :enddate
         </query>
+    </named-query>
+    <named-query name="Sales.disBuyerSales">
+        <query>SELECT DISTINCT s.buyerid FROM Sales s</query>
     </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 

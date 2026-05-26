@@ -68,4 +68,11 @@ public class SalesDAO extends SalesJpaController{
         // Cast the single result to an Object array
         return (Object[]) query.getSingleResult();
     }
+    
+    public List<Integer> getDistictBuyerForSales() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Sales.disBuyerSales", Integer.class);
+        List<Integer> shopids = query.getResultList();
+        return shopids;
+    }
 }

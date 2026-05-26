@@ -32,6 +32,7 @@ import java.util.Date;
     @NamedQuery(name = "Sales.findByCropid", query = "SELECT s FROM Sales s WHERE s.cropid = :cropid"),
     @NamedQuery(name = "Sales.findByProductid", query = "SELECT s FROM Sales s WHERE s.productid = :productid"),
     @NamedQuery(name = "Sales.findByHarvestid", query = "SELECT s FROM Sales s WHERE s.harvestid = :harvestid"),
+    @NamedQuery(name = "Sales.findByBuyerid", query = "SELECT s FROM Sales s WHERE s.buyerid = :buyerid"),
     @NamedQuery(name = "Sales.findByQuantitysold", query = "SELECT s FROM Sales s WHERE s.quantitysold = :quantitysold"),
     @NamedQuery(name = "Sales.findByPriceperunit", query = "SELECT s FROM Sales s WHERE s.priceperunit = :priceperunit"),
     @NamedQuery(name = "Sales.findByDate", query = "SELECT s FROM Sales s WHERE s.date = :date")})
@@ -49,6 +50,8 @@ public class Sales implements Serializable {
     private Integer productid;
     @Column(name = "harvestid")
     private Integer harvestid;
+    @Column(name = "buyerid")
+    private Integer buyerid;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "quantitysold")
     private BigDecimal quantitysold;
@@ -95,6 +98,14 @@ public class Sales implements Serializable {
 
     public void setHarvestid(Integer harvestid) {
         this.harvestid = harvestid;
+    }
+
+    public Integer getBuyerid() {
+        return buyerid;
+    }
+
+    public void setBuyerid(Integer buyerid) {
+        this.buyerid = buyerid;
     }
 
     public BigDecimal getQuantitysold() {
