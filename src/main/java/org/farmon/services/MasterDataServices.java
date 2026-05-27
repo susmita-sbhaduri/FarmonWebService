@@ -520,6 +520,77 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+     public int getMaxBuyerId() {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
+        try {
+            return buyerdao.getMaxBuyerId();
+        } catch (NoResultException e) {
+            System.out.println("No records in Buyer table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxBuyerId().");
+            //            return DB_SEVERE;
+            return 0;
+        }
+    }
+
+    public int addBuyerRecord(BuyerDTO buyerrec) {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
+        try {
+            Buyer rec = new Buyer();
+            rec.setBuyerid(Integer.valueOf(buyerrec.getBuyerId()));
+            rec.setBuyername(buyerrec.getBuyerName());
+            rec.setLocation(buyerrec.getLocation());
+            rec.setContact(buyerrec.getContact());
+            rec.setAvailabilitytime(buyerrec.getAvailabilityTime());
+            buyerdao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this Buyer record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addBuyerRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+    public int editShopRecord(ShopDTO shoprec) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);
+
+        try {
+            Shop rec = new Shop();
+            rec.setShopid(Integer.valueOf(shoprec.getShopId()));
+            rec.setShopname(shoprec.getShopName());
+            rec.setLocation(shoprec.getLocation());
+            rec.setContact(shoprec.getContact());
+            rec.setAvailabilitytime(shoprec.getAvailabilityTime());
+            shopdao.edit(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("This Shop record to be edited, does not exist ");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editShopRecord.");
+            return DB_SEVERE;
+        }
+    }
+
+    public int delShop(ShopDTO shopres) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);
+        try {
+            Shop shopentity = new Shop();
+            shopentity.setShopid(Integer.valueOf(shopres.getShopId()));
+            shopdao.destroy(shopentity.getShopid());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this Shop does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in delShop.");
+            return DB_SEVERE;
+        }
+    }
 
     public FarmresourceDTO getResourceIdForName(String resourcename) {
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);

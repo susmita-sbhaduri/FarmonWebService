@@ -35,9 +35,9 @@ public class BuyerDAO extends BuyerJpaController{
         return listofbuyer;
     }
     
-//    public int getMaxShopId() {
-//        EntityManager em = getEntityManager();
-//        TypedQuery<Integer> query = em.createNamedQuery("Shop.getMaxShopId", Integer.class);        
-//        return query.getSingleResult();
-//    }
+    public int getMaxBuyerId() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Buyer.getMaxBuyerId", Integer.class);        
+        return query.getSingleResult();
+    }
 }
