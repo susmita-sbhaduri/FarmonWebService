@@ -21,13 +21,13 @@ public class BuyerDAO extends BuyerJpaController{
     public BuyerDAO(UserTransaction utx, EntityManagerFactory emf) {
         super(utx, emf);
     }
-//    public Shop getShopName(int id) {
-//        EntityManager em = getEntityManager();
-//        TypedQuery<Shop> query = em.createNamedQuery("Shop.shopNameForId", Shop.class); 
-//        query.setParameter("shopid", id);
-//        Shop shoprec = query.getSingleResult();
-//        return shoprec;
-//    }
+    public Buyer getBuyerName(int id) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Buyer> query = em.createNamedQuery("Buyer.buyerNameForId", Buyer.class); 
+        query.setParameter("buyerid", id);
+        Buyer buyerrec = query.getSingleResult();
+        return buyerrec;
+    }
     public List<Buyer> getAllBuyers() {
         EntityManager em = getEntityManager();
         TypedQuery<Buyer> query = em.createNamedQuery("Buyer.allBuyers", Buyer.class);            

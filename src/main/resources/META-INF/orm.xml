@@ -175,6 +175,9 @@
     <named-query name="Buyer.getMaxBuyerId">
         <query>SELECT MAX(b.buyerid) FROM Buyer b</query>
     </named-query>
+    <named-query name="Buyer.buyerNameForId">
+        <query>SELECT b FROM Buyer b WHERE b.buyerid = :buyerid</query>
+    </named-query>
     <named-query name="Farmresource.resNameForId">
         <query>SELECT f FROM Farmresource f WHERE f.resourceid = :resourceid</query>
     </named-query>

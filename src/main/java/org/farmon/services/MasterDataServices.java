@@ -457,7 +457,27 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public ShopDTO getShopNameForId(String shopid) {
+        ShopDAO shopdao = new ShopDAO(utx, emf);
+        ShopDTO record = new ShopDTO();
 
+        try {
+            Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));
+            record.setShopName(shoprec.getShopname());
+            record.setShopId(shopid);
+            record.setLocation(shoprec.getLocation());
+            record.setContact(shoprec.getContact());
+            record.setAvailabilityTime(shoprec.getAvailabilitytime());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No shop found for this shopid");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getShopNameForId(int shopid).");
+            return null;
+        }
+    }
     public int getMaxFarmresId() {
         FarmresourceDAO resourcedao = new FarmresourceDAO(utx, emf);
         try {
@@ -521,6 +541,27 @@ public class MasterDataServices {
         }
     }
     
+    public BuyerDTO getBuyerNameForId(String buyerid) {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
+        BuyerDTO rec = new BuyerDTO();
+
+        try {
+            Buyer buyerrec = buyerdao.getBuyerName(Integer.parseInt(buyerid));            
+            rec.setBuyerId(buyerrec.getBuyerid().toString());
+            rec.setBuyerName(buyerrec.getBuyername());
+            rec.setLocation(buyerrec.getLocation());
+            rec.setContact(buyerrec.getContact());
+            rec.setAvailabilityTime(buyerrec.getAvailabilitytime());
+            return rec;
+        } catch (NoResultException e) {
+            System.out.println("No shop found for this buyerid");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getBuyerNameForId.");
+            return null;
+        }
+    }
+    
      public int getMaxBuyerId() {
         BuyerDAO buyerdao = new BuyerDAO(utx, emf);
         try {
@@ -555,39 +596,38 @@ public class MasterDataServices {
         }
     }
 
-    public int editShopRecord(ShopDTO shoprec) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);
-
+    public int editBuyerRecord(BuyerDTO buyerrec) {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
         try {
-            Shop rec = new Shop();
-            rec.setShopid(Integer.valueOf(shoprec.getShopId()));
-            rec.setShopname(shoprec.getShopName());
-            rec.setLocation(shoprec.getLocation());
-            rec.setContact(shoprec.getContact());
-            rec.setAvailabilitytime(shoprec.getAvailabilityTime());
-            shopdao.edit(rec);
+            Buyer rec = new Buyer();
+            rec.setBuyerid(Integer.valueOf(buyerrec.getBuyerId()));
+            rec.setBuyername(buyerrec.getBuyerName());
+            rec.setLocation(buyerrec.getLocation());
+            rec.setContact(buyerrec.getContact());
+            rec.setAvailabilitytime(buyerrec.getAvailabilityTime());
+            buyerdao.edit(rec);
             return SUCCESS;
         } catch (NoResultException e) {
-            System.out.println("This Shop record to be edited, does not exist ");
+            System.out.println("This Buyer record to be edited, does not exist ");
             return DB_NON_EXISTING;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in editShopRecord.");
+            System.out.println(exception + " has occurred in editBuyerRecord.");
             return DB_SEVERE;
         }
     }
 
-    public int delShop(ShopDTO shopres) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);
+    public int delBuyer(BuyerDTO buyerrec) {
+        BuyerDAO buyerdao = new BuyerDAO(utx, emf);
         try {
-            Shop shopentity = new Shop();
-            shopentity.setShopid(Integer.valueOf(shopres.getShopId()));
-            shopdao.destroy(shopentity.getShopid());
+            Buyer rec = new Buyer();
+            rec.setBuyerid(Integer.valueOf(buyerrec.getBuyerId()));
+            buyerdao.destroy(rec.getBuyerid());
             return SUCCESS;
         } catch (NonexistentEntityException e) {
-            System.out.println("Record for this Shop does not exist");
+            System.out.println("Record for this Buyer does not exist");
             return DB_NON_EXISTING;
         } catch (Exception exception) {
-            System.out.println(exception + " has occurred in delShop.");
+            System.out.println(exception + " has occurred in delBuyer.");
             return DB_SEVERE;
         }
     }
@@ -650,27 +690,6 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getResShopForPk.");
-            return null;
-        }
-    }
-
-    public ShopDTO getShopNameForId(String shopid) {
-        ShopDAO shopdao = new ShopDAO(utx, emf);
-        ShopDTO record = new ShopDTO();
-
-        try {
-            Shop shoprec = shopdao.getShopName(Integer.parseInt(shopid));
-            record.setShopName(shoprec.getShopname());
-            record.setShopId(shopid);
-            record.setLocation(shoprec.getLocation());
-            record.setContact(shoprec.getContact());
-            record.setAvailabilityTime(shoprec.getAvailabilitytime());
-            return record;
-        } catch (NoResultException e) {
-            System.out.println("No shop found for this shopid");
-            return null;
-        } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getShopNameForId(int shopid).");
             return null;
         }
     }
