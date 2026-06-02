@@ -294,7 +294,7 @@
     </named-query>
     
     <named-query name="Inventory.lastInvHarForCrop">
-        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC</query>
+        <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC, i.id DESC</query>
     </named-query>
     <named-query name="Inventory.lastInvForCrop">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid AND i.productid =:prodid AND i.hasvestid =:harvestid AND i.currentqty &gt; 0 ORDER BY i.lastupdatedate DESC, i.id DESC</query>
@@ -321,7 +321,7 @@
         <query>SELECT MAX(s.id) FROM Sales s</query>
     </named-query>
     <named-query name="Sales.lastSalesHarForCrop">
-        <query>SELECT s FROM Sales s WHERE s.cropid = :cropid ORDER BY s.date DESC</query>
+        <query>SELECT s FROM Sales s WHERE s.cropid = :cropid ORDER BY s.date DESC, s.id DESC</query>
     </named-query>
     <named-query name="Sales.lastSalesForCrop">
         <query>SELECT s FROM Sales s WHERE s.cropid = :cropid AND s.productid =:prodid AND s.harvestid =:harvestid ORDER BY s.date DESC, s.id DESC</query>
