@@ -2986,6 +2986,27 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    public List<CropDTO> getCropForHarvInv(String harvestid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        CropDTO record = new CropDTO();
+        List<CropDTO> recordList = new ArrayList<>();
+        try {
+            List<Integer> croplist = invdao.getDintictHarInv();
+            for (int i = 0; i < croplist.size(); i++) {
+                record = getCropForId(String.valueOf(croplist.get(i)));
+                recordList.add(record);
+                record = new CropDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No Inventory record for the given harvestid");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCropForHarvInv().");
+            return null;
+        }
+    }
 
     public int getMaxCropId() {
         CropDAO cropdao = new CropDAO(utx, emf);
