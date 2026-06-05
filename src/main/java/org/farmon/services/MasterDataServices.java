@@ -2992,7 +2992,7 @@ public class MasterDataServices {
         CropDTO record = new CropDTO();
         List<CropDTO> recordList = new ArrayList<>();
         try {
-            List<Integer> croplist = invdao.getDintictHarInv();
+            List<Integer> croplist = invdao.getCropidForHarInv(Integer.parseInt(harvestid));
             for (int i = 0; i < croplist.size(); i++) {
                 record = getCropForId(String.valueOf(croplist.get(i)));
                 recordList.add(record);
@@ -3004,6 +3004,29 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getCropForHarvInv().");
+            return null;
+        }
+    }
+    
+    public List<CropProductDTO> getCropProdForHarvCrop(String harvestid, String cropid) {
+        InventoryDAO invdao = new InventoryDAO(utx, emf);
+        CropProductDTO record = new CropProductDTO();
+        List<CropProductDTO> recordList = new ArrayList<>();
+        try {
+            List<Integer> cropprodlist = invdao.getCropProdForHarCrop(Integer.parseInt(harvestid)
+            , Integer.parseInt(cropid));
+            for (int i = 0; i < cropprodlist.size(); i++) {
+                record = getCropprodForCropProd(String.valueOf(cropid),
+                        String.valueOf(cropprodlist.get(i)));
+                recordList.add(record);
+                record = new CropProductDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No Inventory record for the given harvestid and cropid");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getCropProdForHarvCrop().");
             return null;
         }
     }

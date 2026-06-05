@@ -80,10 +80,26 @@ public class InventoryDAO extends InventoryJpaController{
     
     public List<Integer> getDintictHarInv() {
         EntityManager em = getEntityManager();
-        TypedQuery<Integer> query = em.createNamedQuery("Inventory.distinctHarInv", Integer.class);
-        
+        TypedQuery<Integer> query = em.createNamedQuery("Inventory.distinctHarInv", Integer.class);        
         List<Integer> harvestids = query.getResultList();
         return harvestids;
+    }
+    
+    public List<Integer> getCropidForHarInv(int harvestid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Inventory.cropIdForHar", Integer.class); 
+        query.setParameter("harvestid", harvestid);
+        List<Integer> cropids = query.getResultList();
+        return cropids;
+    }
+    
+    public List<Integer> getCropProdForHarCrop(int harvestid, int cropid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Inventory.cropprodForHarCrop", Integer.class); 
+        query.setParameter("harvestid", harvestid);
+        query.setParameter("cropid", cropid);
+        List<Integer> cropprodids = query.getResultList();
+        return cropprodids;
     }
     
     public BigDecimal getTotalInvStock(int cropid, int prodid, int harvestid) {

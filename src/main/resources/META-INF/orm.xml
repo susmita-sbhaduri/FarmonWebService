@@ -314,6 +314,12 @@
     <named-query name="Inventory.distinctHarInv">
         <query>SELECT DISTINCT i.hasvestid FROM Inventory i</query>
     </named-query>
+    <named-query name="Inventory.cropIdForHar">
+        <query>SELECT DISTINCT i.cropid FROM Inventory i WHERE i.hasvestid = :harvestid</query>
+    </named-query>
+    <named-query name="Inventory.cropprodForHarCrop">
+        <query>SELECT DISTINCT i.productid FROM Inventory i WHERE i.hasvestid = :harvestid AND i.cropid = :cropid</query>
+    </named-query>
     <named-query name="Inventory.deleteByCropId">
         <query>SELECT i FROM Inventory i WHERE i.cropid = :cropid</query>
     </named-query>
