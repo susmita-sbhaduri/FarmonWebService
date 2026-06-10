@@ -26,5 +26,6 @@
     <class>org.farmon.entities.Cropproduct</class>
     <class>org.farmon.entities.Inventory</class>
     <class>org.farmon.entities.Buyer</class>
+    <class>org.farmon.entities.Productstage</class>
   </persistence-unit>
 </persistence>

@@ -69,7 +69,7 @@
         <query>SELECT c FROM Cropproduct c WHERE c.cropid = :cropid AND c.productid = :productid</query>
     </named-query>
     <named-query name="Farmresource.listAll">
-        <query>SELECT f FROM Farmresource f ORDER BY f.resourcename</query>
+        <query>SELECT f FROM Farmresource f ORDER BY f.availableamount DESC</query>
     </named-query>
     <named-query name="Farmresource.listNonzero">
         <query>SELECT f FROM Farmresource f WHERE f.availableamount > 0</query>
