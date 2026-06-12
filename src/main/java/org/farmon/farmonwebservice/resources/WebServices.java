@@ -37,6 +37,7 @@ import org.farmon.farmondto.HarvestDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
 import org.farmon.farmondto.LabourCropDTO;
+import org.farmon.farmondto.ProductStageDTO;
 import org.farmon.farmondto.ResAcqReportDTO;
 import org.farmon.farmondto.ResAcquireDTO;
 import org.farmon.farmondto.ResourceCropDTO;
@@ -3642,6 +3643,34 @@ public class WebServices {
         MasterDataServices masterDataService = new MasterDataServices();
         List<SalesDTO> saleslist = masterDataService.getDistinctBuyerForSales();
         farmondto.setSaleslist(saleslist);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("stagesCropProd")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getStagesForCropProd(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        List<ProductStageDTO> stagelist = masterDataService.getStagesForCropProd(farmondto.getProdstagerec().getCropId(),
+                farmondto.getProdstagerec().getProductId());
+        farmondto.setProdstagelist(stagelist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;

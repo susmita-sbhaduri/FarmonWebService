@@ -32,6 +32,7 @@ import org.farmon.DA.EmpexpenseDAO;
 import org.farmon.DA.HarvestDAO;
 import org.farmon.DA.InventoryDAO;
 import org.farmon.DA.LabourCropDAO;
+import org.farmon.DA.ProdStageDAO;
 import org.farmon.DA.ResAcquireDAO;
 import org.farmon.DA.ResourceCropDAO;
 import org.farmon.DA.SalesDAO;
@@ -92,6 +93,7 @@ import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.entities.Buyer;
 import org.farmon.entities.Cropproduct;
 import org.farmon.entities.Inventory;
+import org.farmon.entities.Productstage;
 import org.farmon.entities.Sales;
 
 import org.farmon.entities.Sensordata;
@@ -100,6 +102,7 @@ import org.farmon.farmondto.BuyerDTO;
 import org.farmon.farmondto.CropProductDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
+import org.farmon.farmondto.ProductStageDTO;
 import org.farmon.farmondto.SalesDTO;
 import org.farmon.farmondto.SensorDataDTO;
 import org.farmon.farmondto.SensordtlsDTO;
@@ -3482,47 +3485,7 @@ public class MasterDataServices {
         }
     }
     
-//    public List<SalesDTO> getSalesListCropProdHar(String cropid, String prodid, 
-//             String harvestid, Date startDate, Date endDate) {
-//        SalesDAO salesdao = new SalesDAO(utx, emf);
-//        SalesDTO record = new SalesDTO();
-//        List<SalesDTO> recordList = new ArrayList<>();
-//        Date mysqlDate;
-//        String pattern = "yyyy-MM-dd";
-//        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-//        try {
-//            List<Sales> saleslist = salesdao.getNonzeroSalesForCrop(Integer.parseInt(cropid));
-//            for (int i = 0; i < saleslist.size(); i++) {
-//                record.setSalesId(saleslist.get(i).getId().toString());
-//                record.setCropId(saleslist.get(i).getCropid().toString());
-//                record.setProdId(saleslist.get(i).getProductid().toString());
-//                record.setHarvestId(saleslist.get(i).getHarvestid().toString());
-//                record.setProductname(getCropprodForCropProd(cropid, 
-//                        saleslist.get(i).getProductid().toString()).getProductName());
-//                record.setProdunit(getCropprodForCropProd(cropid, 
-//                        saleslist.get(i).getProductid().toString()).getUnit());
-//                record.setCurrentInventoryQty("");
-//                record.setQuantitySold(String.format("%.2f", saleslist.get(i).getQuantitysold()));
-//                record.setPriceperUnit(String.format("%.2f", saleslist.get(i).getPriceperunit()));
-//                mysqlDate = saleslist.get(i).getDate();
-//                if (mysqlDate == null) {
-//                    record.setSalesDate(null);
-//                } else {
-//                    record.setSalesDate(formatter.format(mysqlDate));
-//                }
-//                recordList.add(record);
-//                record = new SalesDTO();
-//            }
-//            return recordList;
-//        } catch (NoResultException e) {
-//            System.out.println("No sales for this crop are added");
-//            return null;
-//        } catch (Exception exception) {
-//            System.out.println(exception + " has occurred in getNonzeroSalesForCrop().");
-//            return null;
-//        }
-//    }
-     public SalesDTO getSalesSumCropProdHar(String cropid, String prodid, 
+    public SalesDTO getSalesSumCropProdHar(String cropid, String prodid, 
              String harvestid, Date startDate, Date endDate) {
         SalesDAO salesdao = new SalesDAO(utx, emf);
         SalesDTO record = new SalesDTO();        
@@ -3619,6 +3582,37 @@ public class MasterDataServices {
             return 0;
         }
     }
+    
+    public List<ProductStageDTO> getStagesForCropProd(String cropid, String prodid) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
+        ProductStageDTO record = new ProductStageDTO();
+        List<ProductStageDTO> recordList = new ArrayList<>();
+        
+        try {
+            List<Productstage> stagelist = sagedao.getStagesForCropProd(Integer.parseInt(cropid)
+            , Integer.parseInt(prodid));
+            for (int i = 0; i < stagelist.size(); i++) {
+                record.setId(stagelist.get(i).getId().toString());
+                record.setCropId(stagelist.get(i).getCropid().toString());
+                record.setCropName(getCropForId(stagelist.get(i).getCropid().toString())
+                        .getCropName());
+                record.setProductId(stagelist.get(i).getProductid().toString());
+                record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
+                record.setProdStageId(stagelist.get(i).getStageid().toString());
+                record.setProdStageName(stagelist.get(i).getStagename());
+                
+                recordList.add(record);
+                record = new ProductStageDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No stages for this crop and product are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getStagesForCropProd().");
+            return null;
+        }
+    }
 
     public List<SensorDataDTO> getSensorDataList() {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
@@ -3666,5 +3660,8 @@ public class MasterDataServices {
             return null;
         }
     }
+    
+    
+    
 
 }

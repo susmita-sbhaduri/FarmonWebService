@@ -348,6 +348,9 @@
     <named-query name="Sales.disBuyerSales">
         <query>SELECT DISTINCT s.buyerid FROM Sales s</query>
     </named-query>
+    <named-query name="Productstage.stageListCropProd">
+        <query>SELECT p FROM Productstage p WHERE p.cropid = :cropid AND p.productid = :prodid</query>
+    </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 
         result-set-mapping="RescropSummaryMapping">
