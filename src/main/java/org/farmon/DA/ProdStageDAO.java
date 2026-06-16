@@ -28,4 +28,9 @@ public class ProdStageDAO extends ProductstageJpaController{
         List<Productstage> listofcrop = query.getResultList();
         return listofcrop;
     }
+    public int getMaxStageId() {
+        EntityManager em = getEntityManager();
+        TypedQuery<Integer> query = em.createNamedQuery("Productstage.getMaxStageId", Integer.class);        
+        return query.getSingleResult();
+    }
 }

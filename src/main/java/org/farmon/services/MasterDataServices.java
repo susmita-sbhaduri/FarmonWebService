@@ -3546,6 +3546,71 @@ public class MasterDataServices {
             return null;
         }
     }
+     
+    public int getMaxStageId() {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
+        try {
+            return sagedao.getMaxStageId();
+        } catch (NoResultException e) {
+            System.out.println("No records in Productstage table");
+            return 0;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getMaxStageId().");
+            return 0;
+        }
+    }
+    
+    public int addProdStageRecord(ProductStageDTO stagerec) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
+        
+        try {
+            Productstage rec = new Productstage();
+            rec.setId(Integer.valueOf(stagerec.getId()));
+            rec.setCropid(Integer.valueOf(stagerec.getCropId()));
+            rec.setProductid(Integer.valueOf(stagerec.getProductId()));
+            rec.setStageid(Integer.valueOf(stagerec.getProdStageId()));
+            rec.setStagename(stagerec.getProdStageName());
+            sagedao.create(rec);
+            return SUCCESS;
+        } catch (PreexistingEntityException e) {
+            System.out.println("Record is already there for this product staage record");
+            return DB_DUPLICATE;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in addProdStageRecord.");
+            return DB_SEVERE;
+        }
+    }
+     
+    public List<ProductStageDTO> getStagesForCropProd(String cropid, String prodid) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
+        ProductStageDTO record = new ProductStageDTO();
+        List<ProductStageDTO> recordList = new ArrayList<>();
+        
+        try {
+            List<Productstage> stagelist = sagedao.getStagesForCropProd(Integer.parseInt(cropid)
+            , Integer.parseInt(prodid));
+            for (int i = 0; i < stagelist.size(); i++) {
+                record.setId(stagelist.get(i).getId().toString());
+                record.setCropId(stagelist.get(i).getCropid().toString());
+                record.setCropName(getCropForId(stagelist.get(i).getCropid().toString())
+                        .getCropName());
+                record.setProductId(stagelist.get(i).getProductid().toString());
+                record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
+                record.setProdStageId(stagelist.get(i).getStageid().toString());
+                record.setProdStageName(stagelist.get(i).getStagename());
+                
+                recordList.add(record);
+                record = new ProductStageDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No stages for this crop and product are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getStagesForCropProd().");
+            return null;
+        }
+    }
     
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
@@ -3583,36 +3648,7 @@ public class MasterDataServices {
         }
     }
     
-    public List<ProductStageDTO> getStagesForCropProd(String cropid, String prodid) {
-        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
-        ProductStageDTO record = new ProductStageDTO();
-        List<ProductStageDTO> recordList = new ArrayList<>();
-        
-        try {
-            List<Productstage> stagelist = sagedao.getStagesForCropProd(Integer.parseInt(cropid)
-            , Integer.parseInt(prodid));
-            for (int i = 0; i < stagelist.size(); i++) {
-                record.setId(stagelist.get(i).getId().toString());
-                record.setCropId(stagelist.get(i).getCropid().toString());
-                record.setCropName(getCropForId(stagelist.get(i).getCropid().toString())
-                        .getCropName());
-                record.setProductId(stagelist.get(i).getProductid().toString());
-                record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
-                record.setProdStageId(stagelist.get(i).getStageid().toString());
-                record.setProdStageName(stagelist.get(i).getStagename());
-                
-                recordList.add(record);
-                record = new ProductStageDTO();
-            }
-            return recordList;
-        } catch (NoResultException e) {
-            System.out.println("No stages for this crop and product are added");
-            return null;
-        } catch (Exception exception) {
-            System.out.println(exception + " has occurred in getStagesForCropProd().");
-            return null;
-        }
-    }
+    
 
     public List<SensorDataDTO> getSensorDataList() {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
