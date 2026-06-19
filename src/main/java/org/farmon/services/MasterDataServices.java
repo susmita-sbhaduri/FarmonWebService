@@ -3580,6 +3580,26 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int editProdStageRecord(ProductStageDTO stagerec) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);        
+        try {
+            Productstage rec = new Productstage();
+            rec.setId(Integer.valueOf(stagerec.getId()));
+            rec.setCropid(Integer.valueOf(stagerec.getCropId()));
+            rec.setProductid(Integer.valueOf(stagerec.getProductId()));
+            rec.setStageid(Integer.valueOf(stagerec.getProdStageId()));
+            rec.setStagename(stagerec.getProdStageName());
+            sagedao.edit(rec);
+            return SUCCESS;
+        } catch (NoResultException e) {
+            System.out.println("The Productstage Record to be edited, does not exist ");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in editProdStageRecord.");
+            return DB_SEVERE;
+        }
+    }
      
     public List<ProductStageDTO> getStagesForCropProd(String cropid, String prodid) {
         ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
@@ -3696,8 +3716,4 @@ public class MasterDataServices {
             return null;
         }
     }
-    
-    
-    
-
 }
