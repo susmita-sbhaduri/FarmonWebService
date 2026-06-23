@@ -3600,6 +3600,22 @@ public class MasterDataServices {
             return DB_SEVERE;
         }
     }
+    
+    public int deleteProdStageRecord(ProductStageDTO stagerec) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf); 
+        try {
+            Productstage rec = new Productstage();
+            rec.setId(Integer.valueOf(stagerec.getId()));
+            sagedao.destroy(rec.getId());
+            return SUCCESS;
+        } catch (NonexistentEntityException e) {
+            System.out.println("Record for this Prodstage does not exist");
+            return DB_NON_EXISTING;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in deleteProdStageRecord.");
+            return DB_SEVERE;
+        }
+    }
      
     public List<ProductStageDTO> getStagesForCropProd(String cropid, String prodid) {
         ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
