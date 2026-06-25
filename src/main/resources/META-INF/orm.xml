@@ -351,6 +351,9 @@
     <named-query name="Productstage.stageListCropProd">
         <query>SELECT p FROM Productstage p WHERE p.cropid = :cropid AND p.productid = :prodid</query>
     </named-query>
+    <named-query name="Productstage.frstCropProdStg">
+        <query>SELECT p FROM Productstage p WHERE p.cropid = :cropid AND p.productid = :prodid AND p.stageid = :stageid</query>
+    </named-query>
     <named-query name="Productstage.getMaxStageId">
         <query>SELECT MAX(p.id) FROM Productstage p</query>
     </named-query>

@@ -28,6 +28,16 @@ public class ProdStageDAO extends ProductstageJpaController{
         List<Productstage> listofcrop = query.getResultList();
         return listofcrop;
     }
+    
+    public Productstage getStageForCropProdStg(int cropid, int prodid, int stageid) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Productstage> query = em.createNamedQuery("Productstage.frstCropProdStg", Productstage.class);            
+        query.setParameter("cropid", cropid);
+        query.setParameter("prodid", prodid);
+        query.setParameter("stageid", stageid);        
+        return query.getSingleResult();
+    }
+    
     public int getMaxStageId() {
         EntityManager em = getEntityManager();
         TypedQuery<Integer> query = em.createNamedQuery("Productstage.getMaxStageId", Integer.class);        

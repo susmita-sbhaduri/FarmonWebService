@@ -3648,6 +3648,30 @@ public class MasterDataServices {
         }
     }
     
+    public ProductStageDTO getStageForCropProdStgid(String cropid, String prodid, String stageid) {
+        ProdStageDAO sagedao = new ProdStageDAO(utx, emf);
+        ProductStageDTO record = new ProductStageDTO();
+        try {
+            Productstage stagerec = sagedao.getStageForCropProdStg(Integer.parseInt(cropid),
+                     Integer.parseInt(prodid), Integer.parseInt(stageid));
+            record.setId(stagerec.getId().toString());
+            record.setCropId(stagerec.getCropid().toString());
+            record.setCropName(getCropForId(stagerec.getCropid().toString())
+                    .getCropName());
+            record.setProductId(stagerec.getProductid().toString());
+            record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
+            record.setProdStageId(stagerec.getStageid().toString());
+            record.setProdStageName(stagerec.getStagename());
+            return record;
+        } catch (NoResultException e) {
+            System.out.println("No stages for this crop and product are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getFirstStageForCropProd().");
+            return null;
+        }
+    }
+    
     public int addSensorDataRecord(SensorDTO sensorRec) {
         SensorDataDAO sensordao = new SensorDataDAO(utx, emf);
         try {
