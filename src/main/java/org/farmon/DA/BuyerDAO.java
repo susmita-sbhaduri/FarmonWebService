@@ -11,7 +11,6 @@ import jakarta.transaction.UserTransaction;
 import java.util.List;
 import org.farmon.JPA.BuyerJpaController;
 import org.farmon.entities.Buyer;
-import org.farmon.entities.Shop;
 
 /**
  *

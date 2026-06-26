@@ -357,6 +357,9 @@
     <named-query name="Productstage.getMaxStageId">
         <query>SELECT MAX(p.id) FROM Productstage p</query>
     </named-query>
+    <named-query name="Growthstage.growthStagesCropProd">
+        <query>SELECT g FROM Growthstage g WHERE g.cropid = cropid AND g.productid = :productid AND g.currentstageid = :currentstageid</query>
+    </named-query>
 <!--    <named-native-query 
         name="Resourcecrop.sumByResId" 
         result-set-mapping="RescropSummaryMapping">

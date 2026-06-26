@@ -27,6 +27,7 @@ import org.farmon.DA.ExpenseDAO;
 import org.farmon.DA.FarmresourceDAO;
 import org.farmon.DA.EmpLeaveDAO;
 import org.farmon.DA.EmpexpenseDAO;
+import org.farmon.DA.GrowthstageDAO;
 //import org.bhaduri.machh.DA.EmployeeDAO;
 //import org.bhaduri.machh.DA.ExpenseDAO;
 import org.farmon.DA.HarvestDAO;
@@ -92,6 +93,7 @@ import org.farmon.JPA.exceptions.NonexistentEntityException;
 import org.farmon.JPA.exceptions.PreexistingEntityException;
 import org.farmon.entities.Buyer;
 import org.farmon.entities.Cropproduct;
+import org.farmon.entities.Growthstage;
 import org.farmon.entities.Inventory;
 import org.farmon.entities.Productstage;
 import org.farmon.entities.Sales;
@@ -100,6 +102,7 @@ import org.farmon.entities.Sensordata;
 import org.farmon.entities.Sensordetail;
 import org.farmon.farmondto.BuyerDTO;
 import org.farmon.farmondto.CropProductDTO;
+import org.farmon.farmondto.GrowthStageDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
 import org.farmon.farmondto.ProductStageDTO;
@@ -3668,6 +3671,49 @@ public class MasterDataServices {
             return null;
         } catch (Exception exception) {
             System.out.println(exception + " has occurred in getFirstStageForCropProd().");
+            return null;
+        }
+    }
+    
+    public List<GrowthStageDTO> getGrowthStagesForCropProd(String cropid, String prodid, 
+            String stageid) {
+        GrowthstageDAO stagedao = new GrowthstageDAO(utx, emf);
+        GrowthStageDTO record = new GrowthStageDTO();
+        List<GrowthStageDTO> recordList = new ArrayList<>();
+        Date mysqlDate;
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            List<Growthstage> stagelist = stagedao.getGrowthStagesForCropProd(Integer.parseInt(cropid)
+            , Integer.parseInt(prodid), Integer.parseInt(stageid));
+            for (int i = 0; i < stagelist.size(); i++) {
+                record.setId(stagelist.get(i).getId().toString());
+                record.setHarvestId(stagelist.get(i).getHarvestid().toString());
+                record.setCropId(stagelist.get(i).getCropid().toString());
+                record.setCropName(getCropForId(stagelist.get(i).getCropid().toString())
+                        .getCropName());
+                record.setProductId(stagelist.get(i).getProductid().toString());
+                record.setProductName(getCropprodForCropProd(cropid, prodid).getProductName());
+                record.setCurrentStageId(stagelist.get(i).getCurrentstageid().toString());
+                record.setCurrentStageName(getStageForCropProdStgid(cropid, prodid,
+                        stagelist.get(i).getCurrentstageid().toString()).getProdStageName());
+                record.setLifeCycleId(stagelist.get(i).getLifecycleid().toString());
+                record.setProductCount(stagelist.get(i).getCount().toString());
+                mysqlDate = stagelist.get(i).getDate();
+                if (mysqlDate == null) {
+                    record.setUpdateDate(null);
+                } else {
+                    record.setUpdateDate(formatter.format(mysqlDate));
+                }
+                recordList.add(record);
+                record = new GrowthStageDTO();
+            }
+            return recordList;
+        } catch (NoResultException e) {
+            System.out.println("No stages for this crop, product and stage are added");
+            return null;
+        } catch (Exception exception) {
+            System.out.println(exception + " has occurred in getGrowthStagesForCropProd().");
             return null;
         }
     }

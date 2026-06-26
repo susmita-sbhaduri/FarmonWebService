@@ -27,5 +27,6 @@
     <class>org.farmon.entities.Inventory</class>
     <class>org.farmon.entities.Buyer</class>
     <class>org.farmon.entities.Productstage</class>
+    <class>org.farmon.entities.Growthstage</class>
   </persistence-unit>
 </persistence>
