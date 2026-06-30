@@ -33,6 +33,7 @@ import org.farmon.farmondto.ExpenseDTO;
 import org.farmon.farmondto.FarmonDTO;
 import org.farmon.farmondto.FarmonResponse;
 import org.farmon.farmondto.FarmresourceDTO;
+import org.farmon.farmondto.GrowthStageDTO;
 import org.farmon.farmondto.HarvestDTO;
 import org.farmon.farmondto.InvDetails;
 import org.farmon.farmondto.InventoryDTO;
@@ -3818,6 +3819,35 @@ public class WebServices {
         ProductStageDTO stagerec = masterDataService.getStageForCropProdStgid(farmondto.getProdstagerec().getCropId(),
                 farmondto.getProdstagerec().getProductId(), farmondto.getProdstagerec().getProdStageId());
         farmondto.setProdstagerec(stagerec);
+        try {
+            String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
+            return responseTermDTOJSON;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    @Path("grthStgCropPrdStgid")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getGrowthStgCropProdStgid(String termDTOJSON) throws NamingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FarmonDTO farmondto;
+        try {
+            Object DTO = objectMapper.readValue(termDTOJSON, FarmonDTO.class);
+            farmondto = (FarmonDTO) DTO;
+        } catch (IOException ex) {
+            Logger.getLogger(UserDTO.class.getName()).log(Level.SEVERE, null, ex);
+            farmondto = new FarmonDTO();
+            farmondto.getUserDto().setResponseMsg("JSON_FORMAT_PROBLEM");
+        }
+        MasterDataServices masterDataService = new MasterDataServices();
+        List<GrowthStageDTO> growthstagelist = masterDataService.getGrowthStagesForCropProd(
+                farmondto.getGrowthstagerec().getCropId(), farmondto.getGrowthstagerec().getProductId(),
+                farmondto.getGrowthstagerec().getCurrentStageId());
+        farmondto.setGrowthstagelist(growthstagelist);
         try {
             String responseTermDTOJSON = objectMapper.writeValueAsString(farmondto);
             return responseTermDTOJSON;

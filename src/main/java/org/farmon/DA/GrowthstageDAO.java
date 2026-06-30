@@ -11,7 +11,6 @@ import jakarta.transaction.UserTransaction;
 import java.util.List;
 import org.farmon.JPA.GrowthstageJpaController;
 import org.farmon.entities.Growthstage;
-import org.farmon.entities.Sales;
 
 /**
  *
